@@ -1,24 +1,24 @@
-// Import des modules necessaires
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express    = require('express')
+const cors       = require('cors')
+require('dotenv').config()
 
-// Initialisation de l'appli Express
-const app = express();
+const connectDB  = require('./config/db')
+const authRoutes = require('./routes/auth')   
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+const app = express()
+connectDB()
 
-// Route test pour vérifier que le serveur tourne
-app.get('/', (req, res) =>
-{
-    res.json({ message: 'LinguaPath Backend is running ✅' });
-});
+app.use(cors())
+app.use(express.json())
 
-// Démarrage serveur sur port 5000
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-{
-    console.log(`Server running on port ${PORT} ✅`);
-});
+// Routes
+app.use('/api/auth', authRoutes)              
+
+app.get('/', (req, res) => {
+  res.json({ message: 'LinguaPath Backend is running ✅' })
+})
+
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} ✅`)
+})
