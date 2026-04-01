@@ -22,3 +22,13 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} ✅`)
 })
+
+const { protect } = require('./middleware/authMiddleware')
+
+// Route protégée de test
+app.get('/api/protected', protect, (req, res) => {
+  res.json({
+    message: 'Accès autorisé !',
+    user: req.user
+  })
+})
