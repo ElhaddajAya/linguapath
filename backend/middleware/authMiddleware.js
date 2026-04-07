@@ -10,7 +10,6 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer ')
   ) {
     token = req.headers.authorization.split(' ')[1]
-    // "Bearer eyJhbG..." → on prend juste "eyJhbG..."
   }
 
   // 2. Si pas de token → accès refusé
@@ -21,12 +20,16 @@ const protect = async (req, res, next) => {
   try {
     // 3. Vérifier et décoder le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    // decoded = { id: "userId", iat: ..., exp: ... }
 
     // 4. Récupérer l'utilisateur depuis la BDD
     req.user = await User.findById(decoded.id).select('-password')
-    // On attache le user à req pour que les routes suivantes y aient accès
-    // 5. Passer à la route suivante
+
+    // 5. Vérifier que l'utilisateur existe toujours
+    if (!req.user) {
+      return res.status(401).json({ message: 'Utilisateur introuvable.' })
+    }
+
+    // 6. Passer à la route suivante
     next()
   } catch (err) {
     return res.status(401).json({ message: 'Token invalide ou expiré.' })

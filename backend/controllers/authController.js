@@ -14,6 +14,11 @@ const generateToken = (userId) => {
 const register = async (req, res) => {
   const { nom, email, password, languesCibles, niveau } = req.body
 
+  // Validation des champs requis
+  if (!nom || !email || !password) {
+    return res.status(400).json({ message: 'Nom, email et mot de passe sont requis' })
+  }
+
   try {
     // 1. Vérifier si l'email existe déjà
     const existingUser = await User.findOne({ email })
@@ -57,6 +62,11 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body
 
+  // Validation des champs requis
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email et mot de passe sont requis' })
+  }
+
   try {
     // 1. Trouver l'utilisateur par email
     const user = await User.findOne({ email })
@@ -90,4 +100,5 @@ const login = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: err.message })
   }
 }
+
 module.exports = { register, login }
