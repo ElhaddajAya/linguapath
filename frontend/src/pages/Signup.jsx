@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../services/api";
+import Logo from "../components/Logo";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -50,12 +51,12 @@ export default function Signup() {
     <div className='min-h-screen bg-base-200 flex items-center justify-center py-8'>
       <div className='card w-full max-w-md bg-base-100 shadow-xl'>
         <div className='card-body'>
-          <h2 className='card-title text-2xl font-bold justify-center mb-2'>
-            Créer un compte
-          </h2>
-          <p className='text-center text-base-content/60 mb-4'>
-            Rejoins LinguaPath et commence à apprendre
-          </p>
+          <div className='flex flex-col items-center gap-1 mb-4'>
+            <Logo size='full' />
+            <p className='text-base-content/50 text-sm mt-2'>
+              Rejoins LinguaPath et commence à apprendre
+            </p>
+          </div>
 
           {error && (
             <div className='alert alert-error mb-4'>
