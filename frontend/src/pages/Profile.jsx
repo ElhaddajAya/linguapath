@@ -4,122 +4,109 @@ import Navbar from "../components/NavBar.jsx";
 
 export default function Profile() {
   const navigate = useNavigate();
-
-  // On récupère l'utilisateur du localStorage
   const [user] = useState(JSON.parse(localStorage.getItem("user") || "{}"));
 
-  // Liste des langues disponibles dans l'app
-  const toutesLesLangues = [
-    "Français",
-    "Anglais",
-    "Espagnol",
-    "Allemand",
-    "Arabe",
-    "Coréen",
-    "Japonais",
-    "Chinois",
-  ];
+  // Couleurs par niveau — pour différencier visuellement
+  const niveauColor = {
+    A1: "bg-gray-100 text-gray-600",
+    A2: "bg-blue-50 text-blue-600",
+    B1: "bg-green-50 text-green-600",
+    B2: "bg-yellow-50 text-yellow-600",
+    C1: "bg-orange-50 text-orange-600",
+    C2: "bg-red-50 text-red-600",
+  };
 
   return (
-    <div className='min-h-screen bg-base-200'>
+    <div className='min-h-screen bg-surface-50'>
       <Navbar />
 
       <div className='max-w-2xl mx-auto px-4 py-10'>
-        {/* Titre de la page */}
-        <h1 className='text-2xl font-bold mb-6'>Mon Profil</h1>
+        <h1 className='text-2xl font-bold text-surface-900 mb-6'>Mon Profil</h1>
 
-        {/* Carte principale du profil */}
-        <div className='card bg-base-100 shadow-md'>
-          <div className='card-body gap-6'>
-            {/* Avatar + nom + email */}
-            <div className='flex items-center gap-4'>
-              {/* Grand avatar avec initiale */}
-              <div className='avatar placeholder'>
-                <div className='bg-primary text-primary-content rounded-full w-16'>
-                  <span className='text-2xl font-bold'>
-                    {user.nom?.charAt(0).toUpperCase() || "?"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <h2 className='text-xl font-bold'>{user.nom}</h2>
-                <p className='text-base-content/60 text-sm'>{user.email}</p>
-                {/* Badge du rôle — "user" ou "admin" */}
-                <span className='badge badge-ghost badge-sm mt-1 capitalize'>
-                  {user.role || "user"}
-                </span>
-              </div>
+        <div className='bg-white rounded-2xl border border-surface-200 shadow-sm overflow-hidden'>
+          {/* Header — avatar + infos */}
+          <div className='p-6 flex items-center gap-4 border-b border-surface-200'>
+            <div
+              className='w-16 h-16 rounded-full flex items-center justify-center
+                            text-white text-2xl font-bold shrink-0'
+              style={{
+                background:
+                  "linear-gradient(to bottom right, #F59E0B, #EA580C)",
+              }}
+            >
+              {user.nom?.charAt(0).toUpperCase() || "?"}
             </div>
-
-            {/* Divider — séparateur DaisyUI */}
-            <div className='divider my-0'></div>
-
-            {/* Niveau */}
             <div>
-              <p className='text-sm font-semibold text-base-content/60 uppercase tracking-wide mb-2'>
-                Niveau actuel
-              </p>
-              {/* On affiche tous les niveaux, le niveau actuel est mis en valeur */}
-              <div className='flex gap-2 flex-wrap'>
-                {["A1", "A2", "B1", "B2", "C1", "C2"].map((n) => (
-                  <span
-                    key={n}
-                    className={`badge badge-lg font-semibold ${
-                      n === user.niveau
-                        ? "badge-primary" // niveau actuel → jaune
-                        : "badge-ghost" // autres niveaux → gris
-                    }`}
+              <h2 className='text-xl font-bold text-surface-900'>{user.nom}</h2>
+              <p className='text-surface-500 text-sm'>{user.email}</p>
+              <span
+                className='inline-block mt-1 text-xs px-2 py-0.5 rounded-full
+                               bg-surface-100 text-surface-500 capitalize'
+              >
+                {user.role || "user"}
+              </span>
+            </div>
+          </div>
+
+          {/* Langues pratiquées */}
+          <div className='p-6'>
+            <p className='text-xs font-semibold text-surface-500 uppercase tracking-wide mb-4'>
+              Langues en apprentissage
+            </p>
+
+            {user.langues?.length > 0 ? (
+              <div className='flex flex-col gap-3'>
+                {user.langues.map((l) => (
+                  <div
+                    key={l.langue}
+                    className='flex items-center justify-between px-4 py-3
+                               rounded-xl border border-surface-200 bg-surface-50'
                   >
-                    {n}
-                  </span>
+                    <span className='font-medium text-surface-900'>
+                      {l.langue}
+                    </span>
+                    <span
+                      className={`text-sm font-semibold px-3 py-1 rounded-full ${niveauColor[l.niveau]}`}
+                    >
+                      {l.niveau}
+                    </span>
+                  </div>
                 ))}
               </div>
-            </div>
-
-            <div className='divider my-0'></div>
-
-            {/* Langues cibles */}
-            <div>
-              <p className='text-sm font-semibold text-base-content/60 uppercase tracking-wide mb-2'>
-                Langues en apprentissage
-              </p>
-              <div className='flex gap-2 flex-wrap'>
-                {user.languesCibles?.length > 0 ? (
-                  user.languesCibles.map((l) => (
-                    <span
-                      key={l}
-                      className='badge badge-primary badge-outline'
-                    >
-                      {l}
-                    </span>
-                  ))
-                ) : (
-                  <span className='text-base-content/40 text-sm'>
-                    Aucune langue sélectionnée
-                  </span>
-                )}
+            ) : (
+              // Aucune langue encore — invitation à commencer
+              <div className='text-center py-8'>
+                <p className='text-surface-500 text-sm mb-4'>
+                  Tu n'as pas encore de langue en apprentissage.
+                </p>
+                <button
+                  onClick={() => navigate("/")}
+                  className='px-6 py-2.5 rounded-lg text-sm font-semibold text-white'
+                  style={{
+                    background: "linear-gradient(to right, #F59E0B, #EA580C)",
+                  }}
+                >
+                  Choisir une langue
+                </button>
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className='divider my-0'></div>
-
-            {/* Actions */}
-            <div className='card-actions justify-between items-center'>
-              <button
-                onClick={() => navigate("/")}
-                className='btn btn-ghost btn-sm'
-              >
-                ← Retour
-              </button>
-              {/* Le bouton modifier sera fonctionnel au Sprint 2 */}
-              <button
-                className='btn btn-primary btn-sm'
-                disabled
-              >
-                Modifier le profil (bientôt)
-              </button>
-            </div>
+          {/* Actions */}
+          <div className='px-6 py-4 border-t border-surface-200 flex justify-between items-center'>
+            <button
+              onClick={() => navigate("/")}
+              className='text-sm text-surface-500 hover:text-surface-700 transition-colors'
+            >
+              ← Retour
+            </button>
+            <button
+              disabled
+              className='px-4 py-2 rounded-lg text-sm font-medium
+                         bg-surface-100 text-surface-400 cursor-not-allowed'
+            >
+              Modifier (bientôt)
+            </button>
           </div>
         </div>
       </div>
