@@ -104,6 +104,58 @@ export default function Logo({ size = "navbar" }) {
     );
   }
 
+  // ── VERSION SMALL — icône 52x60 + wordmark (pages auth) ──
+  if (size === "small") {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <svg
+          width='52'
+          height='60'
+          viewBox='0 0 52 60'
+          xmlns='http://www.w3.org/2000/svg'
+        >
+          <GradDefs id='gSmall' />
+          <rect
+            x='0'
+            y='0'
+            width='52'
+            height='46'
+            rx='12'
+            fill='url(#gSmall)'
+          />
+          <polygon
+            points='6,46 0,60 20,46'
+            fill='url(#gSmall)'
+          />
+          <text
+            x='17'
+            y='34'
+            fontFamily='Georgia, serif'
+            fontSize='28'
+            fontWeight='700'
+            fill='white'
+            textAnchor='middle'
+          >
+            A
+          </text>
+          <text
+            x='38'
+            y='32'
+            fontFamily='serif'
+            fontSize='19'
+            fontWeight='700'
+            fill='white'
+            opacity='0.9'
+            textAnchor='middle'
+          >
+            語
+          </text>
+        </svg>
+        <Wordmark big={false} />
+      </div>
+    );
+  }
+
   // ── VERSION FULL ──
   return (
     <div

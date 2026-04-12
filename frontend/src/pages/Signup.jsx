@@ -1,5 +1,3 @@
-// Signup.jsx — minimal : nom + email + password uniquement
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../services/api";
@@ -22,7 +20,6 @@ export default function Signup() {
       const res = await register(form);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      // Après inscription → test de niveau
       navigate("/quiz");
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'inscription");
@@ -32,16 +29,36 @@ export default function Signup() {
   };
 
   return (
-    <div className='min-h-screen bg-warm-50 flex items-center justify-center px-4 py-8'>
-      <div className='w-full max-w-sm'>
-        {/* Logo */}
-        <div className='flex justify-center mb-10'>
-          <Logo size='full' />
+    <div className='min-h-screen bg-warm-50 flex'>
+      {/* Colonne gauche — décorative lg+ */}
+      <div
+        className='hidden lg:flex lg:flex-1 bg-gradient-to-br from-orange-500 to-orange-600
+                      items-center justify-center p-12'
+      >
+        <div className='text-white text-center'>
+          <p
+            className='text-4xl font-bold mb-4'
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            Rejoins LinguaPath.
+          </p>
+          <p className='text-orange-100 text-lg'>
+            Choisis ta langue,
+            <br />
+            découvre ton niveau.
+          </p>
         </div>
+      </div>
 
-        {/* Card */}
-        <div className='bg-white rounded-3xl shadow-card border border-warm-200 p-8'>
-          <h2 className='text-xl font-semibold text-warm-900 mb-1'>
+      {/* Colonne droite — formulaire */}
+      <div className='flex-1 flex items-center justify-center px-6 py-10'>
+        <div className='w-full max-w-md'>
+          {/* Logo — taille réduite */}
+          <div className='flex justify-center mb-8'>
+            <Logo size='small' />
+          </div>
+
+          <h2 className='text-2xl font-semibold text-warm-900 mb-1'>
             Crée ton compte
           </h2>
           <p className='text-sm text-warm-500 mb-7'>
@@ -61,7 +78,6 @@ export default function Signup() {
             onSubmit={handleSubmit}
             className='flex flex-col gap-4'
           >
-            {/* Nom */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>
                 Nom complet
@@ -74,13 +90,12 @@ export default function Signup() {
                 onChange={handleChange}
                 required
                 className='w-full px-4 py-3 rounded-xl border border-warm-200
-                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           bg-white text-warm-900 text-sm placeholder:text-warm-400
                            focus:outline-none focus:border-orange-500
                            focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
-            {/* Email */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>Email</label>
               <input
@@ -91,13 +106,12 @@ export default function Signup() {
                 onChange={handleChange}
                 required
                 className='w-full px-4 py-3 rounded-xl border border-warm-200
-                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           bg-white text-warm-900 text-sm placeholder:text-warm-400
                            focus:outline-none focus:border-orange-500
                            focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
-            {/* Password */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>
                 Mot de passe
@@ -110,7 +124,7 @@ export default function Signup() {
                 onChange={handleChange}
                 required
                 className='w-full px-4 py-3 rounded-xl border border-warm-200
-                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           bg-white text-warm-900 text-sm placeholder:text-warm-400
                            focus:outline-none focus:border-orange-500
                            focus:ring-2 focus:ring-orange-500/10 transition-all'
               />

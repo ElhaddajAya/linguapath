@@ -1,5 +1,3 @@
-// Navbar.jsx — Tailwind pur, blanc chaud + orange
-
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 
@@ -14,9 +12,9 @@ export default function Navbar() {
   };
 
   return (
-    // Barre fixe en haut — fond blanc avec légère ombre
     <nav className='sticky top-0 z-50 bg-white border-b border-warm-200 shadow-soft'>
-      <div className='max-w-5xl mx-auto px-6 h-16 flex items-center justify-between'>
+      {/* max-w-7xl au lieu de max-w-5xl + padding horizontal plus grand */}
+      <div className='max-w-7xl mx-auto px-10 h-16 flex items-center justify-between'>
         {/* Logo cliquable */}
         <Link
           to='/'
@@ -25,9 +23,9 @@ export default function Navbar() {
           <Logo size='navbar' />
         </Link>
 
-        {/* Droite */}
-        <div className='flex items-center gap-4'>
-          {/* Nombre de langues si l'utilisateur en a */}
+        {/* Droite — gap augmenté entre les éléments */}
+        <div className='flex items-center gap-6'>
+          {/* Nombre de langues */}
           {user.langues?.length > 0 && (
             <span
               className='hidden sm:block text-xs font-medium
@@ -42,6 +40,9 @@ export default function Navbar() {
           <span className='hidden sm:block text-sm font-medium text-warm-600'>
             {user.nom}
           </span>
+
+          {/* Séparateur vertical discret */}
+          <div className='hidden sm:block w-px h-5 bg-warm-200' />
 
           {/* Avatar → profil */}
           <Link to='/profile'>
@@ -60,7 +61,8 @@ export default function Navbar() {
           {/* Déconnexion */}
           <button
             onClick={handleLogout}
-            className='text-sm text-warm-400 hover:text-warm-600 transition-colors'
+            className='text-sm text-warm-400 hover:text-warm-700
+                       transition-colors font-medium'
           >
             Déconnexion
           </button>

@@ -1,5 +1,3 @@
-// Login.jsx — Tailwind pur, blanc chaud + orange
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../services/api";
@@ -31,24 +29,43 @@ export default function Login() {
   };
 
   return (
-    // Fond blanc chaud — comme Claude AI
-    <div className='min-h-screen bg-warm-50 flex items-center justify-center px-4'>
-      <div className='w-full max-w-sm'>
-        {/* Logo centré en haut */}
-        <div className='flex justify-center mb-10'>
-          <Logo size='full' />
+    // Layout 2 colonnes sur grand écran, 1 colonne sur mobile
+    <div className='min-h-screen bg-warm-50 flex'>
+      {/* Colonne gauche — décorative, visible seulement sur lg+ */}
+      <div
+        className='hidden lg:flex lg:flex-1 bg-gradient-to-br from-orange-500 to-orange-600
+                      items-center justify-center p-12'
+      >
+        <div className='text-white text-center'>
+          <p
+            className='text-4xl font-bold mb-4'
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            Apprends en parlant.
+          </p>
+          <p className='text-orange-100 text-lg'>
+            Des conversations réelles,
+            <br />
+            un niveau qui progresse.
+          </p>
         </div>
+      </div>
 
-        {/* Card formulaire */}
-        <div className='bg-white rounded-3xl shadow-card border border-warm-200 p-8'>
-          <h2 className='text-xl font-semibold text-warm-900 mb-1'>
+      {/* Colonne droite — formulaire */}
+      <div className='flex-1 flex items-center justify-center px-6 py-10'>
+        <div className='w-full max-w-md'>
+          {/* Logo — taille réduite */}
+          <div className='flex justify-center mb-8'>
+            <Logo size='small' />
+          </div>
+
+          <h2 className='text-2xl font-semibold text-warm-900 mb-1'>
             Bon retour 👋
           </h2>
           <p className='text-sm text-warm-500 mb-7'>
             Connecte-toi pour continuer ta progression
           </p>
 
-          {/* Message d'erreur */}
           {error && (
             <div
               className='bg-red-50 border border-red-200 text-red-600
@@ -62,7 +79,6 @@ export default function Login() {
             onSubmit={handleSubmit}
             className='flex flex-col gap-4'
           >
-            {/* Email */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>Email</label>
               <input
@@ -73,13 +89,12 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 className='w-full px-4 py-3 rounded-xl border border-warm-200
-                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           bg-white text-warm-900 text-sm placeholder:text-warm-400
                            focus:outline-none focus:border-orange-500
                            focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
-            {/* Mot de passe */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>
                 Mot de passe
@@ -92,13 +107,12 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 className='w-full px-4 py-3 rounded-xl border border-warm-200
-                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           bg-white text-warm-900 text-sm placeholder:text-warm-400
                            focus:outline-none focus:border-orange-500
                            focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
-            {/* Bouton */}
             <button
               type='submit'
               disabled={loading}
@@ -113,7 +127,6 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Lien signup */}
           <p className='text-center mt-6 text-sm text-warm-500'>
             Pas encore de compte ?{" "}
             <Link
