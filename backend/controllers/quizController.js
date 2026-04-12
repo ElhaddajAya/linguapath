@@ -80,17 +80,27 @@ const saveResult = async (req, res) =>
             }
         }
 
-        // 3. Déterminer le niveau — le plus haut niveau où l'utilisateur a ≥ 50%
+        // 3. Déterminer le niveau — approche progressive
+        // On part de A1 et on monte. Dès qu'un niveau est raté --> on s'arrête.
         const niveaux = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-        let niveauFinal = 'A1'
+        let niveauFinal = 'A1' // valeur par défaut si tout est raté
 
         for (const niveau of niveaux)
         {
+
+            // Si pas de questions pour ce niveau → on skip sans changer le résultat
             if (totalParNiveau[niveau] === 0) continue
+
             const pourcentage = scoreParNiveau[niveau] / totalParNiveau[niveau]
+
             if (pourcentage >= 0.5)
             {
+                // Niveau validé → on avance
                 niveauFinal = niveau
+            } else
+            {
+                // Niveau raté → on s'arrête immédiatement
+                break
             }
         }
 
