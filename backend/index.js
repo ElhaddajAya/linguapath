@@ -1,9 +1,10 @@
-const express    = require('express')
-const cors       = require('cors')
+const express = require('express')
+const cors = require('cors')
 require('dotenv').config()
 
-const connectDB  = require('./config/db')
+const connectDB = require('./config/db')
 const authRoutes = require('./routes/auth')
+const quizRoutes = require('./routes/quiz')
 const { protect } = require('./middleware/authMiddleware')
 
 const app = express()
@@ -17,13 +18,16 @@ app.use(express.json())
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/quiz', quizRoutes)
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) =>
+{
   res.json({ message: 'LinguaPath Backend is running ✅' })
 })
 
 // Route protégée de test
-app.get('/api/protected', protect, (req, res) => {
+app.get('/api/protected', protect, (req, res) =>
+{
   res.json({
     message: 'Accès autorisé !',
     user: req.user,
@@ -31,6 +35,7 @@ app.get('/api/protected', protect, (req, res) => {
 })
 
 const PORT = process.env.PORT || 5000
-app.listen(PORT, () => {
+app.listen(PORT, () =>
+{
   console.log(`Server running on port ${PORT} ✅`)
 })
