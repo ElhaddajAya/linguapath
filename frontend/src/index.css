@@ -1,12 +1,42 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-warm-50: #fdfcfa;
+  --color-warm-100: #f7f5f0;
+  --color-warm-200: #ede9e3;
+  --color-warm-300: #d6d0c8;
+  --color-warm-400: #b8b0a4;
+  --color-warm-500: #8c8278;
+  --color-warm-600: #5c554d;
+  --color-warm-700: #3d3830;
+  --color-warm-900: #1a1714;
+
+  --color-orange-50: #fff8f0;
+  --color-orange-100: #feebd5;
+  --color-orange-200: #fdd0a0;
+  --color-orange-300: #fbb060;
+  --color-orange-400: #f99030;
+  --color-orange-500: #f59e0b;
+  --color-orange-600: #ea580c;
+  --color-orange-700: #c2410c;
+  --color-orange-800: #9a3412;
+
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+}
 
 @layer base {
   html {
-    font-family: "DM Sans", system-ui, sans-serif;
+    font-family: var(--font-sans);
   }
   body {
     background-color: #fdfcfa;
@@ -14,18 +44,5 @@
   }
   * {
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-@layer utilities {
-  .text-gradient {
-    background: linear-gradient(to right, #f59e0b, #ea580c);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .bg-gradient-orange {
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
   }
 }
