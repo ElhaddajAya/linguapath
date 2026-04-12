@@ -1,18 +1,12 @@
-// Navbar.jsx utilise les composants DaisyUI : navbar, btn, avatar.
+// Navbar.jsx — Tailwind pur, blanc chaud + orange
 
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 
 export default function Navbar() {
   const navigate = useNavigate();
-
-  // On récupère les infos de l'utilisateur sauvegardées au moment du login
-  // JSON.parse() convertit le texte stocké en objet JavaScript
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Fonction de déconnexion :
-  // 1. On supprime le token et l'user du localStorage
-  // 2. On redirige vers /login
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -20,49 +14,58 @@ export default function Navbar() {
   };
 
   return (
-    <div className='navbar bg-base-100 shadow-sm px-6'>
-      {/* Logo cliquable — redirige vers Home */}
-      <div className='navbar-start'>
-        <Link to='/'>
+    // Barre fixe en haut — fond blanc avec légère ombre
+    <nav className='sticky top-0 z-50 bg-white border-b border-warm-200 shadow-soft'>
+      <div className='max-w-5xl mx-auto px-6 h-16 flex items-center justify-between'>
+        {/* Logo cliquable */}
+        <Link
+          to='/'
+          className='hover:opacity-80 transition-opacity'
+        >
           <Logo size='navbar' />
         </Link>
-      </div>
 
-      {/* Droite — niveau, nom, avatar, déconnexion */}
-      <div className='navbar-end gap-3'>
-        {/* Badge niveau */}
-        <span className='badge badge-warning badge-outline font-semibold'>
-          {user.niveau || "A1"}
-        </span>
+        {/* Droite */}
+        <div className='flex items-center gap-4'>
+          {/* Nombre de langues si l'utilisateur en a */}
+          {user.langues?.length > 0 && (
+            <span
+              className='hidden sm:block text-xs font-medium
+                             text-orange-600 bg-orange-50 px-3 py-1 rounded-full
+                             border border-orange-200'
+            >
+              {user.langues.length} langue{user.langues.length > 1 ? "s" : ""}
+            </span>
+          )}
 
-        {/* Nom — caché sur mobile */}
-        <span className='text-sm font-medium hidden sm:block text-base-content/70'>
-          {user.nom}
-        </span>
+          {/* Nom */}
+          <span className='hidden sm:block text-sm font-medium text-warm-600'>
+            {user.nom}
+          </span>
 
-        {/* Avatar cliquable → profil */}
-        <Link to='/profile'>
-          <div className='avatar placeholder cursor-pointer hover:opacity-80 transition-opacity'>
+          {/* Avatar → profil */}
+          <Link to='/profile'>
             <div
-              className='rounded-full w-9 text-white text-sm font-bold'
+              className='w-9 h-9 rounded-full flex items-center justify-center
+                            text-white text-sm font-bold cursor-pointer
+                            hover:opacity-80 transition-opacity'
               style={{
-                background:
-                  "linear-gradient(to bottom right, #F59E0B, #EA580C)",
+                background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              <span>{user.nom?.charAt(0).toUpperCase() || "?"}</span>
+              {user.nom?.charAt(0).toUpperCase() || "?"}
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Déconnexion */}
-        <button
-          onClick={handleLogout}
-          className='btn btn-ghost btn-sm text-base-content/50'
-        >
-          Déconnexion
-        </button>
+          {/* Déconnexion */}
+          <button
+            onClick={handleLogout}
+            className='text-sm text-warm-400 hover:text-warm-600 transition-colors'
+          >
+            Déconnexion
+          </button>
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

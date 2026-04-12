@@ -46,6 +46,7 @@ const register = async (req, res) =>
     })
   } catch (err)
   {
+    console.error('ERREUR REGISTER DÉTAIL:', err) // ← temporaire pour debug
     res.status(500).json({ message: 'Erreur serveur', error: err.message })
   }
 }

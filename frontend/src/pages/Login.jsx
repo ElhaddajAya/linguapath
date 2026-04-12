@@ -1,3 +1,5 @@
+// Login.jsx — Tailwind pur, blanc chaud + orange
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../services/api";
@@ -9,9 +11,8 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,19 +31,30 @@ export default function Login() {
   };
 
   return (
-    <div className='min-h-screen bg-base-200 flex items-center justify-center'>
-      <div className='card w-full max-w-md bg-base-100 shadow-xl'>
-        <div className='card-body'>
-          <div className='flex flex-col items-center gap-1 mb-4'>
-            <Logo size='full' />
-            <p className='text-base-content/50 text-sm mt-2'>
-              Connecte-toi pour continuer
-            </p>
-          </div>
+    // Fond blanc chaud — comme Claude AI
+    <div className='min-h-screen bg-warm-50 flex items-center justify-center px-4'>
+      <div className='w-full max-w-sm'>
+        {/* Logo centré en haut */}
+        <div className='flex justify-center mb-10'>
+          <Logo size='full' />
+        </div>
 
+        {/* Card formulaire */}
+        <div className='bg-white rounded-3xl shadow-card border border-warm-200 p-8'>
+          <h2 className='text-xl font-semibold text-warm-900 mb-1'>
+            Bon retour 👋
+          </h2>
+          <p className='text-sm text-warm-500 mb-7'>
+            Connecte-toi pour continuer ta progression
+          </p>
+
+          {/* Message d'erreur */}
           {error && (
-            <div className='alert alert-error mb-4'>
-              <span>{error}</span>
+            <div
+              className='bg-red-50 border border-red-200 text-red-600
+                            text-sm rounded-xl px-4 py-3 mb-5'
+            >
+              {error}
             </div>
           )}
 
@@ -50,50 +62,63 @@ export default function Login() {
             onSubmit={handleSubmit}
             className='flex flex-col gap-4'
           >
-            <div className='form-control'>
-              <label className='label'>
-                <span className='label-text'>Email</span>
-              </label>
+            {/* Email */}
+            <div className='flex flex-col gap-1.5'>
+              <label className='text-sm font-medium text-warm-700'>Email</label>
               <input
                 type='email'
                 name='email'
-                placeholder='john.doe@example.com'
-                className='input input-bordered w-full'
+                placeholder='aya@example.com'
                 value={form.email}
                 onChange={handleChange}
                 required
+                className='w-full px-4 py-3 rounded-xl border border-warm-200
+                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           focus:outline-none focus:border-orange-500
+                           focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
-            <div className='form-control'>
-              <label className='label'>
-                <span className='label-text'>Mot de passe</span>
+            {/* Mot de passe */}
+            <div className='flex flex-col gap-1.5'>
+              <label className='text-sm font-medium text-warm-700'>
+                Mot de passe
               </label>
               <input
                 type='password'
                 name='password'
                 placeholder='••••••••'
-                className='input input-bordered w-full'
                 value={form.password}
                 onChange={handleChange}
                 required
+                className='w-full px-4 py-3 rounded-xl border border-warm-200
+                           bg-warm-50 text-warm-900 text-sm placeholder:text-warm-400
+                           focus:outline-none focus:border-orange-500
+                           focus:ring-2 focus:ring-orange-500/10 transition-all'
               />
             </div>
 
+            {/* Bouton */}
             <button
               type='submit'
-              className={`btn btn-primary w-full mt-2 ${loading ? "loading" : ""}`}
               disabled={loading}
+              className='w-full py-3 rounded-xl font-semibold text-white text-sm
+                         mt-2 transition-opacity disabled:opacity-60
+                         hover:opacity-90 active:opacity-80'
+              style={{
+                background: "linear-gradient(135deg, #F59E0B, #EA580C)",
+              }}
             >
               {loading ? "Connexion..." : "Se connecter"}
             </button>
           </form>
 
-          <p className='text-center mt-4 text-sm'>
+          {/* Lien signup */}
+          <p className='text-center mt-6 text-sm text-warm-500'>
             Pas encore de compte ?{" "}
             <Link
               to='/signup'
-              className='link link-primary'
+              className='font-semibold text-orange-600 hover:text-orange-700 transition-colors'
             >
               Créer un compte
             </Link>
