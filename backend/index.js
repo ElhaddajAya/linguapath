@@ -1,3 +1,6 @@
+// index.js — point d'entrée du serveur Express
+// On configure le serveur, la connexion à la BDD, les routes et les middlewares.
+
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
@@ -5,6 +8,8 @@ require('dotenv').config()
 const connectDB = require('./config/db')
 const authRoutes = require('./routes/auth')
 const quizRoutes = require('./routes/quiz')
+const scenarioRoutes = require('./routes/scenarios')
+const chatRoutes = require('./routes/chat')
 const { protect } = require('./middleware/authMiddleware')
 
 const app = express()
@@ -19,6 +24,8 @@ app.use(express.json())
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/quiz', quizRoutes)
+app.use('/api/scenarios', scenarioRoutes)
+app.use('/api/chat', chatRoutes)
 
 app.get('/', (req, res) =>
 {
