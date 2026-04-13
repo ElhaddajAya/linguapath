@@ -1,12 +1,12 @@
 // Gère l'envoi et la réception des messages dans une conversation.
-// À chaque message, on envoie TOUT l'historique à Gemini
+// À chaque message, on envoie TOUT l'historique à Groq
 // pour qu'il garde le contexte de la conversation.
 
 const Scenario = require('../models/Scenario')
-const { envoyerMessage } = require('../services/geminiService')
+const { envoyerMessage } = require('../services/groqService') // ← Groq au lieu de Gemini
 
 // ── POST /api/chat/message ──
-// Reçoit un message, l'envoie à Gemini avec l'historique, retourne la réponse
+// Reçoit un message, l'envoie à Groq avec l'historique, retourne la réponse
 const envoyerMessageChat = async (req, res) =>
 {
     const { scenarioId, historique, message } = req.body
@@ -33,11 +33,11 @@ const envoyerMessageChat = async (req, res) =>
 
         const systemPromptComplet = `${scenario.systemPrompt}
 
-        IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
-        Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
-        Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.`
+IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
+Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
+Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.`
 
-        // 3. Envoyer à Gemini avec tout l'historique
+        // 3. Envoyer à Groq avec tout l'historique
         const reponseIA = await envoyerMessage(
             systemPromptComplet,
             historique || [],
@@ -47,7 +47,6 @@ const envoyerMessageChat = async (req, res) =>
         // 4. Retourner la réponse
         res.json({
             reponse: reponseIA,
-            // On retourne aussi le nouveau message ajouté à l'historique
             nouveauMessage: {
                 role: 'assistant',
                 contenu: reponseIA,
@@ -56,7 +55,7 @@ const envoyerMessageChat = async (req, res) =>
 
     } catch (err)
     {
-        console.error('Erreur Gemini :', err.message)
+        console.error('Erreur Groq :', err.message)
         res.status(500).json({ message: 'Erreur lors de la communication avec l\'IA' })
     }
 }
