@@ -13,10 +13,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const envoyerMessage = async (systemPrompt, historique, messageUser) =>
 {
 
-    // On utilise gemini-1.5-flash — rapide et gratuit
+    // On utilise gemini-3-flash-preview — tres proche de GPT-4o en qualité, gratuit avec quota généreux.
     const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        systemInstruction: systemPrompt,
+        model: 'gemini-3-flash-preview', systemInstruction: systemPrompt,
     })
 
     // Gemini attend l'historique dans ce format :
