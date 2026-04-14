@@ -33,9 +33,17 @@ const envoyerMessageChat = async (req, res) =>
 
         const systemPromptComplet = `${scenario.systemPrompt}
 
-IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
-Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
-Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.`
+            IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
+            Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
+            Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.
+
+            RÈGLES DE CORRECTION :
+            - Tu ne te corriges JAMAIS toi-même. Tes propres phrases sont toujours correctes.
+            - Tu corriges UNIQUEMENT si l'utilisateur fait une faute de grammaire ou de vocabulaire.
+            - Si l'utilisateur ne fait PAS de faute → tu réponds normalement, SANS aucune correction.
+            - La correction se place uniquement à la FIN de ta réponse, après ta réponse normale.
+            - Format de correction : "💡 [mot natif pour 'correction'] : [phrase corrigée]"
+            - Si aucune faute → aucune mention de correction, aucun commentaire là-dessus.`
 
         // 3. Envoyer à Groq avec tout l'historique
         const reponseIA = await envoyerMessage(
