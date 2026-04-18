@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const bcrypt   = require('bcryptjs')
+const bcrypt = require('bcryptjs')
 
 const UserSchema = new mongoose.Schema(
   {
@@ -21,15 +21,23 @@ const UserSchema = new mongoose.Schema(
       required: [true, 'Le mot de passe est requis'],
       minlength: [6, 'Minimum 6 caractères'],
     },
-    languesCibles: {
-      type: [String],
+
+    // Chaque langue pratiquée a son propre niveau
+    // Ex: [{ langue: "Coréen", niveau: "A2" }, { langue: "Espagnol", niveau: "B1" }]
+    langues: {
+      type: [
+        {
+          langue: { type: String, required: true },
+          niveau: {
+            type: String,
+            enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+            default: 'A1',
+          },
+        }
+      ],
       default: [],
     },
-    niveau: {
-      type: String,
-      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
-      default: 'A1',
-    },
+
     role: {
       type: String,
       enum: ['user', 'admin'],
@@ -44,13 +52,16 @@ const UserSchema = new mongoose.Schema(
 )
 
 // Hacher le mot de passe avant chaque sauvegarde
-UserSchema.pre('save', async function () {
+UserSchema.pre('save', async function ()
+{
   if (!this.isModified('password')) return
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
 })
-// Méthode pour comparer les mots de passe
-UserSchema.methods.comparePassword = async function (candidatePassword) {
+
+// Méthode pour comparer les mots de passe lors du login
+UserSchema.methods.comparePassword = async function (candidatePassword)
+{
   return bcrypt.compare(candidatePassword, this.password)
 }
 

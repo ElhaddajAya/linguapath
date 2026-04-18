@@ -1,9 +1,16 @@
-const express    = require('express')
-const cors       = require('cors')
+// index.js — point d'entrée du serveur Express
+// On configure le serveur, la connexion à la BDD, les routes et les middlewares.
+
+const express = require('express')
+const cors = require('cors')
 require('dotenv').config()
 
-const connectDB  = require('./config/db')
+const connectDB = require('./config/db')
 const authRoutes = require('./routes/auth')
+const quizRoutes = require('./routes/quiz')
+const scenarioRoutes = require('./routes/scenarios')
+const chatRoutes = require('./routes/chat')
+const traductionRoutes = require('./routes/traduction')
 const { protect } = require('./middleware/authMiddleware')
 
 const app = express()
@@ -17,13 +24,19 @@ app.use(express.json())
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/quiz', quizRoutes)
+app.use('/api/scenarios', scenarioRoutes)
+app.use('/api/chat', chatRoutes)
+app.use('/api/traduction', traductionRoutes)
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) =>
+{
   res.json({ message: 'LinguaPath Backend is running ✅' })
 })
 
 // Route protégée de test
-app.get('/api/protected', protect, (req, res) => {
+app.get('/api/protected', protect, (req, res) =>
+{
   res.json({
     message: 'Accès autorisé !',
     user: req.user,
@@ -31,6 +44,7 @@ app.get('/api/protected', protect, (req, res) => {
 })
 
 const PORT = process.env.PORT || 5000
-app.listen(PORT, () => {
+app.listen(PORT, () =>
+{
   console.log(`Server running on port ${PORT} ✅`)
 })
