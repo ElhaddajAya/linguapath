@@ -11,6 +11,8 @@ const quizRoutes = require('./routes/quiz')
 const scenarioRoutes = require('./routes/scenarios')
 const chatRoutes = require('./routes/chat')
 const traductionRoutes = require('./routes/traduction')
+const conversationRoutes = require('./routes/conversations')
+
 const { protect } = require('./middleware/authMiddleware')
 
 const app = express()
@@ -28,6 +30,7 @@ app.use('/api/quiz', quizRoutes)
 app.use('/api/scenarios', scenarioRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/traduction', traductionRoutes)
+app.use('/api/conversations', conversationRoutes)
 
 app.get('/', (req, res) =>
 {

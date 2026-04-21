@@ -44,6 +44,13 @@ export default function Navbar() {
           {/* Séparateur vertical discret */}
           <div className='hidden sm:block w-px h-5 bg-warm-200' />
 
+          <Link
+            to='/historique'
+            className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'
+          >
+            Historique
+          </Link>
+
           {/* Avatar → profil */}
           <Link to='/profile'>
             <div

@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Quiz from "./pages/Quiz";
 import Scenarios from "./pages/Scenario";
 import Chat from "./pages/Chat";
+import Historique from "./pages/Historique";
 
 export default function App() {
   return (
@@ -65,6 +66,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='/historique'
+          element={
+            <ProtectedRoute>
+              <Historique />
             </ProtectedRoute>
           }
         />

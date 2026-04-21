@@ -1,5 +1,3 @@
-// Chat.jsx — avec cartes de suggestions + voice input
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -102,6 +100,7 @@ export default function Chat() {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
 
+  const [debutAt] = useState(Date.now()); // heure de début de la conversation
   const [scenario, setScenario] = useState(null);
   const [historique, setHistorique] = useState([]);
   const [message, setMessage] = useState("");
@@ -279,6 +278,30 @@ export default function Chat() {
     }
   };
 
+  // Fonction de fin de session — sauvegarde puis redirige
+  const terminerConversation = async () => {
+    // On ne sauvegarde que s'il y a au moins 1 message de l'utilisateur
+    const messagesUser = historique.filter((m) => m.role === "user");
+    if (messagesUser.length === 0) {
+      navigate("/scenarios");
+      return;
+    }
+
+    try {
+      const duree = Math.floor((Date.now() - debutAt) / 1000); // en secondes
+      await api.post("/conversations", {
+        scenarioId,
+        messages: historique,
+        duree,
+      });
+    } catch (err) {
+      console.error("Erreur sauvegarde :", err.message);
+      // On redirige quand même même si la sauvegarde échoue
+    }
+
+    navigate("/scenarios");
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -319,7 +342,7 @@ export default function Chat() {
       >
         <div className='flex items-center gap-3'>
           <button
-            onClick={() => navigate("/scenarios")}
+            onClick={terminerConversation}
             className='text-warm-400 hover:text-warm-700 transition-colors mr-1'
           >
             ←
@@ -333,7 +356,7 @@ export default function Chat() {
           </div>
         </div>
         <button
-          onClick={() => navigate("/scenarios")}
+          onClick={terminerConversation}
           className='px-4 py-1.5 rounded-xl text-xs font-semibold
                                text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
         >
