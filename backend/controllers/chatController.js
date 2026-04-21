@@ -26,7 +26,6 @@ const envoyerMessageChat = async (req, res) =>
         }
 
         // 2. Construire le system prompt complet
-        // On ajoute le niveau de l'utilisateur pour adapter la difficulté
         const user = req.user
         const langueUser = user.langues?.find(l => l.langue === scenario.langue)
         const niveauUser = langueUser?.niveau || 'A1'
@@ -39,34 +38,43 @@ IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
 Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
 Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.
 
-LANGUE STRICTE : Écris UNIQUEMENT en ${scenario.langue}. 
-N'utilise JAMAIS d'autres systèmes d'écriture. 
-Pour le Coréen : uniquement Hangul (한글). 
-Pour le Japonais : uniquement Hiragana/Katakana/Kanji. 
-Pour le Chinois : uniquement Hanzi. 
-Pour l'Arabe : uniquement l'alphabet arabe.
+LANGUE STRICTE :
+- Scénario en Coréen → UNIQUEMENT Hangul (한글). INTERDIT : 者, の, を, 的, 的 ou tout caractère japonais ou chinois.
+- Scénario en Japonais → UNIQUEMENT Hiragana, Katakana, Kanji japonais. Pas de Hangul.
+- Scénario en Chinois → UNIQUEMENT Hanzi simplifié. Pas de Hangul, pas de Kana.
+- Scénario en Arabe → UNIQUEMENT alphabet arabe.
+- Autres langues → alphabet latin uniquement.
+Si tu utilises un seul caractère étranger à la langue, c'est une erreur grave.
 
 RÈGLES DE CORRECTION :
 - Tu ne te corriges JAMAIS toi-même. Tes propres phrases sont toujours correctes.
 - Tu corriges UNIQUEMENT si l'utilisateur fait une faute de grammaire ou de vocabulaire.
 - Si l'utilisateur ne fait PAS de faute → tu réponds normalement, SANS aucune correction.
 - La correction se place uniquement à la FIN de ta réponse, après ta réponse normale.
-- Format de correction : "💡 [mot natif pour 'correction'] : [phrase corrigée]"
+- Format de correction : "💡 [mot natif pour correction] : [phrase corrigée]"
 - Si aucune faute → aucune mention de correction, aucun commentaire là-dessus.
 
 FORMAT DE RÉPONSE OBLIGATOIRE :
-Tu dois TOUJOURS retourner UNIQUEMENT un objet JSON valide, sans aucun texte avant ou après.
-Structure exacte à respecter :
+Retourne UNIQUEMENT un JSON valide sur une seule ligne, sans texte avant ou après.
 {"reponse":"ta réponse dans la langue du scénario","suggestions":["suggestion 1","suggestion 2","suggestion 3"]}
 
-Règles pour les suggestions :
-- Exactement 3 suggestions
-- Dans la langue du scénario
-- Courtes : 5 à 10 mots maximum
-- Contextuelles : logiques par rapport à la conversation en cours
-- Adaptées au niveau ${niveauUser}
+RÈGLES POUR LES SUGGESTIONS — TRÈS IMPORTANT :
+Les suggestions sont des VRAIES RÉPLIQUES que l'utilisateur pourrait dire en réponse à ton dernier message.
+Ce sont des phrases complètes, naturelles, comme dans une vraie conversation.
+Exemples pour un entretien coréen après "어떤 일을 하고 싶으신가요?" :
+  ✅ "저는 백엔드 개발자로 일하고 싶습니다." (Je voudrais travailler comme développeur backend.)
+  ✅ "저는 팀 리더 역할에 관심이 있습니다." (Je suis intéressé par le rôle de chef d'équipe.)
+  ✅ "소프트웨어 엔지니어링 분야에서 성장하고 싶습니다." (Je veux progresser dans l'ingénierie logicielle.)
+  ❌ "지원 경력" (juste un sujet — INTERDIT)
+  ❌ "소개" (un seul mot — INTERDIT)
+Règles strictes pour les suggestions :
+- Phrase complète avec sujet + verbe
+- 1 à 2 phrases maximum
+- Adaptées au contexte exact de la dernière réponse
+- Dans la langue du scénario uniquement
+- Niveau ${niveauUser} — ni trop simple, ni trop complexe
 
-RAPPEL : Retourner SEULEMENT le JSON. Aucun texte, aucun markdown, aucune explication.`
+RAPPEL FINAL : Retourner SEULEMENT le JSON. Aucun texte, aucun markdown, aucune explication.`
 
         // 3. Envoyer à Groq avec tout l'historique
         const reponseRaw = await envoyerMessage(
@@ -76,7 +84,6 @@ RAPPEL : Retourner SEULEMENT le JSON. Aucun texte, aucun markdown, aucune explic
         )
 
         // 4. Parser le JSON retourné par Groq
-        // On nettoie la réponse au cas où Groq ajouterait des balises markdown
         let reponseIA = ''
         let suggestions = []
 
@@ -95,7 +102,6 @@ RAPPEL : Retourner SEULEMENT le JSON. Aucun texte, aucun markdown, aucune explic
         } catch (parseErr)
         {
             // Si le parsing échoue → on affiche le texte brut sans suggestions
-            // Cela peut arriver si Groq ignore les instructions de format
             console.warn('Parsing JSON échoué, fallback texte brut :', parseErr.message)
             reponseIA = reponseRaw
             suggestions = []
