@@ -8,6 +8,7 @@ import Quiz from "./pages/Quiz";
 import Scenarios from "./pages/Scenario";
 import Chat from "./pages/Chat";
 import Historique from "./pages/Historique";
+import HistoriqueDetail from "./pages/HistoriqueDetail";
 
 export default function App() {
   return (
@@ -75,6 +76,23 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Historique />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='/historique'
+          element={
+            <ProtectedRoute>
+              <Historique />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/historique/:id'
+          element={
+            <ProtectedRoute>
+              <HistoriqueDetail />
             </ProtectedRoute>
           }
         />

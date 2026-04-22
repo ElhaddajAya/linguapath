@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 
 // ──────────────────────────────────────
@@ -106,6 +106,8 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingScenario, setLoadingScenario] = useState(true);
+  const [searchParams] = useSearchParams();
+  const resumeId = searchParams.get("resume"); // null si nouvelle conv, ID si reprise
 
   // Suggestions de l'IA pour le prochain message
   // Chaque carte suggestion — avec texte original + romanisation au survol
@@ -120,8 +122,55 @@ export default function Chat() {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    chargerScenario();
-  }, [scenarioId]);
+    const init = async () => {
+      try {
+        // 1. Charger le scénario
+        const resScenario = await api.get(`/scenarios/${scenarioId}`);
+        setScenario(resScenario.data.scenario);
+
+        if (resumeId) {
+          // --- MODE HISTORIQUE : charger une ancienne conversation ---
+          setModeHistorique(true);
+          const resConv = await api.get(`/conversations/${resumeId}`);
+          const conv = resConv.data.conversation;
+
+          // Convertir les messages au format attendu par le Chat
+          // Dans Conversation on stocke { role, contenu } — même format que historique
+          setHistorique(conv.messages); // ✅ directement, pas besoin de mapper
+        } else {
+          // --- MODE NORMAL : nouvelle conversation avec message d'intro ---
+          setModeHistorique(false);
+          const intro = await api.post("/chat/message", {
+            scenarioId,
+            historique: [],
+            message: `Start the conversation with a SHORT greeting (2-3 sentences max).
+Introduce yourself briefly in your role, then ask ONE simple opening question.
+Be warm but concise. Do not write long paragraphs.`,
+          });
+
+          setHistorique([{ role: "assistant", contenu: intro.data.reponse }]);
+
+          if (intro.data.suggestions?.length) {
+            enrichirSuggestions(intro.data.suggestions);
+          }
+        }
+      } catch (err) {
+        console.error("Erreur init chat:", err);
+        // Message de fallback si erreur
+        setHistorique([
+          {
+            role: "assistant",
+            contenu: "👋 Bonjour ! Je suis prêt(e) pour notre conversation.",
+          },
+        ]);
+      } finally {
+        setLoadingScenario(false); // ✅ toujours appelé — débloque le loading screen
+      }
+    };
+
+    init();
+  }, [scenarioId, resumeId]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [historique]);

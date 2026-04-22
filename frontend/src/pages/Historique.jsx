@@ -57,10 +57,10 @@ export default function Historique() {
     }
   };
 
-  // Charger les messages d'une conversation spécifique
-  const ouvrirConversation = async (conv) => {
+  // Toggle accordion preview
+  const togglePreview = async (conv) => {
     if (selected?._id === conv._id) {
-      setSelected(null); // toggle — refermer si déjà ouverte
+      setSelected(null);
       return;
     }
     try {
@@ -155,11 +155,28 @@ export default function Historique() {
                   </div>
 
                   {/* Indicateur expand */}
-                  <p className='text-xs text-orange-500 mt-3'>
-                    {selected?._id === conv._id
-                      ? "▲ Masquer"
-                      : "▼ Voir la conversation"}
-                  </p>
+                  <div className='flex items-center justify-between mt-3'>
+                    <p
+                      className='text-xs text-orange-500 cursor-pointer'
+                      onClick={() => togglePreview(conv)}
+                    >
+                      {selected?._id === conv._id
+                        ? "▲ Masquer l'aperçu"
+                        : "▼ Aperçu"}
+                    </p>
+                    <button
+                      onClick={() =>
+                        navigate(`/chat/${conv.scenarioId}?resume=${conv._id}`)
+                      }
+                      className='text-xs font-semibold text-white px-3 py-1.5
+                   rounded-lg hover:opacity-90 transition-opacity'
+                      style={{
+                        background: "linear-gradient(135deg, #F59E0B, #EA580C)",
+                      }}
+                    >
+                      Ouvrir →
+                    </button>
+                  </div>
                 </div>
 
                 {/* Messages de la conversation — affichés si sélectionnée */}
