@@ -5,10 +5,14 @@ import api from "../services/api";
 // ──────────────────────────────────────
 // Composant Message
 // ──────────────────────────────────────
+const LANGUES_NON_LATINES = ["Coréen", "Japonais", "Chinois", "Arabe"];
+
 function Message({ msg }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  // On n'affiche le bouton que si la langue a un alphabet non-latin
+  const needsRomanisation = LANGUES_NON_LATINES.includes(langue);
 
   const afficher = async () => {
     if (data) {
@@ -17,7 +21,7 @@ function Message({ msg }) {
     }
     setLoading(true);
     try {
-      const res = await api.post("/traduction", { texte: msg.contenu });
+      const res = await api.post("/traduction", { texte: msg.contenu, langue });
       setData({
         romanisation: res.data.romanisation,
         traduction: res.data.traduction,
@@ -33,13 +37,57 @@ function Message({ msg }) {
 
   if (msg.role === "user") {
     return (
-      <div className='flex justify-end'>
-        <div
-          className='max-w-[75%] px-4 py-3 rounded-2xl rounded-br-sm
-                                text-sm text-white leading-relaxed whitespace-pre-wrap'
-          style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
-        >
-          {msg.contenu}
+      <div className='flex justify-start'>
+        <div className='max-w-[75%] flex flex-col gap-1'>
+          <div
+            className='px-4 py-3 rounded-2xl rounded-bl-sm bg-white
+                        border border-warm-200 text-warm-800 text-sm
+                        leading-relaxed whitespace-pre-wrap'
+          >
+            {msg.contenu}
+          </div>
+
+          {/* Panel romanisation — seulement si affiché */}
+          {show && data && (
+            <div
+              className='flex flex-col gap-1.5 px-4 py-3 rounded-xl
+                          bg-orange-50 border border-orange-100 text-xs'
+            >
+              <div className='flex gap-2 items-start'>
+                <span className='text-orange-400 font-semibold shrink-0'>
+                  🔤
+                </span>
+                <span className='text-warm-600 font-mono leading-relaxed'>
+                  {data.romanisation}
+                </span>
+              </div>
+              <div className='border-t border-orange-200' />
+              <div className='flex gap-2 items-start'>
+                <span className='text-orange-400 font-semibold shrink-0'>
+                  🇫🇷
+                </span>
+                <span className='text-warm-600 leading-relaxed italic'>
+                  {data.traduction}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Bouton — seulement pour les langues non-latines */}
+          {needsRomanisation && (
+            <button
+              onClick={afficher}
+              disabled={loading}
+              className='self-start text-xs text-warm-400 hover:text-orange-500
+                       transition-colors px-1'
+            >
+              {loading
+                ? "⏳ Chargement..."
+                : show
+                  ? "🙈 Masquer"
+                  : "🔤 Romanisation & traduction"}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -302,7 +350,10 @@ Be warm but concise. Do not write long paragraphs.`,
     try {
       // On envoie toutes les suggestions en une seule requête
       const textes = suggestions.join("\n");
-      const res = await api.post("/traduction", { texte: textes });
+      const res = await api.post("/traduction", {
+        texte: textes,
+        langue: scenario?.langue,
+      });
 
       // Groq retourne un bloc — on split par ligne pour matcher chaque suggestion
       const romans = res.data.romanisation?.split("\n") || [];
@@ -416,6 +467,7 @@ Be warm but concise. Do not write long paragraphs.`,
             <Message
               key={i}
               msg={msg}
+              langue={scenario?.langue}
             />
           ))}
 

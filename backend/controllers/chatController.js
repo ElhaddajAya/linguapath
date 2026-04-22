@@ -5,6 +5,50 @@
 const Scenario = require('../models/Scenario')
 const { envoyerMessage } = require('../services/groqService')
 
+// Instructions de niveau détaillées — adaptées à chaque niveau CECRL
+// Groq doit adapter CHAQUE phrase à ces contraintes
+const niveauInstructions = {
+    'A1': `Niveau A1 — DÉBUTANT ABSOLU :
+- Phrases très courtes (3 à 5 mots maximum par phrase)
+- Vocabulaire ultra basique uniquement (bonjour, merci, oui, non, je veux, combien, où)
+- Présent simple uniquement, aucun autre temps
+- Zéro expression idiomatique, zéro subordonnée complexe
+- Si l'utilisateur ne comprend pas, répète avec des mots encore plus simples`,
+
+    'A2': `Niveau A2 — ÉLÉMENTAIRE :
+- Phrases simples et courtes
+- Vocabulaire courant du quotidien uniquement
+- Présent, passé simple, futur proche autorisés — rien d'autre
+- Pas de subjonctif, pas de conditionnel, pas de structures complexes
+- Expressions très communes uniquement`,
+
+    'B1': `Niveau B1 — INTERMÉDIAIRE :
+- Phrases de longueur normale
+- Vocabulaire varié mais toujours accessible et courant
+- Passé, présent, futur, conditionnel présent autorisés
+- Quelques expressions idiomatiques très connues
+- Subjonctif présent uniquement si nécessaire et naturel`,
+
+    'B2': `Niveau B2 — INTERMÉDIAIRE AVANCÉ :
+- Phrases complexes autorisées
+- Vocabulaire riche mais sans termes techniques rares ou littéraires
+- Tous les temps courants autorisés
+- Expressions idiomatiques naturelles et courantes
+- Pas de jargon académique, pas de registre littéraire soutenu`,
+
+    'C1': `Niveau C1 — AVANCÉ :
+- Langue naturelle et fluide
+- Vocabulaire riche, précis et varié
+- Toutes les structures grammaticales autorisées
+- Expressions idiomatiques, nuances, registres variés
+- Peut utiliser un langage soutenu quand c'est naturel`,
+
+    'C2': `Niveau C2 — MAÎTRISE :
+- Langue de niveau natif, aucune restriction
+- Vocabulaire et grammaire sans aucune limite
+- Peut utiliser des registres littéraires, académiques ou familiers selon le contexte`,
+}
+
 // ── POST /api/chat/message ──
 // Reçoit un message, l'envoie à Groq avec l'historique, retourne la réponse + suggestions
 const envoyerMessageChat = async (req, res) =>
@@ -34,12 +78,17 @@ const envoyerMessageChat = async (req, res) =>
         // Les espaces en début de ligne font partie du prompt et perturbent le JSON attendu
         const systemPromptComplet = `${scenario.systemPrompt}
 
-IMPORTANT — Niveau de l'utilisateur : ${niveauUser}.
-Adapte la complexité de ton vocabulaire et tes phrases à ce niveau.
+══════════════════════════════════════════
+ADAPTATION AU NIVEAU — RÈGLE ABSOLUE
+══════════════════════════════════════════
+${niveauInstructions[niveauUser] || niveauInstructions['A1']}
+
+Tu dois adapter CHAQUE phrase que tu écris à ce niveau.
+Si tu utilises un vocabulaire ou une structure trop avancée pour ce niveau, c'est une erreur grave.
 Ne jamais sortir du personnage. Répondre uniquement dans la langue du scénario.
 
 LANGUE STRICTE :
-- Scénario en Coréen → UNIQUEMENT Hangul (한글). INTERDIT : 者, の, を, 的, 的 ou tout caractère japonais ou chinois.
+- Scénario en Coréen → UNIQUEMENT Hangul (한글). INTERDIT : 者, の, を, 的 ou tout caractère japonais ou chinois.
 - Scénario en Japonais → UNIQUEMENT Hiragana, Katakana, Kanji japonais. Pas de Hangul.
 - Scénario en Chinois → UNIQUEMENT Hanzi simplifié. Pas de Hangul, pas de Kana.
 - Scénario en Arabe → UNIQUEMENT alphabet arabe.

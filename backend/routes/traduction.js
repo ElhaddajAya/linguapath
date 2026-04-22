@@ -14,6 +14,16 @@ router.post('/', protect, async (req, res) =>
     const { texte } = req.body
     if (!texte) return res.status(400).json({ message: 'texte requis' })
 
+    // Langues latines → pas de romanisation nécessaire
+    // On retourne directement sans appeler Gemini
+    const LANGUES_LATINES = ['Anglais', 'Espagnol', 'Français', 'Allemand']
+    const { langue } = req.body // ajoute langue dans la requête depuis le frontend
+
+    if (langue && LANGUES_LATINES.includes(langue))
+    {
+        return res.json({ romanisation: '', traduction: '' })
+    }
+    
     try
     {
         // On fait les deux en un seul appel — romanisation + traduction française
