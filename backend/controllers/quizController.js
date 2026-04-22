@@ -23,8 +23,8 @@ const getQuestions = async (req, res) =>
         for (const niveau of niveaux)
         {
             const q = await Quiz.find({ langue, niveau })
-                .select('-reponseCorrecte') // sécurité — on cache la réponse
-                .limit(2)
+                .select('-reponseCorrecte')
+                .limit(4)  // ← 4 questions par niveau
             questions = [...questions, ...q]
         }
 

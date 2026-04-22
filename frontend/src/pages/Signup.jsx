@@ -85,7 +85,7 @@ export default function Signup() {
               <input
                 type='text'
                 name='nom'
-                placeholder='Aya El Haddaj'
+                placeholder='Jane Doe'
                 value={form.nom}
                 onChange={handleChange}
                 required

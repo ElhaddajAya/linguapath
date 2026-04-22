@@ -129,8 +129,6 @@ export default function Chat() {
         setScenario(resScenario.data.scenario);
 
         if (resumeId) {
-          // --- MODE HISTORIQUE : charger une ancienne conversation ---
-          setModeHistorique(true);
           const resConv = await api.get(`/conversations/${resumeId}`);
           const conv = resConv.data.conversation;
 
@@ -138,8 +136,6 @@ export default function Chat() {
           // Dans Conversation on stocke { role, contenu } — même format que historique
           setHistorique(conv.messages); // ✅ directement, pas besoin de mapper
         } else {
-          // --- MODE NORMAL : nouvelle conversation avec message d'intro ---
-          setModeHistorique(false);
           const intro = await api.post("/chat/message", {
             scenarioId,
             historique: [],
