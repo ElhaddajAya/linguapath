@@ -27,7 +27,7 @@ const envoyerMessage = async (systemPrompt, historique, messageUser, tentative =
     {
         // On utilise gemini-3-flash-preview — tres proche de GPT-4o en qualité, gratuit avec quota généreux.
         const model = genAI.getGenerativeModel({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-2.0-flash',
             systemInstruction: systemPrompt,
             safetySettings, // On applique les paramètres de sécurité définis plus haut
         })

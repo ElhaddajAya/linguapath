@@ -98,4 +98,47 @@ const getConversationById = async (req, res) =>
     }
 }
 
-module.exports = { sauvegarderConversation, getConversations, getConversationById }
+// ── PUT /api/conversations/:id ──
+// Met à jour une conversation existante avec les nouveaux messages
+const mettreAJourConversation = async (req, res) =>
+{
+    const { messages, duree } = req.body
+
+    if (!messages?.length)
+    {
+        return res.status(400).json({ message: 'messages requis' })
+    }
+
+    try
+    {
+        const conversation = await Conversation.findOneAndUpdate(
+            {
+                _id: req.params.id,
+                userId: req.user._id, // Sécurité — seul le propriétaire peut modifier
+            },
+            {
+                messages,
+                duree: duree || 0,
+                finAt: new Date(),
+            },
+            { new: true }
+        )
+
+        if (!conversation)
+        {
+            return res.status(404).json({ message: 'Conversation introuvable' })
+        }
+
+        res.json({
+            message: 'Conversation mise à jour ✅',
+            conversationId: conversation._id,
+        })
+
+    } catch (err)
+    {
+        console.error('Erreur mise à jour conversation :', err.message)
+        res.status(500).json({ message: 'Erreur serveur' })
+    }
+}
+
+module.exports = { sauvegarderConversation, getConversations, getConversationById, mettreAJourConversation }

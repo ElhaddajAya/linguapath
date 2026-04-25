@@ -145,34 +145,64 @@ export default function Chat() {
   useEffect(() => {
     const init = async () => {
       try {
-        // 1. Charger le scénario
         const resScenario = await api.get(`/scenarios/${scenarioId}`);
-        setScenario(resScenario.data.scenario);
+        const scenarioData = resScenario.data.scenario;
+        setScenario(scenarioData);
+
+        // On extrait la langue ici directement — pas depuis le state
+        const langue = scenarioData.langue;
 
         if (resumeId) {
+          // MODE REPRISE — charger l'ancienne conversation
           const resConv = await api.get(`/conversations/${resumeId}`);
           const conv = resConv.data.conversation;
           setHistorique(conv.messages);
           setOriginalMessageCount(conv.messages.length);
-          // Les suggestions apparaîtront dès le premier message envoyé ✅
+
+          // Générer les suggestions basées sur le dernier message de l'IA
+          // On envoie un message fictif pour obtenir les suggestions du contexte actuel
+          try {
+            const resSugg = await api.post("/chat/message", {
+              scenarioId,
+              historique: conv.messages,
+              message:
+                "__SUGGESTIONS_ONLY__ Do not respond in character. Just return 3 suggestions the user could say next based on the conversation history. Return JSON only.",
+            });
+
+            if (resSugg.data.suggestions?.length) {
+              enrichirSuggestions(resSugg.data.suggestions, langue);
+            }
+          } catch {
+            // Pas grave si les suggestions ne chargent pas au resume
+          }
         } else {
+          // MODE NOUVELLE CONVERSATION
+          // On demande explicitement les suggestions dans le même appel
           const intro = await api.post("/chat/message", {
             scenarioId,
             historique: [],
-            message: `Start the conversation with a SHORT greeting (2-3 sentences max).
-Introduce yourself briefly in your role, then ask ONE simple opening question.
-Be warm but concise. Do not write long paragraphs.`,
+            message: `Begin the scenario now. Write your opening message in the scenario language:
+- Greet the user briefly in your role (2-3 sentences max)
+- Ask ONE simple opening question to start the conversation
+- The JSON suggestions field MUST contain 3 complete phrases the user could reply`,
           });
 
-          setHistorique([{ role: "assistant", contenu: intro.data.reponse }]);
+          const introMessage = {
+            role: "assistant",
+            contenu: intro.data.reponse,
+          };
+          setHistorique([introMessage]);
 
           if (intro.data.suggestions?.length) {
-            enrichirSuggestions(intro.data.suggestions);
+            // Groq a retourné des suggestions → on les utilise
+            enrichirSuggestions(intro.data.suggestions, langue);
+          } else {
+            // Fallback léger — suggestions vides mais visibles, sans appel API
+            setSuggestionsData([]);
           }
         }
       } catch (err) {
         console.error("Erreur init chat:", err);
-        // Message de fallback si erreur
         setHistorique([
           {
             role: "assistant",
@@ -180,7 +210,7 @@ Be warm but concise. Do not write long paragraphs.`,
           },
         ]);
       } finally {
-        setLoadingScenario(false); // ✅ toujours appelé — débloque le loading screen
+        setLoadingScenario(false);
       }
     };
 
@@ -249,15 +279,14 @@ Be warm but concise. Do not write long paragraphs.`,
       const intro = await api.post("/chat/message", {
         scenarioId,
         historique: [],
-        message: `Start the conversation with a SHORT greeting (2-3 sentences max).
-        Introduce yourself briefly in your role, then ask ONE simple opening question.
-        Be warm but concise. Do not write long paragraphs.`,
+        message: `Start the conversation now. Greet the user briefly in your role (2-3 sentences max), ask ONE simple opening question, and provide 3 suggestions of what the user could reply.`,
       });
 
-      setHistorique([{ role: "assistant", contenu: intro.data.reponse }]);
-      // Afficher les premières suggestions
+      const introMessage = { role: "assistant", contenu: intro.data.reponse };
+      setHistorique([introMessage]);
+
       if (intro.data.suggestions?.length) {
-        enrichirSuggestions(intro.data.suggestions);
+        enrichirSuggestions(intro.data.suggestions, langue);
       }
     } catch (err) {
       console.error(err);
@@ -316,25 +345,25 @@ Be warm but concise. Do not write long paragraphs.`,
   };
 
   // Fonction pour enrichir les suggestions avec romanisation + traduction
-  const enrichirSuggestions = async (suggestions) => {
+  const enrichirSuggestions = async (suggestions, langueOverride = null) => {
     if (!suggestions?.length) return;
 
-    // Affichage immédiat sans traduction — les cartes sont visibles tout de suite
+    // On utilise langueOverride si fourni, sinon on prend scenario?.langue
+    const langue = langueOverride || scenario?.langue;
+
+    // Affichage immédiat sans traduction
     setSuggestionsData(
       suggestions.map((texte) => ({ texte, roman: "", trad: "" })),
     );
 
-    // On enrichit chaque suggestion séquentiellement (évite le rate limit Groq)
+    // Enrichissement séquentiel
     const enriched = [];
     for (const texte of suggestions) {
       try {
-        const res = await api.post("/traduction", {
-          texte,
-          langue: scenario?.langue,
-        });
+        const res = await api.post("/traduction", { texte, langue });
         enriched.push({
           texte,
-          roman: LANGUES_NON_LATINES.includes(scenario?.langue)
+          roman: LANGUES_NON_LATINES.includes(langue)
             ? res.data.romanisation || ""
             : "",
           trad: res.data.traduction || "",
@@ -350,27 +379,30 @@ Be warm but concise. Do not write long paragraphs.`,
   const terminerConversation = async () => {
     const messagesUser = historique.filter((m) => m.role === "user");
 
-    // Cas 1 : aucun message utilisateur → juste naviguer
+    // Aucun message utilisateur → naviguer sans sauvegarder
     if (messagesUser.length === 0) {
       navigate("/scenarios");
       return;
     }
 
-    // Cas 2 : conversation reprise SANS nouveaux messages → juste naviguer
-    if (resumeId && historique.length <= originalMessageCount) {
-      navigate("/scenarios");
-      return;
-    }
-
-    // Cas 3 : nouvelle conversation OU conversation reprise avec nouveaux messages
-    // → on sauvegarde une nouvelle conversation avec tout l'historique
     try {
       const duree = Math.floor((Date.now() - debutAt) / 1000);
-      await api.post("/conversations", {
-        scenarioId,
-        messages: historique,
-        duree,
-      });
+
+      if (resumeId && historique.length > originalMessageCount) {
+        // Conversation reprise avec nouveaux messages → UPDATE
+        await api.put(`/conversations/${resumeId}`, {
+          messages: historique,
+          duree,
+        });
+      } else if (!resumeId) {
+        // Nouvelle conversation → CREATE
+        await api.post("/conversations", {
+          scenarioId,
+          messages: historique,
+          duree,
+        });
+      }
+      // Si resumeId ET pas de nouveaux messages → on ne fait rien
     } catch (err) {
       console.error("Erreur sauvegarde :", err.message);
     }
