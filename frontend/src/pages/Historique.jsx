@@ -119,14 +119,12 @@ export default function Historique() {
               <div key={conv._id}>
                 {/* Card conversation */}
                 <div
-                  onClick={() => ouvrirConversation(conv)}
-                  className={`bg-white rounded-2xl border shadow-soft p-5
-                                               cursor-pointer transition-all
-                                               ${
-                                                 selected?._id === conv._id
-                                                   ? "border-orange-300 shadow-card"
-                                                   : "border-warm-200 hover:border-orange-200 hover:shadow-card"
-                                               }`}
+                  className={`bg-white rounded-2xl border shadow-soft p-5 transition-all
+                 ${
+                   selected?._id === conv._id
+                     ? "border-orange-300 shadow-card"
+                     : "border-warm-200 hover:border-orange-200 hover:shadow-card"
+                 }`}
                 >
                   <div className='flex items-start justify-between gap-3'>
                     {/* Emoji + infos */}

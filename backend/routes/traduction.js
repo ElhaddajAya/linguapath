@@ -1,53 +1,46 @@
-// Route dédiée à la romanisation ET traduction française
-// On utilise Gemini ici (meilleur pour les langues asiatiques)
-// et Groq pour la conversation principale (quota plus généreux)
+// Route dédiée à la romanisation ET traduction française (Groq gère les deux)
 
 const express = require('express')
 const router = express.Router()
 const { protect } = require('../middleware/authMiddleware')
-const { envoyerMessage } = require('../services/geminiService') // ← Gemini pour ça
+const { envoyerMessage } = require('../services/groqService') // ← Groq maintenant
 
-// POST /api/traduction
-// Retourne : { romanisation, traduction }
 router.post('/', protect, async (req, res) =>
 {
-    const { texte } = req.body
+    const { texte, langue } = req.body
     if (!texte) return res.status(400).json({ message: 'texte requis' })
 
-    // Langues latines → pas de romanisation nécessaire
-    // On retourne directement sans appeler Gemini
     const LANGUES_LATINES = ['Anglais', 'Espagnol', 'Français', 'Allemand']
-    const { langue } = req.body // ajoute langue dans la requête depuis le frontend
+    const estLatine = langue && LANGUES_LATINES.includes(langue)
 
-    if (langue && LANGUES_LATINES.includes(langue))
-    {
-        return res.json({ romanisation: '', traduction: '' })
-    }
-    
     try
     {
-        // On fait les deux en un seul appel — romanisation + traduction française
-        const systemPrompt = `You are a language assistant. Given a text, return ONLY a JSON object with exactly two fields:
-- "romanisation": the phonetic romanization in Latin alphabet
-  * Korean → Revised Romanization (안녕하세요 → Annyeonghaseyo)
-  * Japanese → Hepburn (ありがとう → Arigatou)
-  * Chinese → Pinyin with tones (你好 → Nǐ hǎo)
-  * Arabic → phonetic transliteration (مرحبا → Marhaba)
-  * Latin script languages → return the original text unchanged
-- "traduction": natural French translation of the text
-
-Return ONLY valid JSON, no explanation, no markdown, no code block.
-Example: {"romanisation": "Annyeonghaseyo", "traduction": "Bonjour"}`
+        const systemPrompt = estLatine
+            ? `You are a translator. Given a text, return ONLY valid JSON:
+{"romanisation":"","traduction":"natural French translation"}
+No explanation, no markdown, no code block.`
+            : `You are a language assistant. Given a text, return ONLY valid JSON:
+{"romanisation":"phonetic romanization (Korean→Revised Romanization, Japanese→Hepburn, Chinese→Pinyin with tones, Arabic→phonetic transliteration)","traduction":"natural French translation"}
+No explanation, no markdown, no code block.
+Example: {"romanisation":"Annyeonghaseyo","traduction":"Bonjour"}`
 
         const reponse = await envoyerMessage(systemPrompt, [], texte)
-
-        // On nettoie la réponse et on parse le JSON
         const clean = reponse.replace(/```json|```/g, '').trim()
-        const data = JSON.parse(clean)
+
+        // Extraction robuste du JSON
+        let data
+        try
+        {
+            data = JSON.parse(clean)
+        } catch
+        {
+            const match = clean.match(/\{[\s\S]*\}/)
+            if (match) data = JSON.parse(match[0])
+        }
 
         res.json({
-            romanisation: data.romanisation || '',
-            traduction: data.traduction || '',
+            romanisation: data?.romanisation || '',
+            traduction: data?.traduction || '',
         })
 
     } catch (err)

@@ -138,19 +138,36 @@ RAPPEL FINAL : Retourner SEULEMENT le JSON. Aucun texte, aucun markdown, aucune 
 
         try
         {
-            // Supprimer les éventuels ```json ... ``` ajoutés par le modèle
             const clean = reponseRaw
                 .replace(/```json/gi, '')
                 .replace(/```/g, '')
                 .trim()
 
-            const data = JSON.parse(clean)
-            reponseIA = data.reponse || reponseRaw
-            suggestions = Array.isArray(data.suggestions) ? data.suggestions : []
+            // Tentative 1 : parsing direct
+            let data
+            try
+            {
+                data = JSON.parse(clean)
+            } catch
+            {
+                // Tentative 2 : extraire le JSON avec regex si du texte l'entoure
+                const match = clean.match(/\{[\s\S]*"reponse"[\s\S]*\}/)
+                if (match) data = JSON.parse(match[0])
+            }
+
+            if (data)
+            {
+                reponseIA = data.reponse || reponseRaw
+                suggestions = Array.isArray(data.suggestions) ? data.suggestions : []
+            } else
+            {
+                // Fallback texte brut
+                reponseIA = reponseRaw
+                suggestions = []
+            }
 
         } catch (parseErr)
         {
-            // Si le parsing échoue → on affiche le texte brut sans suggestions
             console.warn('Parsing JSON échoué, fallback texte brut :', parseErr.message)
             reponseIA = reponseRaw
             suggestions = []

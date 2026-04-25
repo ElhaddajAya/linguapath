@@ -7,12 +7,14 @@ import api from "../services/api";
 // ──────────────────────────────────────
 const LANGUES_NON_LATINES = ["Coréen", "Japonais", "Chinois", "Arabe"];
 
-function Message({ msg }) {
+function Message({ msg, langue }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
-  // On n'affiche le bouton que si la langue a un alphabet non-latin
+
   const needsRomanisation = LANGUES_NON_LATINES.includes(langue);
+  // Le bouton traduction s'affiche pour TOUTES les langues
+  // mais seulement sur les messages de l'assistant (pas l'user)
 
   const afficher = async () => {
     if (data) {
@@ -37,57 +39,13 @@ function Message({ msg }) {
 
   if (msg.role === "user") {
     return (
-      <div className='flex justify-start'>
-        <div className='max-w-[75%] flex flex-col gap-1'>
-          <div
-            className='px-4 py-3 rounded-2xl rounded-bl-sm bg-white
-                        border border-warm-200 text-warm-800 text-sm
-                        leading-relaxed whitespace-pre-wrap'
-          >
-            {msg.contenu}
-          </div>
-
-          {/* Panel romanisation — seulement si affiché */}
-          {show && data && (
-            <div
-              className='flex flex-col gap-1.5 px-4 py-3 rounded-xl
-                          bg-orange-50 border border-orange-100 text-xs'
-            >
-              <div className='flex gap-2 items-start'>
-                <span className='text-orange-400 font-semibold shrink-0'>
-                  🔤
-                </span>
-                <span className='text-warm-600 font-mono leading-relaxed'>
-                  {data.romanisation}
-                </span>
-              </div>
-              <div className='border-t border-orange-200' />
-              <div className='flex gap-2 items-start'>
-                <span className='text-orange-400 font-semibold shrink-0'>
-                  🇫🇷
-                </span>
-                <span className='text-warm-600 leading-relaxed italic'>
-                  {data.traduction}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Bouton — seulement pour les langues non-latines */}
-          {needsRomanisation && (
-            <button
-              onClick={afficher}
-              disabled={loading}
-              className='self-start text-xs text-warm-400 hover:text-orange-500
-                       transition-colors px-1'
-            >
-              {loading
-                ? "⏳ Chargement..."
-                : show
-                  ? "🙈 Masquer"
-                  : "🔤 Romanisation & traduction"}
-            </button>
-          )}
+      <div className='flex justify-end'>
+        <div
+          className='max-w-[75%] px-4 py-3 rounded-2xl rounded-br-sm
+                     text-sm text-white leading-relaxed whitespace-pre-wrap'
+          style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+        >
+          {msg.contenu}
         </div>
       </div>
     );
@@ -98,8 +56,8 @@ function Message({ msg }) {
       <div className='max-w-[75%] flex flex-col gap-1'>
         <div
           className='px-4 py-3 rounded-2xl rounded-bl-sm bg-white
-                                border border-warm-200 text-warm-800 text-sm
-                                leading-relaxed whitespace-pre-wrap'
+                        border border-warm-200 text-warm-800 text-sm
+                        leading-relaxed whitespace-pre-wrap'
         >
           {msg.contenu}
         </div>
@@ -107,15 +65,25 @@ function Message({ msg }) {
         {show && data && (
           <div
             className='flex flex-col gap-1.5 px-4 py-3 rounded-xl
-                                    bg-orange-50 border border-orange-100 text-xs'
+                          bg-orange-50 border border-orange-100 text-xs'
           >
-            <div className='flex gap-2 items-start'>
-              <span className='text-orange-400 font-semibold shrink-0'>🔤</span>
-              <span className='text-warm-600 font-mono leading-relaxed'>
-                {data.romanisation}
-              </span>
-            </div>
-            <div className='border-t border-orange-200' />
+            {/* Romanisation — seulement pour les langues non-latines */}
+            {needsRomanisation &&
+              data.romanisation &&
+              data.romanisation !== "—" && (
+                <>
+                  <div className='flex gap-2 items-start'>
+                    <span className='text-orange-400 font-semibold shrink-0'>
+                      🔤
+                    </span>
+                    <span className='text-warm-600 font-mono leading-relaxed'>
+                      {data.romanisation}
+                    </span>
+                  </div>
+                  <div className='border-t border-orange-200' />
+                </>
+              )}
+            {/* Traduction — toujours affichée */}
             <div className='flex gap-2 items-start'>
               <span className='text-orange-400 font-semibold shrink-0'>🇫🇷</span>
               <span className='text-warm-600 leading-relaxed italic'>
@@ -125,16 +93,20 @@ function Message({ msg }) {
           </div>
         )}
 
+        {/* Bouton toujours visible pour tous les messages assistant */}
         <button
           onClick={afficher}
           disabled={loading}
-          className='self-start text-xs text-warm-400 hover:text-orange-500 transition-colors px-1'
+          className='self-start text-xs text-warm-400 hover:text-orange-500
+                     transition-colors px-1'
         >
           {loading
             ? "⏳ Chargement..."
             : show
               ? "🙈 Masquer"
-              : "🔤 Romanisation & traduction"}
+              : needsRomanisation
+                ? "🔤 Romanisation & traduction"
+                : "🇫🇷 Traduction"}
         </button>
       </div>
     </div>
@@ -156,6 +128,7 @@ export default function Chat() {
   const [loadingScenario, setLoadingScenario] = useState(true);
   const [searchParams] = useSearchParams();
   const resumeId = searchParams.get("resume"); // null si nouvelle conv, ID si reprise
+  const [originalMessageCount, setOriginalMessageCount] = useState(0);
 
   // Suggestions de l'IA pour le prochain message
   // Chaque carte suggestion — avec texte original + romanisation au survol
@@ -179,10 +152,9 @@ export default function Chat() {
         if (resumeId) {
           const resConv = await api.get(`/conversations/${resumeId}`);
           const conv = resConv.data.conversation;
-
-          // Convertir les messages au format attendu par le Chat
-          // Dans Conversation on stocke { role, contenu } — même format que historique
-          setHistorique(conv.messages); // ✅ directement, pas besoin de mapper
+          setHistorique(conv.messages);
+          setOriginalMessageCount(conv.messages.length);
+          // Les suggestions apparaîtront dès le premier message envoyé ✅
         } else {
           const intro = await api.post("/chat/message", {
             scenarioId,
@@ -347,44 +319,53 @@ Be warm but concise. Do not write long paragraphs.`,
   const enrichirSuggestions = async (suggestions) => {
     if (!suggestions?.length) return;
 
-    try {
-      // On envoie toutes les suggestions en une seule requête
-      const textes = suggestions.join("\n");
-      const res = await api.post("/traduction", {
-        texte: textes,
-        langue: scenario?.langue,
-      });
+    // Affichage immédiat sans traduction — les cartes sont visibles tout de suite
+    setSuggestionsData(
+      suggestions.map((texte) => ({ texte, roman: "", trad: "" })),
+    );
 
-      // Groq retourne un bloc — on split par ligne pour matcher chaque suggestion
-      const romans = res.data.romanisation?.split("\n") || [];
-      const trads = res.data.traduction?.split("\n") || [];
-
-      setSuggestionsData(
-        suggestions.map((texte, i) => ({
+    // On enrichit chaque suggestion séquentiellement (évite le rate limit Groq)
+    const enriched = [];
+    for (const texte of suggestions) {
+      try {
+        const res = await api.post("/traduction", {
           texte,
-          roman: romans[i]?.trim() || "",
-          trad: trads[i]?.trim() || "",
-        })),
-      );
-    } catch {
-      // Fallback sans romanisation
-      setSuggestionsData(
-        suggestions.map((texte) => ({ texte, roman: "", trad: "" })),
-      );
+          langue: scenario?.langue,
+        });
+        enriched.push({
+          texte,
+          roman: LANGUES_NON_LATINES.includes(scenario?.langue)
+            ? res.data.romanisation || ""
+            : "",
+          trad: res.data.traduction || "",
+        });
+      } catch {
+        enriched.push({ texte, roman: "", trad: "" });
+      }
     }
+    setSuggestionsData(enriched);
   };
 
   // Fonction de fin de session — sauvegarde puis redirige
   const terminerConversation = async () => {
-    // On ne sauvegarde que s'il y a au moins 1 message de l'utilisateur
     const messagesUser = historique.filter((m) => m.role === "user");
+
+    // Cas 1 : aucun message utilisateur → juste naviguer
     if (messagesUser.length === 0) {
       navigate("/scenarios");
       return;
     }
 
+    // Cas 2 : conversation reprise SANS nouveaux messages → juste naviguer
+    if (resumeId && historique.length <= originalMessageCount) {
+      navigate("/scenarios");
+      return;
+    }
+
+    // Cas 3 : nouvelle conversation OU conversation reprise avec nouveaux messages
+    // → on sauvegarde une nouvelle conversation avec tout l'historique
     try {
-      const duree = Math.floor((Date.now() - debutAt) / 1000); // en secondes
+      const duree = Math.floor((Date.now() - debutAt) / 1000);
       await api.post("/conversations", {
         scenarioId,
         messages: historique,
@@ -392,7 +373,6 @@ Be warm but concise. Do not write long paragraphs.`,
       });
     } catch (err) {
       console.error("Erreur sauvegarde :", err.message);
-      // On redirige quand même même si la sauvegarde échoue
     }
 
     navigate("/scenarios");
@@ -437,8 +417,9 @@ Be warm but concise. Do not write long paragraphs.`,
                             flex items-center justify-between shrink-0'
       >
         <div className='flex items-center gap-3'>
+          {/* Bouton ← — retour SANS sauvegarder */}
           <button
-            onClick={terminerConversation}
+            onClick={() => navigate("/scenarios")}
             className='text-warm-400 hover:text-warm-700 transition-colors mr-1'
           >
             ←
@@ -451,10 +432,11 @@ Be warm but concise. Do not write long paragraphs.`,
             <p className='text-xs text-warm-400'>{scenario?.langue}</p>
           </div>
         </div>
+        {/* Bouton Terminer — sauvegarde ET redirige */}
         <button
           onClick={terminerConversation}
           className='px-4 py-1.5 rounded-xl text-xs font-semibold
-                               text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
+               text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
         >
           Terminer
         </button>
@@ -507,19 +489,22 @@ Be warm but concise. Do not write long paragraphs.`,
                   key={i}
                   onClick={() => envoyerMessage(s.texte)}
                   className='flex flex-col items-start px-3 py-2 rounded-xl text-xs
-                           bg-warm-100 border border-warm-200 text-left
-                           hover:bg-orange-50 hover:border-orange-300
-                           transition-all max-w-[180px]'
+                   bg-warm-100 border border-warm-200 text-left
+                   hover:bg-orange-50 hover:border-orange-300
+                   transition-all max-w-[180px]'
                 >
-                  {/* Texte original dans la langue */}
+                  {/* Texte original */}
                   <span className='font-medium text-warm-800'>{s.texte}</span>
-                  {/* Romanisation en dessous */}
-                  {s.roman && (
-                    <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
-                      {s.roman}
-                    </span>
-                  )}
-                  {/* Traduction française */}
+
+                  {/* Romanisation — seulement pour les langues non-latines */}
+                  {s.roman &&
+                    LANGUES_NON_LATINES.includes(scenario?.langue) && (
+                      <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
+                        {s.roman}
+                      </span>
+                    )}
+
+                  {/* Traduction française — toujours affichée si disponible */}
                   {s.trad && (
                     <span className='text-orange-500 italic text-[10px]'>
                       {s.trad}
