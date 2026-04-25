@@ -12,6 +12,7 @@ const scenarioRoutes = require('./routes/scenarios')
 const chatRoutes = require('./routes/chat')
 const traductionRoutes = require('./routes/traduction')
 const conversationRoutes = require('./routes/conversations')
+const learningLogRoutes = require('./routes/learningLog')
 
 const { protect } = require('./middleware/authMiddleware')
 
@@ -31,6 +32,7 @@ app.use('/api/scenarios', scenarioRoutes)
 app.use('/api/chat', chatRoutes)
 app.use('/api/traduction', traductionRoutes)
 app.use('/api/conversations', conversationRoutes)
+app.use('/api/learning-log', learningLogRoutes)
 
 app.get('/', (req, res) =>
 {

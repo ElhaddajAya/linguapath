@@ -379,7 +379,6 @@ export default function Chat() {
   const terminerConversation = async () => {
     const messagesUser = historique.filter((m) => m.role === "user");
 
-    // Aucun message utilisateur → naviguer sans sauvegarder
     if (messagesUser.length === 0) {
       navigate("/scenarios");
       return;
@@ -387,22 +386,41 @@ export default function Chat() {
 
     try {
       const duree = Math.floor((Date.now() - debutAt) / 1000);
+      let conversationId = null;
 
       if (resumeId && historique.length > originalMessageCount) {
         // Conversation reprise avec nouveaux messages → UPDATE
-        await api.put(`/conversations/${resumeId}`, {
+        const res = await api.put(`/conversations/${resumeId}`, {
           messages: historique,
           duree,
         });
+        conversationId = resumeId;
       } else if (!resumeId) {
         // Nouvelle conversation → CREATE
-        await api.post("/conversations", {
+        const res = await api.post("/conversations", {
           scenarioId,
           messages: historique,
           duree,
         });
+        conversationId = res.data.conversationId;
       }
-      // Si resumeId ET pas de nouveaux messages → on ne fait rien
+
+      // Extraction automatique des phrases apprises — ne bloque pas la navigation
+      // On utilise catch silencieux pour ne pas bloquer si Groq est indisponible
+      api
+        .post("/learning-log/extraire", {
+          conversationId,
+          scenarioId,
+          messages: historique,
+          langue: scenario?.langue,
+          niveau:
+            JSON.parse(localStorage.getItem("user") || "{}")?.langues?.find(
+              (l) => l.langue === scenario?.langue,
+            )?.niveau || "A1",
+        })
+        .catch((err) =>
+          console.warn("Extraction phrases échouée (silencieux):", err.message),
+        );
     } catch (err) {
       console.error("Erreur sauvegarde :", err.message);
     }
