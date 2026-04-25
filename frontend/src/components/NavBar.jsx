@@ -51,6 +51,13 @@ export default function Navbar() {
             Historique
           </Link>
 
+          <Link
+            to='/learning-log'
+            className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'
+          >
+            Learning Log
+          </Link>
+
           {/* Avatar → profil */}
           <Link to='/profile'>
             <div

@@ -9,6 +9,7 @@ import Scenarios from "./pages/Scenario";
 import Chat from "./pages/Chat";
 import Historique from "./pages/Historique";
 import HistoriqueDetail from "./pages/HistoriqueDetail";
+import LearningLog from "./pages/LearningLog";
 
 export default function App() {
   return (
@@ -93,6 +94,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <HistoriqueDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='/learning-log'
+          element={
+            <ProtectedRoute>
+              <LearningLog />
             </ProtectedRoute>
           }
         />
