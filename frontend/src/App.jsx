@@ -10,6 +10,7 @@ import Chat from "./pages/Chat";
 import Historique from "./pages/Historique";
 import HistoriqueDetail from "./pages/HistoriqueDetail";
 import LearningLog from "./pages/LearningLog";
+import MindMap from "./pages/MindMap";   
 
 export default function App() {
   return (
@@ -26,7 +27,6 @@ export default function App() {
         />
 
         {/* Routes protégées — redirige vers /login si pas connecté */}
-        {/* On entoure chaque page sensible avec <ProtectedRoute> */}
         <Route
           path='/'
           element={
@@ -82,14 +82,6 @@ export default function App() {
         />
 
         <Route
-          path='/historique'
-          element={
-            <ProtectedRoute>
-              <Historique />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path='/historique/:id'
           element={
             <ProtectedRoute>
@@ -107,8 +99,17 @@ export default function App() {
           }
         />
 
-        {/* Route par défaut — si l'URL n'existe pas, on redirige vers / */}
-        {/* Exemple : si quelqu'un tape /blabla → redirige vers Home */}
+        {/* Route MindMap — LIN-37 */}
+        <Route
+          path='/mindmap'
+          element={
+            <ProtectedRoute>
+              <MindMap />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Route par défaut — redirige vers Home si URL inconnue */}
         <Route
           path='*'
           element={

@@ -13,6 +13,7 @@ const chatRoutes = require('./routes/chat')
 const traductionRoutes = require('./routes/traduction')
 const conversationRoutes = require('./routes/conversations')
 const learningLogRoutes = require('./routes/learningLog')
+const mindmapRoutes = require('./routes/mindmap')         // ← LIN-38 ajouté
 
 const { protect } = require('./middleware/authMiddleware')
 
@@ -33,6 +34,7 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/traduction', traductionRoutes)
 app.use('/api/conversations', conversationRoutes)
 app.use('/api/learning-log', learningLogRoutes)
+app.use('/api/mindmap', mindmapRoutes)                   // ← LIN-38 ajouté
 
 app.get('/', (req, res) =>
 {
