@@ -58,6 +58,12 @@ export default function Navbar() {
             Learning Log
           </Link>
 
+          <Link
+          to='/mindmap'
+          className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'>
+            MindMap
+          </Link>
+
           {/* Avatar → profil */}
           <Link to='/profile'>
             <div
