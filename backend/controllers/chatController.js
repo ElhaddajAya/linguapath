@@ -230,10 +230,21 @@ Réponds TOUJOURS et UNIQUEMENT avec ce JSON valide. Zéro texte en dehors.
 }
 
 RÈGLES POUR LES SUGGESTIONS :
-- 3 phrases COMPLÈTES, dans la suite logique de la conversation
+- Les suggestions sont des phrases que L'UTILISATEUR (l'apprenant) pourrait dire ensuite
+- Elles NE sont PAS des phrases du personnage que tu joues — jamais
+- 3 phrases COMPLÈTES, pertinentes par rapport à la dernière réplique
 - Niveau ${niveauUser} strict — pas de structures au-delà de ce niveau
-- Dans la langue du scénario (${scenario.langue}) uniquement
-- Pertinentes et variées — pas génériques ni répétitives`
+- Dans la langue du scénario (${scenario.langue}) uniquement, en alphabet natif
+- Variées — pas la même structure répétée
+
+EXEMPLE CONCRET — Scénario pharmacie, IA vient de recommander un médicament :
+✅ CORRECT (phrases de l'apprenant/patient) :
+  "이 약은 하루에 몇 번 먹어요?" (Combien de fois par jour je prends ce médicament ?)
+  "어린이도 먹을 수 있어요?" (Les enfants peuvent aussi le prendre ?)
+  "다른 약이랑 같이 먹어도 돼요?" (Je peux le prendre avec d'autres médicaments ?)
+❌ INCORRECT (phrases du pharmacien — JAMAIS ça) :
+  "다른 증상이 있나요?" (Avez-vous d'autres symptômes ?)
+  "알레르기가 있으신가요?" (Avez-vous des allergies ?)`
 
         // 5. Envoyer à Groq avec tout l'historique
         const reponseRaw = await envoyerMessage(
