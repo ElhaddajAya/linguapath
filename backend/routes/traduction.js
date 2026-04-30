@@ -62,7 +62,11 @@ Return ONLY this exact JSON format on one line:
 Return ONLY this exact JSON format on one line:
 {"romanisation":"","traduction":"[French translation here]"}`
 
-        const reponse = await envoyerMessage(systemPrompt, [], texte, 1, 'llama-3.1-8b-instant')
+        const modelAUtiliser = langue === 'Coréen' || langue === 'Japonais' || langue === 'Chinois' || langue === 'Arabe'
+            ? 'llama-3.3-70b-versatile'
+            : 'llama-3.1-8b-instant'
+
+        const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()
 
         let data

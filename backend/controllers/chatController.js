@@ -11,81 +11,114 @@ const { envoyerMessage } = require('../services/groqService')
 // Ces règles s'appliquent à TOUTES les langues sans exception
 // ──────────────────────────────────────────────────────────────
 const niveauInstructions = {
+    'A1': `NIVEAU A1 — DÉBUTANT ABSOLU :
+✅ AUTORISÉ : phrases 3-6 mots, vocabulaire basique, présent simple uniquement, questions simples.
+❌ INTERDIT : conditionnel, subjonctif, imparfait, futur, passé composé, expressions idiomatiques, phrases complexes.`,
 
-    'A1': `NIVEAU A1 — DÉBUTANT ABSOLU — RÈGLES STRICTES :
-✅ AUTORISÉ :
-- Phrases très courtes : 3 à 6 mots maximum par phrase
-- Vocabulaire ultra basique : salutations, chiffres simples, couleurs, objets courants
-- Présent simple UNIQUEMENT — aucun autre temps verbal
-- Questions simples avec des mots interrogatifs basiques (quoi, où, combien)
-✅ STRUCTURE TYPE : [sujet] + [verbe simple] + [complément court]
-❌ INTERDIT ABSOLUMENT :
-- Conditionnel, subjonctif, imparfait, futur, passé composé
-- Expressions idiomatiques ou figurées
-- Phrases subordonnées complexes
-- Vocabulaire peu courant ou technique
-⚠️ Si l'utilisateur ne comprend pas, réponds avec des mots encore plus simples et courts.`,
+    'A2': `NIVEAU A2 — ÉLÉMENTAIRE :
+✅ AUTORISÉ : phrases max 12-15 mots, vocabulaire quotidien, présent + passé composé simple + futur proche, connecteurs simples (et, mais, parce que).
+❌ INTERDIT : subjonctif, conditionnel, imparfait narratif, phrases trop longues, vocabulaire spécialisé.`,
 
-    'A2': `NIVEAU A2 — ÉLÉMENTAIRE — RÈGLES STRICTES :
-✅ AUTORISÉ :
-- Phrases simples, maximum 12 à 15 mots
-- Vocabulaire du quotidien courant et familier
-- Temps autorisés : présent, passé récent (passé composé simple), futur proche
-- Connecteurs simples : et, mais, parce que, alors, après
-- Questions courantes de la vie quotidienne
-✅ STRUCTURE TYPE : phrases simples reliées par des connecteurs basiques
-❌ INTERDIT ABSOLUMENT :
-- Subjonctif, conditionnel, imparfait narratif
-- Expressions idiomatiques complexes
-- Phrases trop longues ou avec plusieurs subordonnées
-- Vocabulaire rare ou spécialisé`,
+    'B1': `NIVEAU B1 — INTERMÉDIAIRE :
+✅ AUTORISÉ : phrases bien construites, vocabulaire varié courant, présent/passé/futur/conditionnel présent, subjonctif très courant, quelques expressions idiomatiques fréquentes.
+❌ INTERDIT : subjonctif imparfait, vocabulaire littéraire ou technique, structures grammaticales rares.`,
 
-    'B1': `NIVEAU B1 — INTERMÉDIAIRE — RÈGLES STRICTES :
-✅ AUTORISÉ :
-- Phrases de longueur normale, bien construites
-- Vocabulaire varié et courant, accessible à un apprenant intermédiaire
-- Temps autorisés : présent, passé, futur, conditionnel présent simple
-- Subjonctif présent uniquement dans les structures très courantes
-- Quelques expressions idiomatiques très connues et fréquentes
-- Connecteurs logiques : bien que, même si, cependant, pourtant
-✅ STRUCTURE TYPE : phrases complexes mais claires, avec une ou deux subordonnées
-❌ INTERDIT :
-- Subjonctif imparfait ou plus-que-parfait
-- Vocabulaire littéraire, académique ou très spécialisé
-- Structures grammaticales rares ou complexes`,
-
-    'B2': `NIVEAU B2 — INTERMÉDIAIRE AVANCÉ — RÈGLES STRICTES :
-✅ AUTORISÉ :
-- Phrases complexes et bien structurées
-- Vocabulaire riche mais toujours courant — pas de termes rares
-- Tous les temps courants autorisés y compris le subjonctif présent
-- Expressions idiomatiques naturelles et fréquentes
-- Nuances de sens et registres légèrement variés
-✅ STRUCTURE TYPE : langue fluide et naturelle, proche d'un locuteur natif courant
-❌ INTERDIT :
-- Registre littéraire ou académique soutenu
-- Vocabulaire rare, archaïque ou ultra-spécialisé
-- Subjonctif imparfait
-- Structures grammaticales très complexes ou peu usitées`,
+    'B2': `NIVEAU B2 — INTERMÉDIAIRE AVANCÉ :
+✅ AUTORISÉ : phrases complexes, vocabulaire riche courant, tous les temps courants, subjonctif présent, expressions idiomatiques naturelles.
+❌ INTERDIT : registre littéraire soutenu, vocabulaire rare ou archaïque, subjonctif imparfait.`,
 
     'C1': `NIVEAU C1 — AVANCÉ :
-✅ AUTORISÉ :
-- Langue naturelle, fluide et précise
-- Vocabulaire riche, précis et nuancé
-- Toutes les structures grammaticales y compris les plus complexes
-- Expressions idiomatiques, jeux de mots subtils, registres variés
-- Langage soutenu quand c'est naturellement approprié au contexte`,
+✅ Langue naturelle et fluide. Vocabulaire riche et précis. Toutes les structures grammaticales. Expressions idiomatiques, registres variés.`,
 
     'C2': `NIVEAU C2 — MAÎTRISE :
-✅ Aucune restriction. Utilise la langue comme un locuteur natif cultivé.
-- Vocabulaire et grammaire sans aucune limite
-- Registres littéraires, académiques, familiers selon le contexte
-- Toutes les nuances, sous-entendus et finesses linguistiques`,
+✅ Aucune restriction. Parle comme un locuteur natif cultivé. Tous registres, toutes nuances.`,
+}
+
+// ──────────────────────────────────────────────────────────────
+// Règles de saisie par langue
+// L'utilisateur peut écrire en romanisation — c'est un mode de saisie valide
+// Le modèle doit comprendre et NE PAS corriger la romanisation si elle est correcte
+// ──────────────────────────────────────────────────────────────
+const reglesSaisie = {
+    'Coréen': `
+CORÉEN — MODE DE SAISIE :
+L'utilisateur écrit en romanisation latine (ex: "annyeonghaseyo", "baega appayo") car son clavier n'a pas de Hangeul.
+C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
+Ta réponse : TOUJOURS en Hangeul uniquement (ex: 안녕하세요). JAMAIS de caractères chinois (漢字) ni japonais.`,
+
+    'Japonais': `
+JAPONAIS — MODE DE SAISIE :
+L'utilisateur peut écrire en romaji (ex: "arigatou", "sumimasen") car son clavier est latin.
+C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
+Ta réponse : Hiragana + Katakana + Kanji selon le contexte naturel.`,
+
+    'Chinois': `
+CHINOIS — MODE DE SAISIE :
+L'utilisateur peut écrire en Pinyin (ex: "ni hao", "xie xie") car son clavier est latin.
+C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
+Ta réponse : caractères chinois simplifiés uniquement.`,
+
+    'Arabe': `
+ARABE — MODE DE SAISIE :
+L'utilisateur peut écrire en transcription phonétique latine (ex: "marhaba", "shukran") car son clavier est latin.
+C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
+Ta réponse : alphabet arabe uniquement.`,
+}
+
+// ──────────────────────────────────────────────────────────────
+// Exemples de correction par langue
+// Utilisés dans le prompt pour guider le modèle avec des cas concrets
+// ──────────────────────────────────────────────────────────────
+const exemplesCorrectionParLangue = {
+    'Espagnol': `
+Exemples pour l'Espagnol :
+  ❌ "quierro" → ✅ "quiero" — un seul r dans querer.
+  ❌ "Donde estas" → ✅ "¿Dónde está?" — accent sur Dónde + está 3ème personne.
+  ❌ "Quiero un mesa" → ✅ "Quiero una mesa" — mesa est féminin.`,
+
+    'Anglais': `
+Exemples pour l'Anglais :
+  ❌ "I have went" → ✅ "I have gone" — participe passé de go.
+  ❌ "She don't know" → ✅ "She doesn't know" — 3ème personne singulier.
+  ❌ "I am agree" → ✅ "I agree" — agree n'est pas adjectif ici.`,
+
+    'Français': `
+Exemples pour le Français :
+  ❌ "Je suis allé au magasin hier et j'ai achetais" → ✅ "j'ai acheté" — passé composé, pas imparfait.
+  ❌ "Il faut que tu viens" → ✅ "Il faut que tu viennes" — subjonctif après il faut que.`,
+
+    'Allemand': `
+Exemples pour l'Allemand :
+  ❌ "Ich habe gegessen haben" → ✅ "Ich habe gegessen" — pas de double auxiliaire.
+  ❌ "Ich gehe in die Schule gestern" → ✅ "Ich bin gestern in die Schule gegangen" — verbe de mouvement avec sein.`,
+
+    'Coréen': `
+Exemples pour le Coréen (romanisation) :
+  ❌ "gamsahamnidda" → ✅ "gamsahamnida" — double d incorrect.
+  ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — voyelle incorrecte.
+  ❌ "mogo sipeo" → ✅ "meokgo sipeo" — transcription phonétique incorrecte (먹고 싶어).
+  ✅ "annyeonghaseyo", "baega appayo", "achim buteo" → CORRECTS, ne pas toucher.`,
+
+    'Japonais': `
+Exemples pour le Japonais (romaji) :
+  ❌ "arigatougozaimasu" → ✅ "arigatou gozaimasu" — séparation correcte.
+  ❌ "taberu tai" → ✅ "tabetai" — forme de désir, un seul mot.
+  ✅ "sumimasen", "arigatou", "ohayou gozaimasu" → CORRECTS, ne pas toucher.`,
+
+    'Chinois': `
+Exemples pour le Chinois (Pinyin) :
+  ❌ "wo hen hao" → ✅ "wǒ hěn hǎo" — tons manquants en Pinyin.
+  ❌ "ni shuo shenme" → ✅ "nǐ shuō shénme" — tons incorrects.
+  ✅ "ni hao", "xie xie", "wo yao" → COMPRIS même sans tons, ne pas sur-corriger.`,
+
+    'Arabe': `
+Exemples pour l'Arabe (translittération) :
+  ❌ "ana mabsoot" (féminin) → ✅ "ana mabsoota" — accord de genre.
+  ❌ "shukraan jazeelan" → ✅ "shukran jazeilan" — translittération incorrecte.
+  ✅ "marhaba", "shukran", "sabah el kheir" → CORRECTS, ne pas toucher.`,
 }
 
 // ── POST /api/chat/message ──
-// Reçoit un message de l'utilisateur, construit le prompt complet,
-// l'envoie à Groq avec tout l'historique, et retourne la réponse + suggestions
 const envoyerMessageChat = async (req, res) =>
 {
     const { scenarioId, historique, message } = req.body
@@ -97,7 +130,7 @@ const envoyerMessageChat = async (req, res) =>
 
     try
     {
-        // 1. Récupérer le scénario pour avoir le system prompt du personnage
+        // 1. Récupérer le scénario
         const scenario = await Scenario.findById(scenarioId)
         if (!scenario)
         {
@@ -109,106 +142,123 @@ const envoyerMessageChat = async (req, res) =>
         const langueUser = user.langues?.find(l => l.langue === scenario.langue)
         const niveauUser = langueUser?.niveau || 'A1'
 
-        // 3. Construire le system prompt complet
-        // IMPORTANT : pas d'indentation dans le template string —
-        // les espaces en début de ligne sont inclus dans le prompt et perturbent le JSON
-        const systemPromptComplet = `${scenario.systemPrompt}
+        // 3. Récupérer les règles spécifiques à la langue (si disponibles)
+        const regleSaisie = reglesSaisie[scenario.langue] || ''
+        const exemplesCorrection = exemplesCorrectionParLangue[scenario.langue] || ''
 
-══════════════════════════════════════════════════════════════
-RÈGLE PRIORITAIRE N°1 — ADAPTATION STRICTE AU NIVEAU
-══════════════════════════════════════════════════════════════
-L'utilisateur a le niveau ${niveauUser} dans cette langue.
-Tu dois OBLIGATOIREMENT respecter les règles ci-dessous pour CHAQUE phrase que tu écris.
-Ces règles s'appliquent à cette langue et à toutes les langues sans exception.
+        // 4. Construire le system prompt complet
+        // Pas d'indentation dans le template — les espaces perturbent le comportement du modèle
+        const systemPrompt =
+            `${scenario.systemPrompt}
 
-${niveauInstructions[niveauUser] || niveauInstructions['A1']}
+════════════════════════════════════════════════════════
+PERSONNALITÉ ET TON — RÈGLE FONDAMENTALE
+════════════════════════════════════════════════════════
 
-⚠️ RAPPEL CRITIQUE : utiliser un vocabulaire ou une structure grammaticale
-au-dessus du niveau ${niveauUser} est une ERREUR GRAVE qui nuit à l'apprentissage.
-Vérifie chaque phrase avant de l'écrire.
+Tu es un personnage RÉEL dans une situation du quotidien. Tu n'es PAS un assistant IA.
+Parle comme un vrai humain : avec énergie, chaleur, expressions naturelles, réactions authentiques.
 
-══════════════════════════════════════════════════════════════
-RÈGLE PRIORITAIRE N°2 — LANGUE DU SCÉNARIO
-══════════════════════════════════════════════════════════════
-Tu réponds UNIQUEMENT dans la langue du scénario, jamais dans une autre langue.
-Tu ne sors JAMAIS du personnage défini dans ton rôle.
+RÈGLES DE TON (toutes langues, tous niveaux) :
+- Utilise des expressions du quotidien typiques de la langue et de la situation
+- Varie la structure de tes phrases — jamais deux réponses avec la même construction
+- Montre de l'enthousiasme, de la gentillesse, ou de l'humour léger selon le contexte
+- Ajoute des détails réalistes : prix, quantités, recommandations, petites anecdotes
+- Réagis naturellement à ce que dit l'utilisateur comme dans une vraie conversation
 
-Règles d'alphabet strictes — une seule violation = réponse incorrecte :
-- Scénario en Coréen  → UNIQUEMENT Hangul (한글). Zéro caractère japonais ou chinois.
-- Scénario en Japonais → UNIQUEMENT Hiragana + Katakana + Kanji japonais. Zéro Hangul.
-- Scénario en Chinois  → UNIQUEMENT Hanzi simplifié. Zéro Hangul, zéro Kana.
-- Scénario en Arabe   → UNIQUEMENT alphabet arabe.
-- Autres langues      → alphabet latin uniquement.
+EXEMPLE — Bon ton vs mauvais ton :
+✅ "¡Uy, las manzanas de hoy están buenísimas! Las traje esta mañana del campo. ¿Cuántos kilos le pongo?"
+❌ "Tengo manzanas. Son dos euros el kilo." ← trop sec, trop robotique
 
-══════════════════════════════════════════════════════════════
-RÈGLE PRIORITAIRE N°3 — CORRECTION PÉDAGOGIQUE DES FAUTES
-══════════════════════════════════════════════════════════════
-Tu joues un double rôle : personnage du scénario ET professeur de langue.
+════════════════════════════════════════════════════════
+RÈGLE N°1 — ADAPTATION AU NIVEAU ${niveauUser}
+════════════════════════════════════════════════════════
 
-FAUTES À DÉTECTER ET CORRIGER OBLIGATOIREMENT :
-- Faute d'orthographe : lettre en trop, lettre manquante, mauvaise lettre
-- Faute de grammaire : mauvaise conjugaison, mauvais accord en genre ou nombre
-- Mauvais temps verbal utilisé dans le contexte
-- Mot inventé ou inexistant dans la langue
+${niveauInstructions[niveauUser]}
 
-COMPORTEMENT ATTENDU :
-→ Si l'utilisateur n'a PAS fait de faute :
-  Réponds normalement dans ton rôle. Aucune mention de correction.
+════════════════════════════════════════════════════════
+RÈGLE N°2 — LANGUE ET MODE DE SAISIE
+════════════════════════════════════════════════════════
 
-→ Si l'utilisateur a fait UNE OU PLUSIEURS fautes :
-  1. Réponds D'ABORD normalement dans ton rôle (continue la conversation).
-  2. Ajoute ENSUITE à la fin de ta réponse, sur une nouvelle ligne :
-     💡 Correction : [mot ou phrase fautif] → [forme correcte]
-  Note importante : la correction est dans la langue du scénario uniquement.
-  Si plusieurs fautes, liste-les toutes séparées par " | "
+Tu réponds EXCLUSIVEMENT dans la langue du scénario (${scenario.langue}), avec le bon alphabet.
+Pas un seul mot dans une autre langue dans ta réponse.
+${regleSaisie}
 
-══════════════════════════════════════════════════════════════
-FORMAT DE RÉPONSE — OBLIGATOIRE ET NON NÉGOCIABLE
-══════════════════════════════════════════════════════════════
-Retourne UNIQUEMENT un objet JSON valide sur UNE SEULE LIGNE.
-Aucun texte avant. Aucun texte après. Aucun markdown. Aucun commentaire.
+════════════════════════════════════════════════════════
+RÈGLE N°3 — CORRECTION PÉDAGOGIQUE (OBLIGATOIRE)
+════════════════════════════════════════════════════════
 
-Format exact :
-{"reponse":"[ta réponse dans la langue du scénario, correction incluse si nécessaire]","suggestions":["[suggestion 1]","[suggestion 2]","[suggestion 3]"]}
+Cette règle est NON NÉGOCIABLE. Elle s'applique à chaque message, pour toutes les langues.
 
-══════════════════════════════════════════════════════════════
-RÈGLES POUR LES SUGGESTIONS
-══════════════════════════════════════════════════════════════
-Les suggestions sont 3 répliques COMPLÈTES que l'utilisateur pourrait envoyer
-en réponse à ton dernier message. Elles doivent :
-- Être des phrases complètes avec sujet + verbe (jamais un seul mot ou un sujet vague)
-- Être rédigées UNIQUEMENT dans la langue du scénario (Hangul pour coréen, etc.)
-- Respecter EXACTEMENT le niveau ${niveauUser} de l'utilisateur
-- Être naturelles, variées, et adaptées au contexte précis de la conversation
-- Faire 1 à 2 phrases maximum chacune`
+PROCESSUS AVANT CHAQUE RÉPONSE :
+1. Lis le dernier message de l'utilisateur
+2. Identifie le mode de saisie : alphabet natif ou romanisation/translittération latine
+3. Cherche UNIQUEMENT les vraies erreurs linguistiques (voir définition ci-dessous)
+4. Si erreur trouvée → inclure la correction DANS ta réponse, puis continuer naturellement
 
-        // 4. Envoyer à Groq avec tout l'historique de la conversation
+QU'EST-CE QU'UNE VRAIE ERREUR À CORRIGER :
+- Conjugaison incorrecte
+- Mauvais accord (genre, nombre)
+- Accent manquant ou mal placé
+- Vocabulaire incorrect ou mal utilisé
+- Structure de phrase grammaticalement fausse
+- Pour les langues à romanisation : phonétique incorrecte (mauvaise consonne, mauvaise voyelle)
+
+CE QUI N'EST PAS UNE ERREUR — NE PAS CORRIGER :
+- L'utilisateur écrit en romanisation/translittération au lieu de l'alphabet natif → c'est son mode de saisie, il est ACCEPTÉ
+- Une formulation différente mais grammaticalement correcte
+- Un registre légèrement différent mais compréhensible
+${exemplesCorrection}
+
+FORMAT DE CORRECTION :
+💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte en français]
+
+La correction s'intègre naturellement dans ta réponse — avant ou après ta réplique de personnage.
+
+════════════════════════════════════════════════════════
+FORMAT JSON OBLIGATOIRE
+════════════════════════════════════════════════════════
+
+Réponds TOUJOURS et UNIQUEMENT avec ce JSON valide. Zéro texte en dehors.
+
+{
+  "reponse": "Ta réplique avec correction intégrée si une vraie erreur existe",
+  "suggestions": [
+    "Phrase 1 complète dans la langue du scénario",
+    "Phrase 2 complète dans la langue du scénario",
+    "Phrase 3 complète dans la langue du scénario"
+  ]
+}
+
+RÈGLES POUR LES SUGGESTIONS :
+- 3 phrases COMPLÈTES, dans la suite logique de la conversation
+- Niveau ${niveauUser} strict — pas de structures au-delà de ce niveau
+- Dans la langue du scénario (${scenario.langue}) uniquement
+- Pertinentes et variées — pas génériques ni répétitives`
+
+        // 5. Envoyer à Groq avec tout l'historique
         const reponseRaw = await envoyerMessage(
-            systemPromptComplet,
+            systemPrompt,
             historique || [],
             message
         )
 
-        // 5. Parser le JSON retourné par Groq
+        // 6. Parser le JSON retourné par Groq
         let reponseIA = ''
         let suggestions = []
 
         try
         {
-            // Nettoyer les éventuels blocs ```json ... ``` ajoutés par le modèle
             const clean = reponseRaw
                 .replace(/```json/gi, '')
                 .replace(/```/g, '')
                 .trim()
 
-            // Tentative 1 : parsing JSON direct
             let data
             try
             {
                 data = JSON.parse(clean)
             } catch
             {
-                // Tentative 2 : extraire le JSON avec regex si du texte l'entoure
                 const match = clean.match(/\{[\s\S]*"reponse"[\s\S]*\}/)
                 if (match) data = JSON.parse(match[0])
             }
@@ -219,7 +269,6 @@ en réponse à ton dernier message. Elles doivent :
                 suggestions = Array.isArray(data.suggestions) ? data.suggestions : []
             } else
             {
-                // Fallback : afficher le texte brut si le JSON est non récupérable
                 reponseIA = reponseRaw
                 suggestions = []
             }
@@ -231,7 +280,7 @@ en réponse à ton dernier message. Elles doivent :
             suggestions = []
         }
 
-        // 6. Retourner la réponse et les suggestions au frontend
+        // 7. Retourner la réponse au frontend
         res.json({
             reponse: reponseIA,
             suggestions,
