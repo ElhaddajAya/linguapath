@@ -380,7 +380,7 @@ export default function Chat() {
     const messagesUser = historique.filter((m) => m.role === "user");
 
     if (messagesUser.length === 0) {
-      navigate("/scenarios");
+      navigate("/historique");
       return;
     }
 
@@ -425,7 +425,7 @@ export default function Chat() {
       console.error("Erreur sauvegarde :", err.message);
     }
 
-    navigate("/scenarios");
+    navigate("/history");
   };
 
   const handleKeyDown = (e) => {

@@ -72,50 +72,50 @@ Ta réponse : alphabet arabe uniquement.`,
 const exemplesCorrectionParLangue = {
     'Espagnol': `
 Exemples pour l'Espagnol :
-  ❌ "quierro" → ✅ "quiero" — un seul r dans querer.
-  ❌ "Donde estas" → ✅ "¿Dónde está?" — accent sur Dónde + está 3ème personne.
-  ❌ "Quiero un mesa" → ✅ "Quiero una mesa" — mesa est féminin.`,
+  ❌ "quierro" → ✅ "quiero" — "querer" se escribe con una sola "r".
+  ❌ "Donde estas" → ✅ "¿Dónde está?" — "dónde" lleva tilde y "está" es 3ª persona.
+  ❌ "Quiero un mesa" → ✅ "Quiero una mesa" — "mesa" es femenino.`,
 
     'Anglais': `
 Exemples pour l'Anglais :
-  ❌ "I have went" → ✅ "I have gone" — participe passé de go.
-  ❌ "She don't know" → ✅ "She doesn't know" — 3ème personne singulier.
-  ❌ "I am agree" → ✅ "I agree" — agree n'est pas adjectif ici.`,
+  ❌ "I have went" → ✅ "I have gone" — "gone" is the past participle of "go", not "went".
+  ❌ "She don't know" → ✅ "She doesn't know" — with "she", we use "doesn't".
+  ❌ "I am agree" → ✅ "I agree" — "agree" is a verb here, not an adjective.`,
 
     'Français': `
 Exemples pour le Français :
-  ❌ "Je suis allé au magasin hier et j'ai achetais" → ✅ "j'ai acheté" — passé composé, pas imparfait.
-  ❌ "Il faut que tu viens" → ✅ "Il faut que tu viennes" — subjonctif après il faut que.`,
+  ❌ "j'ai achetais" → ✅ "j'ai acheté" — avec "avoir", on utilise le participe passé, pas l'imparfait.
+  ❌ "Il faut que tu viens" → ✅ "Il faut que tu viennes" — après "il faut que", on utilise le subjonctif.`,
 
     'Allemand': `
 Exemples pour l'Allemand :
-  ❌ "Ich habe gegessen haben" → ✅ "Ich habe gegessen" — pas de double auxiliaire.
-  ❌ "Ich gehe in die Schule gestern" → ✅ "Ich bin gestern in die Schule gegangen" — verbe de mouvement avec sein.`,
+  ❌ "Ich habe gegessen haben" → ✅ "Ich habe gegessen" — kein doppeltes Hilfsverb.
+  ❌ "Ich gehe in die Schule gestern" → ✅ "Ich bin gestern in die Schule gegangen" — Bewegungsverb mit "sein".`,
 
     'Coréen': `
 Exemples pour le Coréen (romanisation) :
-  ❌ "gamsahamnidda" → ✅ "gamsahamnida" — double d incorrect.
-  ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — voyelle incorrecte.
-  ❌ "mogo sipeo" → ✅ "meokgo sipeo" — transcription phonétique incorrecte (먹고 싶어).
-  ✅ "annyeonghaseyo", "baega appayo", "achim buteo" → CORRECTS, ne pas toucher.`,
+  ❌ "gamsahamnidda" → ✅ "gamsahamnida" — 받침이 잘못되었어요. "다"로 끝나야 해요.
+  ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — 모음이 틀렸어요. "세요"가 맞아요.
+  ❌ "mogo sipeo" → ✅ "meokgo sipeo" — "먹고"의 발음은 "meokgo"예요.
+  ✅ "annyeonghaseyo", "baega appayo", "achim buteo" → 맞아요, 수정하지 마세요.`,
 
     'Japonais': `
 Exemples pour le Japonais (romaji) :
-  ❌ "arigatougozaimasu" → ✅ "arigatou gozaimasu" — séparation correcte.
-  ❌ "taberu tai" → ✅ "tabetai" — forme de désir, un seul mot.
-  ✅ "sumimasen", "arigatou", "ohayou gozaimasu" → CORRECTS, ne pas toucher.`,
+  ❌ "taberu tai" → ✅ "tabetai" — "〜たい"は一つの単語です。
+  ❌ "arigatougozaimasu" → ✅ "arigatou gozaimasu" — 分けて書きます。
+  ✅ "sumimasen", "arigatou", "ohayou gozaimasu" → 正しいです、直さないでください。`,
 
     'Chinois': `
 Exemples pour le Chinois (Pinyin) :
-  ❌ "wo hen hao" → ✅ "wǒ hěn hǎo" — tons manquants en Pinyin.
-  ❌ "ni shuo shenme" → ✅ "nǐ shuō shénme" — tons incorrects.
-  ✅ "ni hao", "xie xie", "wo yao" → COMPRIS même sans tons, ne pas sur-corriger.`,
+  ❌ "wo hen hao" → ✅ "wǒ hěn hǎo" — 声调很重要，请注意标注。
+  ❌ "ni shuo shenme" → ✅ "nǐ shuō shénme" — 声调不正确。
+  ✅ "ni hao", "xie xie", "wo yao" → 没问题，不需要纠正。`,
 
     'Arabe': `
 Exemples pour l'Arabe (translittération) :
-  ❌ "ana mabsoot" (féminin) → ✅ "ana mabsoota" — accord de genre.
-  ❌ "shukraan jazeelan" → ✅ "shukran jazeilan" — translittération incorrecte.
-  ✅ "marhaba", "shukran", "sabah el kheir" → CORRECTS, ne pas toucher.`,
+  ❌ "ana mabsoot" (locutrice) → ✅ "ana mabsoota" — المؤنث يحتاج إلى "ة" في النهاية.
+  ❌ "shukraan jazeelan" → ✅ "shukran jazeilan" — الكتابة الصوتية غير صحيحة.
+  ✅ "marhaba", "shukran", "sabah el kheir" → صحيح، لا تصحح.`,
 }
 
 // ── POST /api/chat/message ──
@@ -169,6 +169,22 @@ EXEMPLE — Bon ton vs mauvais ton :
 ✅ "¡Uy, las manzanas de hoy están buenísimas! Las traje esta mañana del campo. ¿Cuántos kilos le pongo?"
 ❌ "Tengo manzanas. Son dos euros el kilo." ← trop sec, trop robotique
 
+RÈGLES DE LONGUEUR — AUSSI IMPORTANTES QUE LE TON :
+- Ta réponse ne doit JAMAIS dépasser 3 phrases maximum.
+- Tu poses UNE SEULE question à la fois — jamais plusieurs en même message.
+- Tu n'anticipes pas : pas de diagnostic, pas de conclusion, pas de solution
+  avant que l'utilisateur t'ait donné toutes les informations nécessaires.
+- Si tu as plusieurs questions à poser, choisis la plus importante et garde les autres pour après.
+- L'objectif est un échange en allers-retours courts — pas un monologue.
+
+EXEMPLE — Scénario médecin, l'utilisateur dit "j'ai mal au dos depuis hier" :
+✅ CORRECT (court, une seule question) :
+  "I'm sorry to hear that. Can you describe the pain — is it sharp, dull, or burning?"
+❌ TROP LONG (plusieurs questions + diagnostic anticipé) :
+  "I'm sorry to hear that. Could you tell me how severe it is, how long it lasts,
+   if you've had injuries, what medication you take, and if you have any allergies?
+   It could be muscular strain or a facet joint issue, so I may suggest NSAIDs..."
+
 ════════════════════════════════════════════════════════
 RÈGLE N°1 — ADAPTATION AU NIVEAU ${niveauUser}
 ════════════════════════════════════════════════════════
@@ -210,9 +226,35 @@ CE QUI N'EST PAS UNE ERREUR — NE PAS CORRIGER :
 ${exemplesCorrection}
 
 FORMAT DE CORRECTION :
-💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte en français]
+La correction apparaît TOUJOURS EN PREMIER, AVANT ta réplique de personnage.
+Elle est séparée de ta réplique par une ligne vide obligatoire.
 
-La correction s'intègre naturellement dans ta réponse — avant ou après ta réplique de personnage.
+Structure exacte à respecter :
+💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte dans la langue du scénario]
+
+[ligne vide]
+[ta réplique de personnage ici]
+
+RÈGLE IMPORTANTE — LANGUE DE L'EXPLICATION :
+L'explication après le "—" doit être rédigée dans la langue du scénario (${scenario.langue}), pas en français.
+C'est comme si le personnage corrigeait naturellement l'apprenant dans sa propre langue.
+
+EXEMPLES DU FORMAT ATTENDU :
+
+Scénario Anglais :
+💡 Correction : "Good moorning" → "Good morning" — "morning" has only one "o", it's a spelling mistake.
+
+Good morning! I'm Dr. Roberts. How can I help you today?
+
+Scénario Espagnol :
+💡 Correction : "quierro" → "quiero" — "querer" se escribe con una sola "r".
+
+¡Buenos días! ¿En qué le puedo ayudar hoy?
+
+Scénario Coréen :
+💡 Correction : "gamsahamnidda" → "gamsahamnida" — "다"로 끝나야 해요. "ㄷ" 하나면 충분해요.
+
+천만에요! 또 필요한 게 있으면 말씀해 주세요.
 
 ════════════════════════════════════════════════════════
 FORMAT JSON OBLIGATOIRE
