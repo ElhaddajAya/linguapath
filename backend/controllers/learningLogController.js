@@ -34,17 +34,31 @@ const extrairePhrasesApprises = async (req, res) =>
             .join('\n')
 
         // 3. Prompt d'extraction — on utilise le petit modèle (économie de tokens)
-        const systemPrompt = `You are a language learning assistant specialized in extracting useful phrases from conversations.
-Analyze the conversation and extract the most useful phrases, expressions, or vocabulary that the learner encountered.
-Focus on phrases said by the AI (not the user) since those are the target language phrases to learn.
-Include phrases that are:
-- Common and reusable in real life situations
-- Relevant to the scenario theme
-- At an appropriate level for the learner
+        const systemPrompt = `You are a language learning assistant. Extract SHORT, reusable phrases from this conversation.
 
-Return ONLY a valid JSON array. No explanation, no markdown.
-Format: [{"phrase":"[phrase in target language]","traduction":"[natural French translation]"},...]
-Extract between 3 and 8 phrases maximum. If the conversation is too short, extract fewer.`
+RULES — all mandatory, no exceptions :
+- Extract ONLY phrases said by the AI character, never the user
+- MAXIMUM 4 phrases total
+- Each phrase : 2 to 6 words ONLY — count the words, if more than 6 → SKIP IT
+- The phrase must be reusable in many different situations, not just this specific conversation
+- NEVER extract questions with medical details, diagnoses, or technical terms
+- NEVER extract phrases longer than 6 words, even if they seem useful
+- Identify the grammatical pattern : replace the variable part with "..."
+
+GOOD examples (2-6 words, reusable) :
+  "I'm sorry to hear that." → pattern: "I'm sorry to hear..."
+  "I see." → pattern: "I see."
+  "How are you feeling?" → pattern: "How are you...?"
+  "That makes sense." → pattern: "That makes sense."
+
+BAD examples — NEVER extract these :
+  "On a scale of 1 to 10, how would you rate the soreness?" → 16 words, too long
+  "Are you currently taking any medication or have any known allergies?" → 11 words, too long
+
+If no phrase respects the 2-6 word rule → return []
+
+Return ONLY a valid JSON array, no markdown :
+[{"phrase":"...","traduction":"...","pattern":"..."}]`
 
         const messageUser = `Conversation in ${langue} (level ${niveau}, theme: ${scenario.theme}):\n\n${historiqueTexte}\n\nExtract the most useful phrases from this conversation.`
 
@@ -61,24 +75,49 @@ Extract between 3 and 8 phrases maximum. If the conversation is too short, extra
         let phrasesExtraites = []
         try
         {
-            const clean = reponseRaw.replace(/```json|```/g, '').trim()
-            phrasesExtraites = JSON.parse(clean)
-            // Vérification que c'est bien un tableau
-            if (!Array.isArray(phrasesExtraites)) phrasesExtraites = []
-        } catch
-        {
-            // Tentative avec regex si le JSON est mal formaté
-            const match = reponseRaw.match(/\[[\s\S]*\]/)
-            if (match)
+            // On nettoie les caractères problématiques avant de parser
+            const clean = reponseRaw
+                .replace(/```json|```/g, '')
+                .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // caractères de contrôle
+                .trim()
+
+            try
             {
-                try { phrasesExtraites = JSON.parse(match[0]) } catch { }
+                phrasesExtraites = JSON.parse(clean)
+            } catch
+            {
+                // Tentative avec regex si le JSON est mal formé
+                const match = clean.match(/\[[\s\S]*\]/)
+                if (match)
+                {
+                    try { phrasesExtraites = JSON.parse(match[0]) } catch { }
+                }
             }
+
+            if (!Array.isArray(phrasesExtraites)) phrasesExtraites = []
+
+        } catch (err)
+        {
+            console.warn('Parsing extraction échoué :', err.message)
+            phrasesExtraites = []
         }
 
-        // 5. Sauvegarder chaque phrase en BDD
-        const entries = phrasesExtraites
-            .filter(p => p.phrase && p.traduction) // garder seulement les valides
-            .map(p => ({
+        // 5. Dédupliquer — éviter les phrases déjà existantes en BDD
+        const entries = []
+
+        for (const p of phrasesExtraites.filter(p => p.phrase && p.traduction))
+        {
+            // On vérifie si cette phrase existe déjà pour cet utilisateur + langue
+            const existe = await LearningEntry.findOne({
+                userId: req.user._id,
+                langue,
+                phrase: p.phrase.trim(),
+            })
+
+            // Si elle existe déjà → on la saute
+            if (existe) continue
+
+            entries.push({
                 userId: req.user._id,
                 phrase: p.phrase.trim(),
                 traduction: p.traduction.trim(),
@@ -88,7 +127,9 @@ Extract between 3 and 8 phrases maximum. If the conversation is too short, extra
                 scenarioTitre: scenario.titre,
                 conversationId: conversationId || null,
                 source: 'auto',
-            }))
+                pattern: p.pattern?.trim() || 'Général', // Si pas de pattern, on met "Général"
+            })
+        }
 
         if (entries.length > 0)
         {

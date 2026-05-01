@@ -3,68 +3,21 @@
 
 const mongoose = require('mongoose')
 
-const LearningEntrySchema = new mongoose.Schema({
+const learningEntrySchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    phrase: { type: String, required: true },
+    traduction: { type: String, required: true },
+    langue: { type: String, required: true },
+    niveau: { type: String, default: 'A1' },
+    theme: { type: String, default: 'Général' },
+    scenarioTitre: { type: String },
+    conversationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Conversation', default: null },
+    source: { type: String, enum: ['auto', 'manuel'], default: 'auto' },
 
-    // L'utilisateur qui a appris cette phrase
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    },
-
-    // La phrase dans la langue cible (ex: "¿Cuánto cuesta?")
-    phrase: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-
-    // Traduction française de la phrase
-    traduction: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-
-    // La langue de la phrase
-    langue: {
-        type: String,
-        required: true,
-    },
-
-    // Niveau CECRL de l'utilisateur au moment de l'apprentissage
-    niveau: {
-        type: String,
-        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
-        default: 'A1',
-    },
-
-    // Thème du scénario — utilisé pour organiser la MindMap
-    theme: {
-        type: String,
-        required: true,
-    },
-
-    // Titre du scénario pour le contexte
-    scenarioTitre: {
-        type: String,
-        required: true,
-    },
-
-    // Référence à la conversation source
-    conversationId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Conversation',
-        default: null,
-    },
-
-    // Source : 'auto' = extrait automatiquement, 'manuel' = ajouté manuellement
-    source: {
-        type: String,
-        enum: ['auto', 'manuel'],
-        default: 'auto',
-    },
+    // Pattern grammatical — ex: "I'm sorry to hear...", "Could you...?"
+    // Permet de regrouper les phrases par structure dans la MindMap
+    pattern: { type: String, default: 'Général' },
 
 }, { timestamps: true })
 
-module.exports = mongoose.model('LearningEntry', LearningEntrySchema)
+module.exports = mongoose.model('LearningEntry', learningEntrySchema)

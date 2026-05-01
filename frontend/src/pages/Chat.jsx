@@ -407,20 +407,22 @@ export default function Chat() {
 
       // Extraction automatique des phrases apprises — ne bloque pas la navigation
       // On utilise catch silencieux pour ne pas bloquer si Groq est indisponible
-      api
-        .post("/learning-log/extraire", {
-          conversationId,
-          scenarioId,
-          messages: historique,
-          langue: scenario?.langue,
-          niveau:
-            JSON.parse(localStorage.getItem("user") || "{}")?.langues?.find(
-              (l) => l.langue === scenario?.langue,
-            )?.niveau || "A1",
-        })
-        .catch((err) =>
-          console.warn("Extraction phrases échouée (silencieux):", err.message),
-        );
+      const nouveauxMessages = historique.slice(originalMessageCount);
+
+      if (nouveauxMessages.length > 0) {
+        api
+          .post("/learning-log/extraire", {
+            conversationId,
+            scenarioId,
+            messages: nouveauxMessages, // ← nouveaux messages seulement
+            langue: scenario?.langue,
+            niveau:
+              JSON.parse(localStorage.getItem("user") || "{}")?.langues?.find(
+                (l) => l.langue === scenario?.langue,
+              )?.niveau || "A1",
+          })
+          .catch((err) => console.warn("Extraction échouée :", err.message));
+      }
     } catch (err) {
       console.error("Erreur sauvegarde :", err.message);
     }

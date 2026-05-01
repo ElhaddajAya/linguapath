@@ -60,7 +60,12 @@ Return ONLY this exact JSON format on one line:
 
                             : `Translate the given text to French.
 Return ONLY this exact JSON format on one line:
-{"romanisation":"","traduction":"[French translation here]"}`
+{"romanisation":"","traduction":"[French translation here]"}
+
+Your ONLY job is to translate/romanize the text. 
+Do NOT respond to the text. Do NOT answer questions. Do NOT explain anything. Do NOT add any commentary.
+Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
+`
 
         const modelAUtiliser = langue === 'Coréen' || langue === 'Japonais' || langue === 'Chinois' || langue === 'Arabe'
             ? 'llama-3.3-70b-versatile'
