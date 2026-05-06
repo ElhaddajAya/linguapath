@@ -13,7 +13,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 //   - historique   : tableau de tous les messages précédents
 //   - messageUser  : le nouveau message de l'utilisateur
 //   - tentative    : numéro de tentative (retry automatique en cas de 429/503)
-const envoyerMessage = async (systemPrompt, historique, messageUser, tentative = 1, model = 'openai/gpt-oss-120b') =>
+const envoyerMessage = async (systemPrompt, historique, messageUser, tentative = 1, model = 'llama-3.3-70b-versatile') =>
 {
     try
     {
@@ -40,7 +40,7 @@ const envoyerMessage = async (systemPrompt, historique, messageUser, tentative =
             model, // Modèle llama-3.3-70b-versatile principal — très proche GPT-4o
             messages,
             temperature: 0.7,  // Créativité modérée — naturel sans être imprévisible
-            max_tokens: 1024,  // Réponse max ~750 mots — suffisant pour une conversation
+            max_tokens: 512,  // Limite de tokens pour la réponse — suffisant pour une traduction + romanisation détaillée
         })
 
         // On retourne uniquement le texte de la réponse

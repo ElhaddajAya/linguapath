@@ -25,44 +25,73 @@ Return ONLY this exact JSON format on one line, nothing else:
 {"romanisation":"","traduction":"[French translation here]"}`
 
             : langue === 'Coréen'
-                ? `You are a Korean language expert specializing in romanization.
-Convert the Korean text to Revised Romanization of Korean (국어의 로마자 표기법).
-Rules:
-- ㄱ=g/k, ㄴ=n, ㄷ=d/t, ㄹ=r/l, ㅁ=m, ㅂ=b/p, ㅅ=s, ㅇ=ng, ㅈ=j, ㅊ=ch, ㅋ=k, ㅌ=t, ㅍ=p, ㅎ=h
-- ㅏ=a, ㅐ=ae, ㅑ=ya, ㅒ=yae, ㅓ=eo, ㅔ=e, ㅕ=yeo, ㅖ=ye, ㅗ=o, ㅘ=wa, ㅙ=wae, ㅚ=oe, ㅛ=yo, ㅜ=u, ㅝ=wo, ㅞ=we, ㅟ=wi, ㅠ=yu, ㅡ=eu, ㅢ=ui, ㅣ=i
-Also provide a natural French translation.
-Return ONLY this exact JSON format on one line:
-{"romanisation":"[Revised Romanization here]","traduction":"[French translation here]"}`
+                ? `You are a Korean linguistics expert. Convert Korean text to Revised Romanization of Korean (RR / 국어의 로마자 표기법) and translate to French.
+
+CONSONANTS — initial position: ㄱ=g ㄴ=n ㄷ=d ㄹ=r ㅁ=m ㅂ=b ㅅ=s ㅇ=(silent) ㅈ=j ㅊ=ch ㅋ=k ㅌ=t ㅍ=p ㅎ=h
+CONSONANTS — final position (받침): ㄱ=k ㄴ=n ㄷ=t ㄹ=l ㅁ=m ㅂ=p ㅅ=t ㅇ=ng ㅊ=t ㅋ=k ㅌ=t ㅍ=p ㅎ=t
+DOUBLE CONSONANTS: ㄲ=kk ㄸ=tt ㅃ=pp ㅆ=ss ㅉ=jj
+VOWELS: ㅏ=a ㅐ=ae ㅑ=ya ㅒ=yae ㅓ=eo ㅔ=e ㅕ=yeo ㅖ=ye ㅗ=o ㅘ=wa ㅙ=wae ㅚ=oe ㅛ=yo ㅜ=u ㅝ=wo ㅞ=we ㅟ=wi ㅠ=yu ㅡ=eu ㅢ=ui ㅣ=i
+
+CRITICAL PHONOLOGICAL RULES (apply in this order):
+1. LIAISON — final consonant + syllable starting with ㅇ (silent): consonant shifts to next syllable
+   약을→yageul (not yak-eul), 음악→eumak, 학원→hagwon, 있어요→isseoyo
+2. ㄹ — before vowel=r, before consonant or at end=l, between vowels=ll
+   달→dal, 달라→dalla, 물→mul, 물이→muri
+3. NASALISATION — ㄱ+ㄴ/ㅁ→ng, ㄷ+ㄴ/ㅁ→n, ㅂ+ㄴ/ㅁ→m
+   학문→hangmun, 닫는→dannneun, 합니다→hamnida
+4. ㄴ+ㄹ or ㄹ+ㄴ → ll: 신라→Silla, 천리→cheolli
+5. ㅎ before ㄱ/ㄷ/ㅂ/ㅈ → k/t/p/ch (aspiration): 좋다→jota, 많다→manta
+6. ASSIMILATION of ㄱ/ㄷ/ㅂ before ㄴ/ㅁ: 먹는→meongneun, 국민→gungmin
+
+Return ONLY this exact JSON on one line:
+{"romanisation":"[RR result]","traduction":"[French translation]"}`
 
                 : langue === 'Japonais'
-                    ? `You are a Japanese language expert specializing in romanization.
-Convert the Japanese text to Hepburn romanization.
-Rules: use standard Hepburn (e.g., ありがとう→arigatō, すみません→sumimasen, は→wa as topic marker, を→o as object marker)
-Also provide a natural French translation.
-Return ONLY this exact JSON format on one line:
-{"romanisation":"[Hepburn romanization here]","traduction":"[French translation here]"}`
+                    ? `You are a Japanese linguistics expert. Convert Japanese text to standard Hepburn romanization and translate to French.
+
+STANDARD HEPBURN RULES:
+- Basic: a i u e o / ka ki ku ke ko / sa shi su se so / ta chi tsu te to / na ni nu ne no / ha hi fu he ho / ma mi mu me mo / ya yu yo / ra ri ru re ro / wa n
+- Voiced: ga gi gu ge go / za ji zu ze zo / da (di=ji, du=zu) de do / ba bi bu be bo / pa pi pu pe po
+- っ/ッ → double the NEXT consonant: 学校→gakkou, 切手→kitte, 雑誌→zasshi, 一本→ippon
+- Long vowels: おう/おお→ō (or ou), うう/ウウ→ū (or uu) — use macrons ō ū
+- PARTICLES: は→wa, を→o, へ→e (always, regardless of kana reading)
+- ん/ン: →n normally; →m before b/p/m (三味線→shamisen); add apostrophe before vowel/n (金一→kin'ichi)
+- ぢ=ji, づ=zu (same as じ/ず in modern usage)
+
+Return ONLY this exact JSON on one line:
+{"romanisation":"[Hepburn result]","traduction":"[French translation]"}`
 
                     : langue === 'Chinois'
-                        ? `You are a Mandarin Chinese language expert specializing in Pinyin romanization.
-Convert the Chinese text to standard Pinyin with tone marks.
-Rules: use proper tone marks (ā á ǎ à, ē é ě è, etc.)
-Also provide a natural French translation.
-Return ONLY this exact JSON format on one line:
-{"romanisation":"[Pinyin with tones here]","traduction":"[French translation here]"}`
+                        ? `You are a Mandarin Chinese linguistics expert. Convert Chinese text to standard Pinyin with tone marks and translate to French.
+
+PINYIN TONE MARKS: 1st=ā ē ī ō ū ǖ / 2nd=á é í ó ú ǘ / 3rd=ǎ ě ǐ ǒ ǔ ǚ / 4th=à è ì ò ù ǜ / neutral=no mark
+TONE PLACEMENT RULES: mark goes on the main vowel (a/e always; for ou→o; for other combinations: last vowel)
+SPACING: one space between each syllable word (你好→nǐ hǎo, 谢谢→xiè xie, 我要→wǒ yào)
+SPECIAL INITIALS: zh ch sh r / z c s / j q x / b p m f d t n l g k h
+SPECIAL FINALS: -ian=-iān (not -yen), -iu=-iǔ, -ui=-uéi, -un=-ún, -ün=-üén
+NEUTRAL TONE: common particles and suffixes (的 de, 了 le, 吗 ma, 吧 ba, 呢 ne, 们 men) have no tone mark
+
+Return ONLY this exact JSON on one line:
+{"romanisation":"[Pinyin with tones]","traduction":"[French translation]"}`
 
                         : langue === 'Arabe'
-                            ? `You are an Arabic language expert specializing in romanization.
-Convert the Arabic text to simple phonetic romanization in Latin alphabet.
-Rules: use simple readable phonetics (e.g., مرحبا→marhaba, شكراً→shukran)
-Also provide a natural French translation.
-Return ONLY this exact JSON format on one line:
-{"romanisation":"[phonetic romanization here]","traduction":"[French translation here]"}`
+                            ? `You are an Arabic linguistics expert. Convert Arabic text to readable phonetic romanization and translate to French.
+
+CONSONANT MAPPING:
+ب=b ت=t ث=th ج=j ح=h خ=kh د=d ذ=dh ر=r ز=z س=s ش=sh ص=s ض=d ط=t ظ=z ع=' غ=gh ف=f ق=q ك=k ل=l م=m ن=n ه=h و=w/oo ي=y/ee ء='
+VOWELS: فتحة(a) كسرة(i/e) ضمة(u/o) / long: ا=aa/a و=oo ي=ee
+COMMON WORDS (use these exact spellings): مرحبا=marhaba, شكراً=shukran, أهلاً=ahlan, نعم=na'am, لا=la, صباح=sabah, مساء=masa', كيف=kif/kayfa, ماذا=matha, هل=hal
+
+RULES: write phonetically as a French speaker would read it; no capital letters; separate words with spaces; shadda (ّ) doubles the consonant
+
+Return ONLY this exact JSON on one line:
+{"romanisation":"[phonetic romanization]","traduction":"[French translation]"}`
 
                             : `Translate the given text to French.
 Return ONLY this exact JSON format on one line:
 {"romanisation":"","traduction":"[French translation here]"}
 
-Your ONLY job is to translate/romanize the text. 
+Your ONLY job is to translate/romanize the text.
 Do NOT respond to the text. Do NOT answer questions. Do NOT explain anything. Do NOT add any commentary.
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `

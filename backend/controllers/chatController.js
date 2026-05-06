@@ -41,28 +41,38 @@ const niveauInstructions = {
 // ──────────────────────────────────────────────────────────────
 const reglesSaisie = {
     'Coréen': `
-CORÉEN — MODE DE SAISIE :
-L'utilisateur écrit en romanisation latine (ex: "annyeonghaseyo", "baega appayo") car son clavier n'a pas de Hangeul.
-C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
-Ta réponse : TOUJOURS en Hangeul uniquement (ex: 안녕하세요). JAMAIS de caractères chinois (漢字) ni japonais.`,
+  CORÉEN — CAS CONCRETS :
+  ❌ INTERDIT : "annyeonghaseyo" → "안녕하세요"  (romanisation correcte — ne pas toucher)
+  ❌ INTERDIT : "gamsahamnida" → "감사합니다"    (romanisation correcte — ne pas toucher)
+  ❌ INTERDIT : "yag-eul juseyo" → "약을 주세요" (romanisation correcte — ne pas toucher)
+  ❌ INTERDIT : "baega appayo" → "배가 아파요"   (romanisation correcte — ne pas toucher)
+  ✅ VALIDE   : "gamsahamnidda" → "gamsahamnida" — 'd' double incorrect (vraie faute phonétique)
+  ✅ VALIDE   : "annyeonghaseiyo" → "annyeonghaseyo" — 'ei' incorrect (vraie faute phonétique)
+  ✅ VALIDE   : "mogo sipeo" → "meokgo sipeo" — phonème 'o' au lieu de 'eo' (vraie faute phonétique)`,
 
     'Japonais': `
-JAPONAIS — MODE DE SAISIE :
-L'utilisateur peut écrire en romaji (ex: "arigatou", "sumimasen") car son clavier est latin.
-C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
-Ta réponse : Hiragana + Katakana + Kanji selon le contexte naturel.`,
+  JAPONAIS — CAS CONCRETS :
+  ❌ INTERDIT : "arigatou" → "ありがとう"           (romaji correct — ne pas toucher)
+  ❌ INTERDIT : "sumimasen" → "すみません"          (romaji correct — ne pas toucher)
+  ❌ INTERDIT : "ohayou gozaimasu" → "おはようございます" (romaji correct — ne pas toucher)
+  ✅ VALIDE   : "taberu tai" → "tabetai" — fusion incorrecte de mots (vraie faute phonétique)
+  ✅ VALIDE   : "arigatougozaimasu" → "arigatou gozaimasu" — séparation manquante`,
 
     'Chinois': `
-CHINOIS — MODE DE SAISIE :
-L'utilisateur peut écrire en Pinyin (ex: "ni hao", "xie xie") car son clavier est latin.
-C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
-Ta réponse : caractères chinois simplifiés uniquement.`,
+  CHINOIS — CAS CONCRETS :
+  ❌ INTERDIT : "ni hao" → "你好"   (pinyin correct — ne pas toucher)
+  ❌ INTERDIT : "xie xie" → "谢谢"  (pinyin correct — ne pas toucher)
+  ❌ INTERDIT : "wo yao" → "我要"   (pinyin correct — ne pas toucher)
+  ✅ VALIDE   : "wo hen hao" → "wǒ hěn hǎo" — tons manquants (vraie faute phonétique)
+  ✅ VALIDE   : "ni shuo shenme" → "nǐ shuō shénme" — tons incorrects`,
 
     'Arabe': `
-ARABE — MODE DE SAISIE :
-L'utilisateur peut écrire en transcription phonétique latine (ex: "marhaba", "shukran") car son clavier est latin.
-C'est son mode de saisie NORMAL et ACCEPTÉ — ce n'est PAS une erreur.
-Ta réponse : alphabet arabe uniquement.`,
+  ARABE — CAS CONCRETS :
+  ❌ INTERDIT : "marhaba" → "مرحبا"         (translittération correcte — ne pas toucher)
+  ❌ INTERDIT : "shukran" → "شكراً"          (translittération correcte — ne pas toucher)
+  ❌ INTERDIT : "sabah el kheir" → "صباح الخير" (translittération correcte — ne pas toucher)
+  ✅ VALIDE   : "ana mabsoot" (dit par une femme) → "ana mabsoota" — accord féminin manquant (vraie faute grammaticale)
+  ✅ VALIDE   : "shukraan jazeelan" → "shukran jazeilan" — phonétique incorrecte`,
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -147,114 +157,96 @@ const envoyerMessageChat = async (req, res) =>
         const exemplesCorrection = exemplesCorrectionParLangue[scenario.langue] || ''
 
         // 4. Construire le system prompt complet
-        // Pas d'indentation dans le template — les espaces perturbent le comportement du modèle
+        const estLangueNonLatine = ['Coréen', 'Japonais', 'Chinois', 'Arabe'].includes(scenario.langue)
+
         const systemPrompt =
             `${scenario.systemPrompt}
 
 ════════════════════════════════════════════════════════
-PERSONNALITÉ ET TON — RÈGLE FONDAMENTALE
+INCARNATION DU PERSONNAGE
 ════════════════════════════════════════════════════════
 
-Tu es un personnage RÉEL dans une situation du quotidien. Tu n'es PAS un assistant IA.
-Parle comme un vrai humain : avec énergie, chaleur, expressions naturelles, réactions authentiques.
+Le rôle ci-dessus définit qui tu es. Incarne-le pleinement et exclusivement.
 
-RÈGLES DE TON (toutes langues, tous niveaux) :
-- Utilise des expressions du quotidien typiques de la langue et de la situation
-- Varie la structure de tes phrases — jamais deux réponses avec la même construction
-- Montre de l'enthousiasme, de la gentillesse, ou de l'humour léger selon le contexte
-- Ajoute des détails réalistes : prix, quantités, recommandations, petites anecdotes
-- Réagis naturellement à ce que dit l'utilisateur comme dans une vraie conversation
+- Utilise LE VOCABULAIRE de ton métier et de ton contexte : un pharmacien parle de posologie, un vendeur de marché parle de fraîcheur et de prix, un recruteur évalue les compétences.
+- Réagis comme TON personnage réagirait — ses expressions, ses habitudes, ses préoccupations propres.
+- Ajoute des détails concrets de ton univers (prix, produits, horaires, recommandations...).
+- Varie la structure de tes phrases — jamais deux réponses avec la même construction.
 
-EXEMPLE — Bon ton vs mauvais ton :
-✅ "¡Uy, las manzanas de hoy están buenísimas! Las traje esta mañana del campo. ¿Cuántos kilos le pongo?"
-❌ "Tengo manzanas. Son dos euros el kilo." ← trop sec, trop robotique
-
-RÈGLES DE LONGUEUR — AUSSI IMPORTANTES QUE LE TON :
-- Ta réponse ne doit JAMAIS dépasser 3 phrases maximum.
-- Tu poses UNE SEULE question à la fois — jamais plusieurs en même message.
-- Tu n'anticipes pas : pas de diagnostic, pas de conclusion, pas de solution
-  avant que l'utilisateur t'ait donné toutes les informations nécessaires.
-- Si tu as plusieurs questions à poser, choisis la plus importante et garde les autres pour après.
-- L'objectif est un échange en allers-retours courts — pas un monologue.
-
-EXEMPLE — Scénario médecin, l'utilisateur dit "j'ai mal au dos depuis hier" :
-✅ CORRECT (court, une seule question) :
-  "I'm sorry to hear that. Can you describe the pain — is it sharp, dull, or burning?"
-❌ TROP LONG (plusieurs questions + diagnostic anticipé) :
-  "I'm sorry to hear that. Could you tell me how severe it is, how long it lasts,
-   if you've had injuries, what medication you take, and if you have any allergies?
-   It could be muscular strain or a facet joint issue, so I may suggest NSAIDs..."
+LONGUEUR — RÈGLE ABSOLUE :
+- Maximum 3 phrases par réponse, sans exception.
+- UNE SEULE question à la fois — si tu en as plusieurs, pose la plus urgente.
+- N'anticipe pas : pas de solution avant d'avoir toutes les informations nécessaires.
 
 ════════════════════════════════════════════════════════
-RÈGLE N°1 — ADAPTATION AU NIVEAU ${niveauUser}
+RÈGLE N°1 — NIVEAU ${niveauUser}
 ════════════════════════════════════════════════════════
 
 ${niveauInstructions[niveauUser]}
 
 ════════════════════════════════════════════════════════
-RÈGLE N°2 — LANGUE ET MODE DE SAISIE
+RÈGLE N°2 — LANGUE DE RÉPONSE
 ════════════════════════════════════════════════════════
 
-Tu réponds EXCLUSIVEMENT dans la langue du scénario (${scenario.langue}), avec le bon alphabet.
-Pas un seul mot dans une autre langue dans ta réponse.
+Réponds EXCLUSIVEMENT en ${scenario.langue}, alphabet natif uniquement.
+Aucun mot dans une autre langue dans ta réplique de personnage.
+
+════════════════════════════════════════════════════════
+RÈGLE N°3 — CORRECTION PÉDAGOGIQUE
+════════════════════════════════════════════════════════
+
+ALGORITHME OBLIGATOIRE — exécute ces étapes dans l'ordre avant chaque réponse :
+
+${estLangueNonLatine ? `ÉTAPE 1 — IDENTIFIER LE SCRIPT DU MESSAGE :
+Le message de l'utilisateur est principalement en caractères latins (a-z) ?
+→ OUI : c'est de la ROMANISATION → aller à ÉTAPE 2
+→ NON : c'est de l'écriture native → aller à ÉTAPE 3
+
+ÉTAPE 2 — ROMANISATION DÉTECTÉE :
+La romanisation est un MODE DE SAISIE, pas une faute d'orthographe.
+
+❌ INTERDIT ABSOLU — ces comportements ne doivent JAMAIS apparaître :
+   1. Convertir ou répéter la romanisation de l'utilisateur en alphabet natif :
+      "annyeonghaseyo" → "안녕하세요"  ← JAMAIS
+      "gamsahamnida" → "감사합니다"    ← JAMAIS
+      "arigatou" → "ありがとう"         ← JAMAIS
+      "ni hao" → "你好"                ← JAMAIS
+      "marhaba" → "مرحبا"             ← JAMAIS
+   2. Reprendre le message de l'utilisateur en alphabet natif au début de ta réponse,
+      même sans le présenter comme une correction — ex: commencer par "안녕하세요!" alors que l'utilisateur vient d'écrire "annyeonghaseyo" ← JAMAIS.
+      Réponds directement en tant que ton personnage, sans jamais réécrire ce que l'utilisateur a dit.
+
+✅ SEUL CAS VALIDE : erreur phonétique DANS la romanisation elle-même
+   (mauvaise consonne ou voyelle dans la transcription latine)
 ${regleSaisie}
+Si aucune faute phonétique → STOP → réponds directement en tant que ton personnage.
 
-════════════════════════════════════════════════════════
-RÈGLE N°3 — CORRECTION PÉDAGOGIQUE (OBLIGATOIRE)
-════════════════════════════════════════════════════════
-
-Cette règle est NON NÉGOCIABLE. Elle s'applique à chaque message, pour toutes les langues.
-
-PROCESSUS AVANT CHAQUE RÉPONSE :
-1. Lis le dernier message de l'utilisateur
-2. Identifie le mode de saisie : alphabet natif ou romanisation/translittération latine
-3. Cherche UNIQUEMENT les vraies erreurs linguistiques (voir définition ci-dessous)
-4. Si erreur trouvée → inclure la correction DANS ta réponse, puis continuer naturellement
-
-QU'EST-CE QU'UNE VRAIE ERREUR À CORRIGER :
+ÉTAPE 3 — ÉCRITURE NATIVE DÉTECTÉE :` : `ÉTAPE UNIQUE — VÉRIFICATION :`}
+Cherche uniquement les vraies erreurs :
 - Conjugaison incorrecte
 - Mauvais accord (genre, nombre)
-- Accent manquant ou mal placé
 - Vocabulaire incorrect ou mal utilisé
 - Structure de phrase grammaticalement fausse
-- Pour les langues à romanisation : phonétique incorrecte (mauvaise consonne, mauvaise voyelle)
 
-CE QUI N'EST PAS UNE ERREUR — NE PAS CORRIGER :
-- L'utilisateur écrit en romanisation/translittération au lieu de l'alphabet natif → c'est son mode de saisie, il est ACCEPTÉ
-- Une formulation différente mais grammaticalement correcte
-- Un registre légèrement différent mais compréhensible
+Si aucune erreur → STOP → passe directement à ta réplique.
 ${exemplesCorrection}
 
-FORMAT DE CORRECTION :
-La correction apparaît TOUJOURS EN PREMIER, AVANT ta réplique de personnage.
-Elle est séparée de ta réplique par une ligne vide obligatoire.
+FORMAT DE CORRECTION (uniquement si une vraie erreur est identifiée) :
+Correction TOUJOURS EN PREMIER, suivie d'une ligne vide, puis ta réplique.
 
-Structure exacte à respecter :
-💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte dans la langue du scénario]
+💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte en ${scenario.langue}]
 
 [ligne vide]
-[ta réplique de personnage ici]
+[ta réplique de personnage]
 
-RÈGLE IMPORTANTE — LANGUE DE L'EXPLICATION :
-L'explication après le "—" doit être rédigée dans la langue du scénario (${scenario.langue}), pas en français.
-C'est comme si le personnage corrigeait naturellement l'apprenant dans sa propre langue.
+L'explication est rédigée en ${scenario.langue}, jamais en français.
 
-EXEMPLES DU FORMAT ATTENDU :
+════════════════════════════════════════════════════════
+RÈGLE N°4 — NE JAMAIS RÉPÉTER
+════════════════════════════════════════════════════════
 
-Scénario Anglais :
-💡 Correction : "Good moorning" → "Good morning" — "morning" has only one "o", it's a spelling mistake.
-
-Good morning! I'm Dr. Roberts. How can I help you today?
-
-Scénario Espagnol :
-💡 Correction : "quierro" → "quiero" — "querer" se escribe con una sola "r".
-
-¡Buenos días! ¿En qué le puedo ayudar hoy?
-
-Scénario Coréen :
-💡 Correction : "gamsahamnidda" → "gamsahamnida" — "다"로 끝나야 해요. "ㄷ" 하나면 충분해요.
-
-천만에요! 또 필요한 게 있으면 말씀해 주세요.
+Lis tout l'historique avant de poser une question.
+Si un sujet a déjà été abordé → avance naturellement, ne reviens pas dessus.
 
 ════════════════════════════════════════════════════════
 FORMAT JSON OBLIGATOIRE
@@ -263,30 +255,18 @@ FORMAT JSON OBLIGATOIRE
 Réponds TOUJOURS et UNIQUEMENT avec ce JSON valide. Zéro texte en dehors.
 
 {
-  "reponse": "Ta réplique avec correction intégrée si une vraie erreur existe",
+  "reponse": "Ta réplique (correction en premier si nécessaire, sinon réplique directement)",
   "suggestions": [
-    "Phrase 1 complète dans la langue du scénario",
-    "Phrase 2 complète dans la langue du scénario",
-    "Phrase 3 complète dans la langue du scénario"
+    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}",
+    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}",
+    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}"
   ]
 }
 
-RÈGLES POUR LES SUGGESTIONS :
-- Les suggestions sont des phrases que L'UTILISATEUR (l'apprenant) pourrait dire ensuite
-- Elles NE sont PAS des phrases du personnage que tu joues — jamais
-- 3 phrases COMPLÈTES, pertinentes par rapport à la dernière réplique
-- Niveau ${niveauUser} strict — pas de structures au-delà de ce niveau
-- Dans la langue du scénario (${scenario.langue}) uniquement, en alphabet natif
-- Variées — pas la même structure répétée
-
-EXEMPLE CONCRET — Scénario pharmacie, IA vient de recommander un médicament :
-✅ CORRECT (phrases de l'apprenant/patient) :
-  "이 약은 하루에 몇 번 먹어요?" (Combien de fois par jour je prends ce médicament ?)
-  "어린이도 먹을 수 있어요?" (Les enfants peuvent aussi le prendre ?)
-  "다른 약이랑 같이 먹어도 돼요?" (Je peux le prendre avec d'autres médicaments ?)
-❌ INCORRECT (phrases du pharmacien — JAMAIS ça) :
-  "다른 증상이 있나요?" (Avez-vous d'autres symptômes ?)
-  "알레르기가 있으신가요?" (Avez-vous des allergies ?)`
+RÈGLES SUGGESTIONS :
+- Ce sont les phrases DE L'APPRENANT, pas du personnage
+- 3 phrases complètes, variées, pertinentes par rapport à ta dernière réplique
+- Niveau ${niveauUser} strict — ${scenario.langue} uniquement, alphabet natif`
 
         // 5. Envoyer à Groq avec tout l'historique
         const reponseRaw = await envoyerMessage(
@@ -297,39 +277,80 @@ EXEMPLE CONCRET — Scénario pharmacie, IA vient de recommander un médicament 
 
         // 6. Parser le JSON retourné par Groq
         let reponseIA = ''
-        let suggestions = []
-
         try
         {
-            const clean = reponseRaw
-                .replace(/```json/gi, '')
-                .replace(/```/g, '')
-                .trim()
-
-            let data
-            try
-            {
-                data = JSON.parse(clean)
-            } catch
-            {
-                const match = clean.match(/\{[\s\S]*"reponse"[\s\S]*\}/)
-                if (match) data = JSON.parse(match[0])
-            }
-
-            if (data)
-            {
-                reponseIA = data.reponse || reponseRaw
-                suggestions = Array.isArray(data.suggestions) ? data.suggestions : []
-            } else
-            {
-                reponseIA = reponseRaw
-                suggestions = []
-            }
-
-        } catch (parseErr)
+            const cleanRaw = reponseRaw.replace(/```json|```/g, '').trim()
+            const jsonMatch = cleanRaw.match(/\{[\s\S]*\}/)
+            const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleanRaw)
+            reponseIA = parsed.reponse || reponseRaw
+        } catch
         {
-            console.warn('Parsing JSON échoué, fallback texte brut :', parseErr.message)
             reponseIA = reponseRaw
+        }
+
+        // Appel séparé pour les suggestions
+        // Langues non-latines : le modèle 8B échoue sur les alphabets non-latins → on utilise le 70B
+        let suggestions = []
+        try
+        {
+            const modeleSuggestions = estLangueNonLatine ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant'
+
+            // Inclure les derniers échanges pour que les suggestions soient contextuelles
+            const historiqueRecent = (historique || []).slice(-6)
+            const contextConversation = historiqueRecent
+                .map(m => `${m.role === 'user' ? 'APPRENANT' : 'PERSONNAGE IA'}: ${m.contenu}`)
+                .join('\n')
+
+            const systemSugg =
+`You are a ${scenario.langue} language teaching assistant.
+Your ONLY task: write 3 phrases that THE LEARNER could say next in this conversation practice.
+
+SCENARIO: "${scenario.titre}"
+AI CHARACTER: ${scenario.systemPrompt.split('\n')[0]}
+LEARNER LEVEL: ${niveauUser}
+LANGUAGE: ${scenario.langue} — native script only
+
+WHO IS THE LEARNER (non-professional side):
+- Pharmacy / doctor → learner is the PATIENT
+- Restaurant / café / market → learner is the CUSTOMER
+- Job interview → learner is the CANDIDATE
+- Hotel / transport → learner is the TRAVELLER/CLIENT
+- Street / directions → learner is the PERSON WHO IS LOST
+
+GENERATE 3 PHRASES, one of each type:
+1. A QUESTION — learner asks for information or clarification
+2. A STATEMENT — learner answers or reacts to what the AI just said
+3. A REQUEST — learner asks for something or moves the conversation forward
+
+STRICT RULES:
+- Write directly in ${scenario.langue}, native script, level ${niveauUser}
+- NEVER write a phrase the AI character (professional) would say
+- Each phrase: complete, natural, 3 to 10 words maximum
+- Coherent with the conversation context below
+
+SCRIPT PURITY — ABSOLUTE RULE:${estLangueNonLatine ? `
+Each phrase must contain ONLY the native script of ${scenario.langue}. Zero mixing allowed.
+${scenario.langue === 'Coréen' ? `- Korean: ONLY Hangul characters (가나다...). ZERO Chinese/Japanese kanji. ZERO Latin letters.
+  ❌ WRONG: "물以外에" or "사 bose 요" — mixing scripts
+  ✅ CORRECT: "물 말고 다른 음료도 있나요?" — pure Hangul` : ''}${scenario.langue === 'Japonais' ? `- Japanese: ONLY Hiragana/Katakana/Kanji. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Chinois' ? `- Chinese: ONLY simplified Chinese characters. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Arabe' ? `- Arabic: ONLY Arabic script. ZERO Latin letters mixed in.` : ''}
+If a syllable or word comes out in the wrong script → rewrite the entire phrase in pure native script.` : `
+Each phrase must be written entirely in ${scenario.langue}.`}
+
+Return ONLY a JSON array on one line, no markdown:
+["phrase1", "phrase2", "phrase3"]`
+
+            const triggerSugg =
+`${contextConversation ? `Conversation so far:\n${contextConversation}\n\n` : ''}AI CHARACTER just said: "${reponseIA}"
+
+Generate the 3 learner phrases.`
+
+            const resSugg = await envoyerMessage(systemSugg, [], triggerSugg, 1, modeleSuggestions)
+            const cleanSugg = resSugg.replace(/```json|```/g, '').trim()
+            const arrMatch = cleanSugg.match(/\[[\s\S]*?\]/)
+            const parsed = JSON.parse(arrMatch ? arrMatch[0] : cleanSugg)
+            if (Array.isArray(parsed) && parsed.length > 0) suggestions = parsed.slice(0, 3)
+        } catch
+        {
             suggestions = []
         }
 
@@ -345,8 +366,8 @@ EXEMPLE CONCRET — Scénario pharmacie, IA vient de recommander un médicament 
 
     } catch (err)
     {
-        console.error('Erreur Groq :', err.message)
-        res.status(500).json({ message: "Erreur lors de la communication avec l'IA" })
+        console.error('Erreur Groq DÉTAIL:', err) // ← remplace le console.error existant
+        res.status(500).json({ message: "Erreur lors de la communication avec l'IA", detail: err.message })
     }
 }
 
