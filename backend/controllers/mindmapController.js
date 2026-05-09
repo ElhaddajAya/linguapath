@@ -1,4 +1,3 @@
-// mindmapController.js
 // Transforme les LearningEntries d'un utilisateur en structure d'arbre
 // pour alimenter la MindMap React Flow côté frontend
 //

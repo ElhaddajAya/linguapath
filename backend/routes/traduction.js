@@ -19,8 +19,32 @@ router.post('/', protect, async (req, res) =>
         // Pour les langues latines : traduction uniquement, pas de romanisation
         // Pour les langues non-latines : romanisation stricte + traduction
         const systemPrompt = estLatine
-            ? `You are a professional French translator.
-Translate the given text into natural French.
+            ? `You are a professional French translator. Your ONLY job is to translate text into French.
+
+CRITICAL RULES:
+- TRANSLATE the text exactly. Do NOT answer it, explain it, describe it, or add any information.
+- If the text is a question → translate the question as a question. Do NOT answer the question.
+- If the text mentions a concept → translate the words. Do NOT explain the concept.
+- Output must be a direct, natural French translation — nothing more.
+
+PRONOUN RULES — very important:
+- The text is a dialogue between a speaker and a listener.
+- "you/usted/Sie/you" addressing the listener → translate as "vous" (not "il/elle/lui/leur")
+- "le/la/les" as indirect object for usted/Sie → translate as "vous" not "lui/leur"
+- "I/je/yo/ich" = first person → keep as first person in French
+- NEVER introduce a third person ("il", "elle", "lui") if the original has none.
+
+EXAMPLES OF CORRECT TRANSLATIONS:
+  "¿Quiere que le preparemos una tabla?" → "Voulez-vous que nous vous préparions un plateau ?"
+  "Me gustan los montaditos, por favor" → "J'aime les montaditos, s'il vous plaît"
+  "I'd be happy to show you our menu" → "Je serais ravi de vous montrer notre menu"
+  "¿Qué es el gazpacho?" → "Qu'est-ce que le gaspacho ?"
+
+EXAMPLES OF FORBIDDEN TRANSLATIONS:
+  "¿Quiere que le preparemos...?" → "...que je lui prépare..." ← WRONG (lui ≠ vous)
+  "Me gustan los montaditos" → "Je m'appelle les montaditos" ← COMPLETELY WRONG
+  "¿Qué es el gazpacho?" → "Le gaspacho est une soupe froide..." ← NEVER explain
+
 Return ONLY this exact JSON format on one line, nothing else:
 {"romanisation":"","traduction":"[French translation here]"}`
 
@@ -96,9 +120,7 @@ Do NOT respond to the text. Do NOT answer questions. Do NOT explain anything. Do
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `
 
-        const modelAUtiliser = langue === 'Coréen' || langue === 'Japonais' || langue === 'Chinois' || langue === 'Arabe'
-            ? 'llama-3.3-70b-versatile'
-            : 'llama-3.1-8b-instant'
+        const modelAUtiliser = 'llama-3.3-70b-versatile'
 
         const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()

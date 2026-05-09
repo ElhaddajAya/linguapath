@@ -219,25 +219,38 @@ La romanisation est un MODE DE SAISIE, pas une faute d'orthographe.
 ✅ SEUL CAS VALIDE : erreur phonétique DANS la romanisation elle-même
    (mauvaise consonne ou voyelle dans la transcription latine)
 ${regleSaisie}
-Si aucune faute phonétique → STOP → réponds directement en tant que ton personnage.
+Si aucune faute phonétique → passe directement à ta réplique de personnage.
 
 ÉTAPE 3 — ÉCRITURE NATIVE DÉTECTÉE :` : `ÉTAPE UNIQUE — VÉRIFICATION :`}
-Cherche uniquement les vraies erreurs :
+Cherche les vraies erreurs linguistiques :
+- Orthographe incorrecte (ex: "bieno" au lieu de "bien", "tempo" au lieu de "tiempo")
 - Conjugaison incorrecte
 - Mauvais accord (genre, nombre)
 - Vocabulaire incorrect ou mal utilisé
 - Structure de phrase grammaticalement fausse
 
-Si aucune erreur → STOP → passe directement à ta réplique.
+Si aucune erreur → passe directement à ta réplique de personnage.
 ${exemplesCorrection}
 
-FORMAT DE CORRECTION (uniquement si une vraie erreur est identifiée) :
-Correction TOUJOURS EN PREMIER, suivie d'une ligne vide, puis ta réplique.
+FORMAT DE RÉPONSE QUAND UNE ERREUR EST TROUVÉE — RÈGLE ABSOLUE :
+La correction est une parenthèse pédagogique. Elle vient EN PREMIER, puis tu continues OBLIGATOIREMENT la scène.
+Ta réponse doit TOUJOURS contenir deux parties : la correction ET ta réplique de personnage.
+❌ INTERDIT : répondre avec seulement la correction et rien d'autre.
+❌ INTERDIT : répéter la phrase corrigée de l'utilisateur comme si c'était ta réplique.
 
+Structure exacte :
 💡 Correction : "[ce que l'utilisateur a écrit]" → "[forme correcte]" — [explication courte en ${scenario.langue}]
 
-[ligne vide]
-[ta réplique de personnage]
+[ta réplique de personnage qui continue la conversation normalement]
+
+EXEMPLE CONCRET — scénario restaurant, utilisateur dit "Me parece bieno" :
+✅ CORRECT :
+💡 Correction : "bieno" → "bien" — "bien" no lleva "o" al final.
+
+¡Perfecto! Enseguida le traigo su bebida y el pan con tomate.
+
+❌ INTERDIT :
+"Me parece bien" ← juste la phrase corrigée, sans réplique de personnage
 
 L'explication est rédigée en ${scenario.langue}, jamais en français.
 
@@ -293,22 +306,30 @@ RÈGLES SUGGESTIONS :
         let suggestions = []
         try
         {
-            const modeleSuggestions = estLangueNonLatine ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant'
+            const modeleSuggestions = 'llama-3.3-70b-versatile'
+
+            // Noms de langues en anglais pour éviter que le modèle génère en français
+            const langueEnAnglais = {
+                'Anglais': 'English', 'Espagnol': 'Spanish', 'Français': 'French',
+                'Allemand': 'German', 'Coréen': 'Korean', 'Japonais': 'Japanese',
+                'Chinois': 'Chinese (Mandarin)', 'Arabe': 'Arabic'
+            }
+            const languePrompt = langueEnAnglais[scenario.langue] || scenario.langue
 
             // Inclure les derniers échanges pour que les suggestions soient contextuelles
             const historiqueRecent = (historique || []).slice(-6)
             const contextConversation = historiqueRecent
-                .map(m => `${m.role === 'user' ? 'APPRENANT' : 'PERSONNAGE IA'}: ${m.contenu}`)
+                .map(m => `${m.role === 'user' ? 'LEARNER' : 'AI CHARACTER'}: ${m.contenu}`)
                 .join('\n')
 
             const systemSugg =
-`You are a ${scenario.langue} language teaching assistant.
+`You are a ${languePrompt} language teaching assistant.
 Your ONLY task: write 3 phrases that THE LEARNER could say next in this conversation practice.
 
 SCENARIO: "${scenario.titre}"
 AI CHARACTER: ${scenario.systemPrompt.split('\n')[0]}
 LEARNER LEVEL: ${niveauUser}
-LANGUAGE: ${scenario.langue} — native script only
+TARGET LANGUAGE: ${languePrompt} — write ALL phrases in ${languePrompt}, native script only
 
 WHO IS THE LEARNER (non-professional side):
 - Pharmacy / doctor → learner is the PATIENT
@@ -323,18 +344,19 @@ GENERATE 3 PHRASES, one of each type:
 3. A REQUEST — learner asks for something or moves the conversation forward
 
 STRICT RULES:
-- Write directly in ${scenario.langue}, native script, level ${niveauUser}
+- Write ALL phrases in ${languePrompt} ONLY. Not French. Not any other language. ${languePrompt} only.
+- The learner's messages in the history may be in French (their native language) — IGNORE THIS. Generate in ${languePrompt} regardless.
 - NEVER write a phrase the AI character (professional) would say
 - Each phrase: complete, natural, 3 to 10 words maximum
 - Coherent with the conversation context below
 
 SCRIPT PURITY — ABSOLUTE RULE:${estLangueNonLatine ? `
-Each phrase must contain ONLY the native script of ${scenario.langue}. Zero mixing allowed.
+Each phrase must contain ONLY the native script of ${languePrompt}. Zero mixing allowed.
 ${scenario.langue === 'Coréen' ? `- Korean: ONLY Hangul characters (가나다...). ZERO Chinese/Japanese kanji. ZERO Latin letters.
   ❌ WRONG: "물以外에" or "사 bose 요" — mixing scripts
   ✅ CORRECT: "물 말고 다른 음료도 있나요?" — pure Hangul` : ''}${scenario.langue === 'Japonais' ? `- Japanese: ONLY Hiragana/Katakana/Kanji. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Chinois' ? `- Chinese: ONLY simplified Chinese characters. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Arabe' ? `- Arabic: ONLY Arabic script. ZERO Latin letters mixed in.` : ''}
 If a syllable or word comes out in the wrong script → rewrite the entire phrase in pure native script.` : `
-Each phrase must be written entirely in ${scenario.langue}.`}
+Each phrase must be written entirely in ${languePrompt}. NOT in French, even if the learner wrote in French.`}
 
 Return ONLY a JSON array on one line, no markdown:
 ["phrase1", "phrase2", "phrase3"]`
