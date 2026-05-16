@@ -1,0 +1,454 @@
+// pages/AdminScenarios.jsx
+// Page admin : création, modification et suppression des scénarios.
+// Accessible uniquement via AdminRoute (role === 'admin').
+
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Navbar from "../components/NavBar";
+import api from "../services/api";
+
+const NIVEAUX = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const LANGUES  = ["Anglais", "Espagnol", "Français", "Allemand", "Coréen", "Japonais", "Chinois", "Arabe"];
+const THEMES   = ["Restaurant", "Voyage", "Entretien", "Ville", "Médecin", "Shopping", "Famille", "Travail", "Général"];
+
+const NIVEAU_COLORS = {
+  A1: "bg-slate-100 text-slate-500",
+  A2: "bg-blue-50 text-blue-500",
+  B1: "bg-green-50 text-green-600",
+  B2: "bg-yellow-50 text-yellow-600",
+  C1: "bg-orange-50 text-orange-600",
+  C2: "bg-red-50 text-red-600",
+};
+
+const FORM_VIDE = {
+  title: "", theme: "", description: "",
+  langue: "", minLevel: "A1", maxLevel: "B2", emoji: "💬",
+};
+
+export default function AdminScenarios() {
+  const [scenarios, setScenarios] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [toast, setToast]         = useState(null);
+
+  // ── Modal (création + édition) ─────────────────────────────
+  const [showModal, setShowModal]   = useState(false);
+  const [editTarget, setEditTarget] = useState(null); // null = création, sinon objet scénario
+  const [form, setForm]             = useState(FORM_VIDE);
+  const [saving, setSaving]         = useState(false);
+
+  // ── Suppression ────────────────────────────────────────────
+  const [confirmDelete, setConfirmDelete] = useState(null); // id à supprimer
+  const [deleting, setDeleting]           = useState(false);
+
+  // ── Chargement ─────────────────────────────────────────────
+
+  useEffect(() => { chargerScenarios(); }, []);
+
+  const chargerScenarios = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/admin/scenarios");
+      setScenarios(res.data.scenarios);
+    } catch {
+      showToast("Erreur lors du chargement des scénarios.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Toast ──────────────────────────────────────────────────
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // ── Ouvrir modal ───────────────────────────────────────────
+
+  const ouvrirCreation = () => {
+    setEditTarget(null);
+    setForm(FORM_VIDE);
+    setShowModal(true);
+  };
+
+  const ouvrirEdition = (scenario) => {
+    setEditTarget(scenario);
+    setForm({
+      title:       scenario.title || "",
+      theme:       scenario.theme || "",
+      description: scenario.description || "",
+      langue:      scenario.langue || "",
+      minLevel:    scenario.minLevel || "A1",
+      maxLevel:    scenario.maxLevel || "B2",
+      emoji:       scenario.emoji || "💬",
+    });
+    setShowModal(true);
+  };
+
+  const fermerModal = () => {
+    setShowModal(false);
+    setEditTarget(null);
+    setForm(FORM_VIDE);
+  };
+
+  // ── Sauvegarder (create ou update) ────────────────────────
+
+  const sauvegarder = async () => {
+    if (!form.title || !form.theme || !form.description || !form.langue) {
+      showToast("Remplis tous les champs obligatoires.", "error");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (editTarget) {
+        // Modification
+        const res = await api.put(`/admin/scenarios/${editTarget._id}`, form);
+        setScenarios((prev) =>
+          prev.map((s) => (s._id === editTarget._id ? res.data.scenario : s))
+        );
+        showToast("Scénario modifié avec succès.");
+      } else {
+        // Création
+        const res = await api.post("/admin/scenarios", form);
+        setScenarios((prev) => [res.data.scenario, ...prev]);
+        showToast("Scénario créé avec succès.");
+      }
+      fermerModal();
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Erreur lors de la sauvegarde.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Suppression ────────────────────────────────────────────
+
+  const confirmerSuppression = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/admin/scenarios/${confirmDelete}`);
+      setScenarios((prev) => prev.filter((s) => s._id !== confirmDelete));
+      showToast("Scénario supprimé.");
+    } catch {
+      showToast("Erreur lors de la suppression.", "error");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(null);
+    }
+  };
+
+  // ── Rendu ──────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-warm-50">
+      <Navbar />
+
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed top-20 right-6 z-50 px-5 py-3 rounded-xl shadow-lg
+            text-sm font-medium transition-all
+            ${toast.type === "success"
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+            }`}
+        >
+          {toast.type === "success" ? "✓ " : "✕ "}
+          {toast.msg}
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-6 md:px-10 py-10">
+
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Link to="/admin/users" className="text-xs text-warm-400 hover:text-orange-500 transition-colors">
+                ← Utilisateurs
+              </Link>
+            </div>
+            <h1 className="text-2xl font-semibold text-warm-900">
+              🎭 Gestion des scénarios
+            </h1>
+            <p className="text-warm-500 text-sm mt-1">
+              {scenarios.length} scénario{scenarios.length !== 1 ? "s" : ""} disponible{scenarios.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          <button
+            onClick={ouvrirCreation}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+              text-sm font-semibold text-white hover:opacity-90
+              transition-opacity shadow-soft"
+            style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+          >
+            + Nouveau scénario
+          </button>
+        </div>
+
+        {/* ── Liste scénarios ── */}
+        {loading ? (
+          <div className="text-center py-20 text-warm-400">Chargement...</div>
+        ) : scenarios.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center">
+            <p className="text-4xl mb-4">🎭</p>
+            <p className="text-warm-600 font-medium mb-2">Aucun scénario pour l'instant</p>
+            <button
+              onClick={ouvrirCreation}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity mt-2"
+              style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+            >
+              Créer le premier scénario
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {scenarios.map((sc) => (
+              <div
+                key={sc._id}
+                className="bg-white rounded-2xl border border-warm-200 shadow-soft
+                  p-5 flex flex-col gap-3 hover:border-orange-200 transition-colors"
+              >
+                {/* Emoji + titre */}
+                <div className="flex items-start gap-3">
+                  <span className="text-3xl">{sc.emoji || "💬"}</span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-warm-900 text-base leading-tight">
+                      {sc.title}
+                    </p>
+                    <p className="text-xs text-warm-400 mt-0.5">{sc.theme}</p>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-warm-500 leading-relaxed line-clamp-2">
+                  {sc.description}
+                </p>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 border border-orange-100 font-medium">
+                    🌍 {sc.langue}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.minLevel]}`}>
+                    {sc.minLevel}
+                  </span>
+                  <span className="text-xs text-warm-400">→</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.maxLevel]}`}>
+                    {sc.maxLevel}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2 border-t border-warm-100">
+                  <button
+                    onClick={() => ouvrirEdition(sc)}
+                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-warm-200
+                      text-warm-600 hover:border-orange-300 hover:text-orange-600 transition-colors font-medium"
+                  >
+                    ✏️ Modifier
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(sc._id)}
+                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-warm-200
+                      text-warm-400 hover:border-red-200 hover:text-red-500 transition-colors font-medium"
+                  >
+                    🗑️ Supprimer
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Modal Création / Édition ── */}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm
+            flex items-center justify-center z-50 px-4"
+          onClick={fermerModal}
+        >
+          <div
+            className="bg-white rounded-2xl border border-warm-200
+              shadow-lg w-full max-w-lg p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header modal */}
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-warm-900 text-lg">
+                {editTarget ? "✏️ Modifier le scénario" : "✨ Nouveau scénario"}
+              </h2>
+              <button onClick={fermerModal} className="text-warm-400 hover:text-warm-700 text-xl leading-none">
+                ✕
+              </button>
+            </div>
+
+            {/* Emoji + Titre (côte à côte) */}
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 w-20">
+                <label className="text-xs font-medium text-warm-600">Emoji</label>
+                <input
+                  type="text"
+                  value={form.emoji}
+                  onChange={(e) => setForm((f) => ({ ...f, emoji: e.target.value }))}
+                  maxLength={2}
+                  className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm text-center
+                    bg-warm-50 focus:outline-none focus:border-orange-300"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-xs font-medium text-warm-600">Titre *</label>
+                <input
+                  type="text"
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  placeholder="Ex: Au restaurant"
+                  className="px-4 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-900
+                    bg-warm-50 focus:outline-none focus:border-orange-300 placeholder:text-warm-300"
+                />
+              </div>
+            </div>
+
+            {/* Langue + Thème */}
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-xs font-medium text-warm-600">Langue *</label>
+                <select
+                  value={form.langue}
+                  onChange={(e) => setForm((f) => ({ ...f, langue: e.target.value }))}
+                  className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-700
+                    bg-warm-50 focus:outline-none focus:border-orange-300"
+                >
+                  <option value="">Choisir</option>
+                  {LANGUES.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-xs font-medium text-warm-600">Thème *</label>
+                <select
+                  value={form.theme}
+                  onChange={(e) => setForm((f) => ({ ...f, theme: e.target.value }))}
+                  className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-700
+                    bg-warm-50 focus:outline-none focus:border-orange-300"
+                >
+                  <option value="">Choisir</option>
+                  {THEMES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Niveaux min / max */}
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-xs font-medium text-warm-600">Niveau min *</label>
+                <select
+                  value={form.minLevel}
+                  onChange={(e) => setForm((f) => ({ ...f, minLevel: e.target.value }))}
+                  className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-700
+                    bg-warm-50 focus:outline-none focus:border-orange-300"
+                >
+                  {NIVEAUX.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-xs font-medium text-warm-600">Niveau max *</label>
+                <select
+                  value={form.maxLevel}
+                  onChange={(e) => setForm((f) => ({ ...f, maxLevel: e.target.value }))}
+                  className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-700
+                    bg-warm-50 focus:outline-none focus:border-orange-300"
+                >
+                  {NIVEAUX.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-warm-600">Description *</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="Décris brièvement le scénario et son contexte..."
+                rows={3}
+                className="px-4 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-900
+                  bg-warm-50 focus:outline-none focus:border-orange-300 placeholder:text-warm-300
+                  resize-none"
+              />
+            </div>
+
+            {/* Boutons */}
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={fermerModal}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm border border-warm-200
+                  text-warm-600 hover:border-warm-300 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={sauvegarder}
+                disabled={saving}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white
+                  disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+              >
+                {saving ? "Sauvegarde..." : editTarget ? "Modifier" : "Créer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal confirmation suppression ── */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm
+            flex items-center justify-center z-50 px-4"
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-warm-200
+              shadow-lg w-full max-w-sm p-6 flex flex-col gap-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <p className="text-4xl mb-3">🗑️</p>
+              <h3 className="font-semibold text-warm-900 text-lg mb-2">
+                Supprimer ce scénario ?
+              </h3>
+              <p className="text-sm text-warm-500">
+                Cette action est irréversible. Les conversations existantes liées à ce scénario ne seront pas supprimées.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm border border-warm-200
+                  text-warm-600 hover:border-warm-300 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmerSuppression}
+                disabled={deleting}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  text-white bg-red-500 hover:bg-red-600 transition-colors
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

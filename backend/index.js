@@ -20,6 +20,9 @@ const { protect } = require('./middleware/authMiddleware')
 const app = express()
 connectDB()
 
+const adminRoutes = require('./routes/adminRoutes')
+
+
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
@@ -34,7 +37,8 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/traduction', traductionRoutes)
 app.use('/api/conversations', conversationRoutes)
 app.use('/api/learning-log', learningLogRoutes)
-app.use('/api/mindmap', mindmapRoutes)                   // ← LIN-38 ajouté
+app.use('/api/mindmap', mindmapRoutes)                
+app.use('/api/admin', adminRoutes)
 
 app.get('/', (req, res) =>
 {
