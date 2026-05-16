@@ -131,9 +131,9 @@ export default function Chat() {
   const [originalMessageCount, setOriginalMessageCount] = useState(0);
 
   // Suggestions de l'IA pour le prochain message
-  // Chaque carte suggestion — avec texte original + romanisation au survol
   // On stocke { texte, roman, trad } pour chaque suggestion
   const [suggestionsData, setSuggestionsData] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // État du micro — 'idle' | 'listening' | 'error'
   const [microState, setMicroState] = useState("idle");
@@ -306,7 +306,8 @@ export default function Chat() {
     if (!messageUser || loading) return;
 
     setMessage("");
-    enrichirSuggestions([]); // On vide les suggestions pendant que l'IA réfléchit
+    setSuggestionsData([]);
+    setLoadingSuggestions(false);
 
     const nouvelHistorique = [
       ...historique,
@@ -344,19 +345,20 @@ export default function Chat() {
     }
   };
 
-  // Fonction pour enrichir les suggestions avec romanisation + traduction
+  // Enrichit les suggestions avec romanisation + traduction
+  // Affiche un skeleton pendant le chargement — jamais de données partielles
   const enrichirSuggestions = async (suggestions, langueOverride = null) => {
-    if (!suggestions?.length) return;
+    if (!suggestions?.length) {
+      setSuggestionsData([]);
+      setLoadingSuggestions(false);
+      return;
+    }
 
-    // On utilise langueOverride si fourni, sinon on prend scenario?.langue
     const langue = langueOverride || scenario?.langue;
 
-    // Affichage immédiat sans traduction
-    setSuggestionsData(
-      suggestions.map((texte) => ({ texte, roman: "", trad: "" })),
-    );
+    setLoadingSuggestions(true);
+    setSuggestionsData([]);
 
-    // Enrichissement séquentiel
     const enriched = [];
     for (const texte of suggestions) {
       try {
@@ -372,7 +374,9 @@ export default function Chat() {
         enriched.push({ texte, roman: "", trad: "" });
       }
     }
+
     setSuggestionsData(enriched);
+    setLoadingSuggestions(false);
   };
 
   // Fonction de fin de session — sauvegarde puis redirige
@@ -533,8 +537,25 @@ export default function Chat() {
       {/* ── Zone de saisie + suggestions ── */}
       <div className='bg-white border-t border-warm-200 px-6 py-4 shrink-0'>
         <div className='max-w-3xl mx-auto flex flex-col gap-3'>
-          {/* Cartes de suggestions — visibles si pas en cours de chargement */}
-          {suggestionsData.length > 0 && !loading && (
+          {/* Skeleton suggestions — pendant le chargement des traductions */}
+          {loadingSuggestions && !loading && (
+            <div className='flex gap-2 flex-wrap'>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className='flex flex-col gap-1.5 px-3 py-2 rounded-xl
+                    bg-warm-100 border border-warm-200 min-w-30 max-w-45'
+                >
+                  <div className='h-3 bg-warm-200 rounded animate-pulse w-full' />
+                  <div className='h-2 bg-warm-200 rounded animate-pulse w-3/4' />
+                  <div className='h-2 bg-orange-100 rounded animate-pulse w-1/2' />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Cartes de suggestions — affichées uniquement quand tout est prêt */}
+          {suggestionsData.length > 0 && !loading && !loadingSuggestions && (
             <div className='flex gap-2 flex-wrap'>
               {suggestionsData.map((s, i) => (
                 <button
@@ -543,20 +564,14 @@ export default function Chat() {
                   className='flex flex-col items-start px-3 py-2 rounded-xl text-xs
                    bg-warm-100 border border-warm-200 text-left
                    hover:bg-orange-50 hover:border-orange-300
-                   transition-all max-w-[180px]'
+                   transition-all max-w-45'
                 >
-                  {/* Texte original */}
                   <span className='font-medium text-warm-800'>{s.texte}</span>
-
-                  {/* Romanisation — seulement pour les langues non-latines */}
-                  {s.roman &&
-                    LANGUES_NON_LATINES.includes(scenario?.langue) && (
-                      <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
-                        {s.roman}
-                      </span>
-                    )}
-
-                  {/* Traduction française — toujours affichée si disponible */}
+                  {s.roman && LANGUES_NON_LATINES.includes(scenario?.langue) && (
+                    <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
+                      {s.roman}
+                    </span>
+                  )}
                   {s.trad && (
                     <span className='text-orange-500 italic text-[10px]'>
                       {s.trad}

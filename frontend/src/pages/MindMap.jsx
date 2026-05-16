@@ -1,7 +1,8 @@
 // MindMap.jsx
-// Vue root  → Racine + Langues + Thèmes + Phrases (tout affiché)
-// Clic Langue → seule cette langue + ses thèmes + ses phrases restent
-// Clic Thème  → seul ce thème + ses phrases reste
+// Arbre 4 niveaux : Root → Langue → Thème → Pattern → Phrase
+// Clic Langue   → seule cette langue + ses enfants visibles
+// Clic Thème    → seul ce thème + ses patterns + phrases visible
+// Clic Pattern  → seul ce pattern + ses phrases visible
 // Bouton Retour → remonte d'un niveau
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -115,6 +116,31 @@ function ThemeNode({ data }) {
   );
 }
 
+// ── Nœud Pattern ─────────────────────────────────────────────────────────
+function PatternNode({ data }) {
+  return (
+    <div onClick={data.onClick} style={{
+      background: data.dimmed ? "#F5F5F4" : data.selected ? "#EDE9FE" : "#F5F3FF",
+      border: `1.5px solid ${data.dimmed ? "#E7E5E4" : data.selected ? "#7C3AED" : "#C4B5FD"}`,
+      borderRadius: 10, padding: "6px 12px",
+      display: "flex", alignItems: "center", gap: 6,
+      boxShadow: data.selected ? "0 4px 16px rgba(124,58,237,0.3)" : "0 2px 8px rgba(124,58,237,0.1)",
+      opacity: data.dimmed ? 0.25 : 1,
+      cursor: data.onClick ? "pointer" : "default",
+      transform: data.selected ? "scale(1.06)" : "scale(1)",
+      transition: "all 0.25s ease", position: "relative",
+      maxWidth: 160,
+    }}>
+      <Handles />
+      <span style={{ fontSize: 13 }}>🔷</span>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: 11, color: data.dimmed ? "#A8A29E" : "#7C3AED", lineHeight: 1.3 }}>{data.label}</div>
+        <div style={{ fontSize: 9, color: data.dimmed ? "#C4B5AC" : "#6D28D9" }}>{data.count} phrase{data.count > 1 ? "s" : ""}</div>
+      </div>
+    </div>
+  );
+}
+
 // ── Nœud Phrase ──────────────────────────────────────────────────────────
 function PhraseNode({ data, selected: rfSelected }) {
   const niveauColor = NIVEAU_COLOR[data.niveau] || "#9CA3AF";
@@ -141,18 +167,24 @@ function PhraseNode({ data, selected: rfSelected }) {
   );
 }
 
-const nodeTypes = { rootNode: RootNode, langueNode: LangueNode, themeNode: ThemeNode, phraseNode: PhraseNode };
+const nodeTypes = {
+  rootNode: RootNode,
+  langueNode: LangueNode,
+  themeNode: ThemeNode,
+  patternNode: PatternNode,
+  phraseNode: PhraseNode,
+};
 
 // ════════════════════════════════════════════════════════════════════════════
-// Construction de l'arbre COMPLET (vue root = tout affiché)
-// Retourne nodes + edges avec positions calculées
+// Construction de l'arbre COMPLET (4 niveaux : langue → thème → pattern → phrase)
 // ════════════════════════════════════════════════════════════════════════════
 function construireArbreComplet(entries) {
   const nodes = [], edges = [];
   const CX = 0, CY = 0;
-  const RAYON_LANGUE = 320;
-  const RAYON_THEME  = 220;
-  const RAYON_PHRASE = 170;
+  const RAYON_LANGUE  = 400;
+  const RAYON_THEME   = 240;
+  const RAYON_PATTERN = 190;
+  const RAYON_PHRASE  = 150;
 
   nodes.push({
     id: "root", type: "rootNode",
@@ -160,19 +192,21 @@ function construireArbreComplet(entries) {
     position: { x: CX, y: CY },
   });
 
-  // Grouper : langue → theme → phrases
+  // Grouper : langue → theme → pattern → phrases
   const arbre = {};
   for (const e of entries) {
     if (!arbre[e.langue]) arbre[e.langue] = {};
-    if (!arbre[e.langue][e.theme]) arbre[e.langue][e.theme] = [];
-    arbre[e.langue][e.theme].push(e);
+    if (!arbre[e.langue][e.theme]) arbre[e.langue][e.theme] = {};
+    const pat = e.pattern || "Général";
+    if (!arbre[e.langue][e.theme][pat]) arbre[e.langue][e.theme][pat] = [];
+    arbre[e.langue][e.theme][pat].push(e);
   }
 
   const langues = Object.keys(arbre);
   langues.forEach((lang, iLang) => {
     const posLang  = enCercle(CX, CY, RAYON_LANGUE, langues.length, iLang);
     const langueId = `langue-${lang}`;
-    const totalLang = Object.values(arbre[lang]).flat().length;
+    const totalLang = Object.values(arbre[lang]).flatMap(t => Object.values(t)).flat().length;
     const angleLang = langues.length === 1
       ? -Math.PI / 2
       : -Math.PI / 2 + (2 * Math.PI * iLang) / langues.length;
@@ -189,20 +223,20 @@ function construireArbreComplet(entries) {
 
     const themes = Object.keys(arbre[lang]);
     themes.forEach((theme, iTheme) => {
-      const spreadAngle = themes.length === 1
+      const spreadTheme = themes.length === 1
         ? 0
         : (Math.PI * 0.85) * (iTheme / (themes.length - 1) - 0.5);
-      const angleTheme = angleLang + spreadAngle;
+      const angleTheme = angleLang + spreadTheme;
       const posTheme = {
         x: posLang.x + Math.cos(angleTheme) * RAYON_THEME,
         y: posLang.y + Math.sin(angleTheme) * RAYON_THEME,
       };
-      const themeId = `theme-${lang}-${theme}`;
-      const phrases = arbre[lang][theme];
+      const themeId    = `theme-${lang}-${theme}`;
+      const totalTheme = Object.values(arbre[lang][theme]).flat().length;
 
       nodes.push({
         id: themeId, type: "themeNode",
-        data: { label: theme, count: phrases.length, langueKey: lang, themeKey: theme },
+        data: { label: theme, count: totalTheme, langueKey: lang, themeKey: theme },
         position: posTheme,
       });
       edges.push({
@@ -210,29 +244,53 @@ function construireArbreComplet(entries) {
         type: "smoothstep", style: { stroke: "#EA580C", strokeWidth: 1.5 },
       });
 
-      phrases.forEach((entry, iPhrase) => {
-        const spreadPhrase = phrases.length === 1
+      const patterns = Object.keys(arbre[lang][theme]);
+      patterns.forEach((pat, iPat) => {
+        const spreadPattern = patterns.length === 1
           ? 0
-          : (Math.PI * 0.7) * (iPhrase / (phrases.length - 1) - 0.5);
-        const anglePhrase = angleTheme + spreadPhrase;
-        const posPhrase = {
-          x: posTheme.x + Math.cos(anglePhrase) * RAYON_PHRASE,
-          y: posTheme.y + Math.sin(anglePhrase) * RAYON_PHRASE,
+          : (Math.PI * 0.7) * (iPat / (patterns.length - 1) - 0.5);
+        const anglePattern = angleTheme + spreadPattern;
+        const posPattern = {
+          x: posTheme.x + Math.cos(anglePattern) * RAYON_PATTERN,
+          y: posTheme.y + Math.sin(anglePattern) * RAYON_PATTERN,
         };
-        const phraseId = `phrase-${entry._id}`;
+        const patternId = `pattern-${lang}-${theme}-${pat}`;
+        const phrases   = arbre[lang][theme][pat];
 
         nodes.push({
-          id: phraseId, type: "phraseNode",
-          data: {
-            label: entry.phrase, traduction: entry.traduction,
-            niveau: entry.niveau, source: entry.source,
-            entryId: entry._id, langueKey: lang, themeKey: theme,
-          },
-          position: posPhrase,
+          id: patternId, type: "patternNode",
+          data: { label: pat, count: phrases.length, langueKey: lang, themeKey: theme, patternKey: pat },
+          position: posPattern,
         });
         edges.push({
-          id: `e-${themeId}-${phraseId}`, source: themeId, target: phraseId,
-          type: "smoothstep", style: { stroke: "#D1D5DB", strokeWidth: 1 },
+          id: `e-${themeId}-${patternId}`, source: themeId, target: patternId,
+          type: "smoothstep", style: { stroke: "#7C3AED", strokeWidth: 1.5 },
+        });
+
+        phrases.forEach((entry, iPhrase) => {
+          const spreadPhrase = phrases.length === 1
+            ? 0
+            : (Math.PI * 0.55) * (iPhrase / (phrases.length - 1) - 0.5);
+          const anglePhrase = anglePattern + spreadPhrase;
+          const posPhrase = {
+            x: posPattern.x + Math.cos(anglePhrase) * RAYON_PHRASE,
+            y: posPattern.y + Math.sin(anglePhrase) * RAYON_PHRASE,
+          };
+          const phraseId = `phrase-${entry._id}`;
+
+          nodes.push({
+            id: phraseId, type: "phraseNode",
+            data: {
+              label: entry.phrase, traduction: entry.traduction,
+              niveau: entry.niveau, source: entry.source,
+              entryId: entry._id, langueKey: lang, themeKey: theme, patternKey: pat,
+            },
+            position: posPhrase,
+          });
+          edges.push({
+            id: `e-${patternId}-${phraseId}`, source: patternId, target: phraseId,
+            type: "smoothstep", style: { stroke: "#D1D5DB", strokeWidth: 1 },
+          });
         });
       });
     });
@@ -242,34 +300,50 @@ function construireArbreComplet(entries) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Applique le filtre visuel (dimmed) selon la sélection courante
+// Applique le filtre visuel (dimmed/selected) selon la vue courante
 // ════════════════════════════════════════════════════════════════════════════
-function appliquerFiltre(nodesBase, edgesBase, vue, langueSelectionnee, themeSelectionne, onSelectLangue, onSelectTheme) {
+function appliquerFiltre(nodesBase, edgesBase, vue, langSel, themeSel, patSel, onSelectLangue, onSelectTheme, onSelectPattern) {
   const nodesFiltrés = nodesBase.map(node => {
     const d = node.data;
-    let dimmed    = false;
-    let selected  = false;
-    let onClick   = undefined;
+    let dimmed   = false;
+    let selected = false;
+    let onClick  = undefined;
 
     if (node.type === "langueNode") {
       if (vue === "root") {
         onClick = () => onSelectLangue(d.langueKey);
       } else if (vue === "langue") {
-        selected = d.langueKey === langueSelectionnee;
+        selected = d.langueKey === langSel;
         dimmed   = !selected;
-      } else if (vue === "theme") {
-        dimmed = d.langueKey !== langueSelectionnee;
+      } else {
+        dimmed = d.langueKey !== langSel;
       }
     }
 
     if (node.type === "themeNode") {
       if (vue === "root") {
-        // visible mais pas cliquable directement depuis root
+        // visible, pas cliquable
       } else if (vue === "langue") {
-        dimmed  = d.langueKey !== langueSelectionnee;
+        dimmed  = d.langueKey !== langSel;
         onClick = !dimmed ? () => onSelectTheme(d.langueKey, d.themeKey) : undefined;
       } else if (vue === "theme") {
-        selected = d.langueKey === langueSelectionnee && d.themeKey === themeSelectionne;
+        selected = d.langueKey === langSel && d.themeKey === themeSel;
+        dimmed   = !selected;
+      } else if (vue === "pattern") {
+        dimmed = !(d.langueKey === langSel && d.themeKey === themeSel);
+      }
+    }
+
+    if (node.type === "patternNode") {
+      if (vue === "root") {
+        // visible, pas cliquable
+      } else if (vue === "langue") {
+        dimmed = d.langueKey !== langSel;
+      } else if (vue === "theme") {
+        dimmed  = !(d.langueKey === langSel && d.themeKey === themeSel);
+        onClick = !dimmed ? () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey) : undefined;
+      } else if (vue === "pattern") {
+        selected = d.langueKey === langSel && d.themeKey === themeSel && d.patternKey === patSel;
         dimmed   = !selected;
       }
     }
@@ -278,16 +352,17 @@ function appliquerFiltre(nodesBase, edgesBase, vue, langueSelectionnee, themeSel
       if (vue === "root") {
         // tout visible
       } else if (vue === "langue") {
-        dimmed = d.langueKey !== langueSelectionnee;
+        dimmed = d.langueKey !== langSel;
       } else if (vue === "theme") {
-        dimmed = !(d.langueKey === langueSelectionnee && d.themeKey === themeSelectionne);
+        dimmed = !(d.langueKey === langSel && d.themeKey === themeSel);
+      } else if (vue === "pattern") {
+        dimmed = !(d.langueKey === langSel && d.themeKey === themeSel && d.patternKey === patSel);
       }
     }
 
     return { ...node, data: { ...d, dimmed, selected, onClick } };
   });
 
-  // Griser les edges qui mènent vers des nœuds dimmed
   const dimmedIds = new Set(nodesFiltrés.filter(n => n.data.dimmed).map(n => n.id));
   const edgesFiltrés = edgesBase.map(edge => ({
     ...edge,
@@ -307,43 +382,48 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
   const navigate    = useNavigate();
   const { fitView } = useReactFlow();
 
-  const [vue,    setVue]    = useState("root");
-  const [langue, setLangue] = useState(null);
-  const [theme,  setTheme]  = useState(null);
+  const [vue,     setVue]     = useState("root");
+  const [langue,  setLangue]  = useState(null);
+  const [theme,   setTheme]   = useState(null);
+  const [pattern, setPattern] = useState(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Arbre complet calculé une seule fois
   const { nodes: nodesBase, edges: edgesBase } = useMemo(
     () => allEntries.length ? construireArbreComplet(allEntries) : { nodes: [], edges: [] },
     [allEntries]
   );
 
   const onSelectLangue = useCallback((lang) => {
-    setLangue(lang); setTheme(null); setVue("langue"); setSelectedPhrase(null);
+    setLangue(lang); setTheme(null); setPattern(null); setVue("langue"); setSelectedPhrase(null);
   }, [setSelectedPhrase]);
 
   const onSelectTheme = useCallback((lang, th) => {
-    setLangue(lang); setTheme(th); setVue("theme"); setSelectedPhrase(null);
+    setLangue(lang); setTheme(th); setPattern(null); setVue("theme"); setSelectedPhrase(null);
+  }, [setSelectedPhrase]);
+
+  const onSelectPattern = useCallback((lang, th, pat) => {
+    setLangue(lang); setTheme(th); setPattern(pat); setVue("pattern"); setSelectedPhrase(null);
   }, [setSelectedPhrase]);
 
   const retour = useCallback(() => {
     setSelectedPhrase(null);
-    if (vue === "theme")  { setTheme(null); setVue("langue"); }
-    else                  { setLangue(null); setTheme(null); setVue("root"); }
+    if (vue === "pattern")     { setPattern(null); setVue("theme"); }
+    else if (vue === "theme")  { setTheme(null); setPattern(null); setVue("langue"); }
+    else                       { setLangue(null); setTheme(null); setPattern(null); setVue("root"); }
   }, [vue, setSelectedPhrase]);
 
-  // Re-calculer le filtre visuel à chaque changement de vue
   useEffect(() => {
     if (!nodesBase.length) { setNodes([]); setEdges([]); return; }
     const { nodes: n, edges: e } = appliquerFiltre(
-      nodesBase, edgesBase, vue, langue, theme, onSelectLangue, onSelectTheme
+      nodesBase, edgesBase, vue, langue, theme, pattern,
+      onSelectLangue, onSelectTheme, onSelectPattern
     );
     setNodes(n);
     setEdges(e);
     setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 60);
-  }, [nodesBase, edgesBase, vue, langue, theme]);
+  }, [nodesBase, edgesBase, vue, langue, theme, pattern]);
 
   const onNodeClick = useCallback((_, node) => {
     if (node.type === "phraseNode" && !node.data.dimmed) {
@@ -351,13 +431,21 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
     }
   }, [setSelectedPhrase]);
 
-  // Fil d'Ariane
   const filAriane = useMemo(() => {
     const p = [{ label: "🌍 LinguaPath" }];
-    if (langue) p.push({ label: `${LANGUE_EMOJI[langue] || "🌍"} ${langue}` });
-    if (theme)  p.push({ label: `📂 ${theme}` });
+    if (langue)  p.push({ label: `${LANGUE_EMOJI[langue] || "🌍"} ${langue}` });
+    if (theme)   p.push({ label: `📂 ${theme}` });
+    if (pattern) p.push({ label: `🔷 ${pattern}` });
     return p;
-  }, [langue, theme]);
+  }, [langue, theme, pattern]);
+
+  const hintTexte = vue === "root"
+    ? "— clique sur une langue pour zoomer"
+    : vue === "langue"
+    ? "— clique sur un thème pour voir les patterns"
+    : vue === "theme"
+    ? "— clique sur un pattern pour voir les phrases"
+    : null;
 
   return (
     <div className="flex flex-1 px-6 md:px-10 pb-8 gap-4">
@@ -391,7 +479,7 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
             onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick} nodeTypes={nodeTypes}
             fitView fitViewOptions={{ padding: 0.15 }}
-            minZoom={0.15} maxZoom={2}
+            minZoom={0.1} maxZoom={2}
             nodesConnectable={false}
             defaultEdgeOptions={{ type: "smoothstep" }}
           >
@@ -399,7 +487,12 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
             <Controls showInteractive={false}
               style={{ borderRadius: 12, border: "1px solid #E7E5E4", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
             <MiniMap
-              nodeColor={n => n.type === "rootNode" ? "#F59E0B" : n.type === "langueNode" ? "#FCD34D" : n.type === "themeNode" ? "#FED7AA" : "#E7E5E4"}
+              nodeColor={n =>
+                n.type === "rootNode"    ? "#F59E0B" :
+                n.type === "langueNode"  ? "#FCD34D" :
+                n.type === "themeNode"   ? "#FED7AA" :
+                n.type === "patternNode" ? "#C4B5FD" : "#E7E5E4"
+              }
               style={{ borderRadius: 12, border: "1px solid #E7E5E4", overflow: "hidden" }}
               maskColor="rgba(245,245,244,0.7)" />
 
@@ -420,8 +513,8 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
                     </span>
                   </span>
                 ))}
-                {vue === "root" && (
-                  <span className="text-warm-400 text-xs ml-1">— clique sur une langue pour zoomer</span>
+                {hintTexte && (
+                  <span className="text-warm-400 text-xs ml-1">{hintTexte}</span>
                 )}
               </div>
             </Panel>
@@ -434,6 +527,7 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
                   { color: "#F59E0B", label: "Racine" },
                   { color: "#FCD34D", label: "Langue  (cliquable)" },
                   { color: "#FED7AA", label: "Thème  (cliquable)" },
+                  { color: "#C4B5FD", label: "Pattern  (cliquable)" },
                   { color: "#E7E5E4", label: "Phrase" },
                 ].map(({ color, label }) => (
                   <div key={label} className="flex items-center gap-2">
@@ -442,7 +536,7 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
                   </div>
                 ))}
                 <div className="border-t border-warm-100 pt-2 text-warm-400">
-                  Clique sur une phrase pour voir les détails
+                  Clique sur une phrase pour les détails
                 </div>
               </div>
             </Panel>
@@ -464,6 +558,12 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
             <p className="text-xs font-medium text-warm-500 mb-1">Traduction</p>
             <p className="text-warm-700 italic text-sm">{selectedPhrase.traduction}</p>
           </div>
+          {selectedPhrase.patternKey && selectedPhrase.patternKey !== "Général" && (
+            <div>
+              <p className="text-xs font-medium text-warm-500 mb-1">Pattern</p>
+              <p className="text-sm font-mono text-purple-600 bg-purple-50 px-2 py-1 rounded-lg inline-block">{selectedPhrase.patternKey}</p>
+            </div>
+          )}
           <div className="flex gap-2 flex-wrap">
             <span style={{ background: (NIVEAU_COLOR[selectedPhrase.niveau] || "#9CA3AF") + "20", color: NIVEAU_COLOR[selectedPhrase.niveau] || "#9CA3AF" }}
               className="text-xs px-2.5 py-1 rounded-full font-semibold">
@@ -522,7 +622,7 @@ export default function MindMap() {
         <div>
           <h1 className="text-2xl font-semibold text-warm-900">🗺️ MindMap</h1>
           <p className="text-warm-500 text-sm mt-1">
-            {allEntries.length} phrase{allEntries.length !== 1 ? "s" : ""} visualisée{allEntries.length !== 1 ? "s" : ""} sous forme d'arbre
+            {allEntries.length} phrase{allEntries.length !== 1 ? "s" : ""} organisée{allEntries.length !== 1 ? "s" : ""} par langue → thème → pattern
           </p>
         </div>
         <div className="flex items-center gap-3">

@@ -88,9 +88,13 @@ Exemples pour l'Espagnol :
 
     'Anglais': `
 Exemples pour l'Anglais :
-  ❌ "I have went" → ✅ "I have gone" — "gone" is the past participle of "go", not "went".
-  ❌ "She don't know" → ✅ "She doesn't know" — with "she", we use "doesn't".
-  ❌ "I am agree" → ✅ "I agree" — "agree" is a verb here, not an adjective.`,
+  ❌ "moorning" → ✅ "morning" — spelling: only one 'o'.
+  ❌ "stomache" → ✅ "stomach" — spelling: no 'e' at the end.
+  ❌ "yestarday" → ✅ "yesterday" — spelling error.
+  ❌ "beleive" → ✅ "believe" — spelling: 'ie' not 'ei'.
+  ❌ "I have went" → ✅ "I have gone" — "gone" is the past participle of "go".
+  ❌ "She don't know" → ✅ "She doesn't know" — with "she", use "doesn't".
+  ❌ "I am agree" → ✅ "I agree" — "agree" is a verb, not an adjective.`,
 
     'Français': `
 Exemples pour le Français :
@@ -222,14 +226,20 @@ ${regleSaisie}
 Si aucune faute phonétique → passe directement à ta réplique de personnage.
 
 ÉTAPE 3 — ÉCRITURE NATIVE DÉTECTÉE :` : `ÉTAPE UNIQUE — VÉRIFICATION :`}
-Cherche les vraies erreurs linguistiques :
-- Orthographe incorrecte (ex: "bieno" au lieu de "bien", "tempo" au lieu de "tiempo")
+Cherche TOUTES les erreurs dans le message de l'utilisateur — orthographe ET grammaire :
+- Orthographe incorrecte — UN SEUL MOT MAL ÉCRIT = correction obligatoire :
+  English: "moorning"→"morning", "stomache"→"stomach", "beleive"→"believe", "yestarday"→"yesterday"
+  Spanish: "bieno"→"bien", "cómo estas"→"cómo estás"
+  (Toute faute d'orthographe, quelle que soit la langue, doit être corrigée)
 - Conjugaison incorrecte
 - Mauvais accord (genre, nombre)
 - Vocabulaire incorrect ou mal utilisé
 - Structure de phrase grammaticalement fausse
 
 Si aucune erreur → passe directement à ta réplique de personnage.
+❌ INTERDIT ABSOLU : mentionner l'absence d'erreur. Ne JAMAIS écrire :
+   "No hay error", "la frase está bien", "your sentence is correct", "pas d'erreur", "c'est correct", "bien dit"...
+   ou toute phrase équivalente. Si tout est correct → silence total sur la correction, réponds juste normalement.
 ${exemplesCorrection}
 
 FORMAT DE RÉPONSE QUAND UNE ERREUR EST TROUVÉE — RÈGLE ABSOLUE :
@@ -323,48 +333,55 @@ RÈGLES SUGGESTIONS :
                 .join('\n')
 
             const systemSugg =
-`You are a ${languePrompt} language teaching assistant.
-Your ONLY task: write 3 phrases that THE LEARNER could say next in this conversation practice.
+`You are helping a ${languePrompt} language learner practice a realistic conversation scenario.
+
+Your task: write 3 natural, authentic replies the LEARNER could say next.
+These MUST sound like something a real person would actually say in this exact moment — not textbook exercises.
 
 SCENARIO: "${scenario.titre}"
-AI CHARACTER: ${scenario.systemPrompt.split('\n')[0]}
 LEARNER LEVEL: ${niveauUser}
-TARGET LANGUAGE: ${languePrompt} — write ALL phrases in ${languePrompt}, native script only
+TARGET LANGUAGE: ${languePrompt} — ALL phrases in ${languePrompt}, native script only
 
-WHO IS THE LEARNER (non-professional side):
-- Pharmacy / doctor → learner is the PATIENT
-- Restaurant / café / market → learner is the CUSTOMER
-- Job interview → learner is the CANDIDATE
-- Hotel / transport → learner is the TRAVELLER/CLIENT
-- Street / directions → learner is the PERSON WHO IS LOST
+WHAT MAKES A GOOD SUGGESTION:
+✅ Directly responds to the AI's last message (read it carefully)
+✅ Contains concrete, specific details (symptoms, times, quantities, preferences, feelings...)
+✅ Sounds like natural spoken language a real person would use
+✅ Length: 8 to 20 words — long enough to be realistic, not just a fragment
+❌ NOT a generic phrase that could apply to any conversation
+❌ NOT a single vague question ("What are my options?", "Can you help me?")
+❌ NOT a phrase the professional character (doctor, waiter, etc.) would say
+❌ NOT a one-word or two-word answer
 
-GENERATE 3 PHRASES, one of each type:
-1. A QUESTION — learner asks for information or clarification
-2. A STATEMENT — learner answers or reacts to what the AI just said
-3. A REQUEST — learner asks for something or moves the conversation forward
+EXAMPLES showing the difference (doctor scenario, AI asked about symptoms):
+✅ "I've had a sharp pain in my lower abdomen since last night, and I also feel nauseous."
+✅ "The pain gets worse after eating. I think I might have eaten something bad yesterday evening."
+✅ "I also have a slight fever of 37.8 degrees. How serious do you think it is?"
+❌ "I have a stomach ache." — too vague, no detail
+❌ "What are my options?" — generic, ignores what the AI asked
+❌ "Can I get a diagnosis?" — patients don't say this
 
-STRICT RULES:
-- Write ALL phrases in ${languePrompt} ONLY. Not French. Not any other language. ${languePrompt} only.
-- The learner's messages in the history may be in French (their native language) — IGNORE THIS. Generate in ${languePrompt} regardless.
-- NEVER write a phrase the AI character (professional) would say
-- Each phrase: complete, natural, 3 to 10 words maximum
-- Coherent with the conversation context below
+GENERATE exactly 3 phrases with this variety:
+1. A DETAILED ANSWER to what the AI just asked, with specific information
+2. AN ELABORATION that adds a new relevant detail + a natural follow-up question
+3. AN ALTERNATIVE ANGLE — different concern or aspect the learner could raise
 
-SCRIPT PURITY — ABSOLUTE RULE:${estLangueNonLatine ? `
-Each phrase must contain ONLY the native script of ${languePrompt}. Zero mixing allowed.
-${scenario.langue === 'Coréen' ? `- Korean: ONLY Hangul characters (가나다...). ZERO Chinese/Japanese kanji. ZERO Latin letters.
-  ❌ WRONG: "물以外에" or "사 bose 요" — mixing scripts
-  ✅ CORRECT: "물 말고 다른 음료도 있나요?" — pure Hangul` : ''}${scenario.langue === 'Japonais' ? `- Japanese: ONLY Hiragana/Katakana/Kanji. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Chinois' ? `- Chinese: ONLY simplified Chinese characters. ZERO Latin letters mixed in.` : ''}${scenario.langue === 'Arabe' ? `- Arabic: ONLY Arabic script. ZERO Latin letters mixed in.` : ''}
-If a syllable or word comes out in the wrong script → rewrite the entire phrase in pure native script.` : `
-Each phrase must be written entirely in ${languePrompt}. NOT in French, even if the learner wrote in French.`}
+STRICT LANGUAGE RULES:
+- ALL phrases in ${languePrompt} ONLY — never French, never another language
+- Learner's history messages may be in French — IGNORE THIS, generate in ${languePrompt}
+- Level ${niveauUser}: ${['A1', 'A2'].includes(niveauUser) ? 'simple but complete sentences, common vocabulary' : ['B1', 'B2'].includes(niveauUser) ? 'varied vocabulary, natural expressions' : 'rich, idiomatic, natural language'}
+${estLangueNonLatine ? `
+SCRIPT PURITY — ABSOLUTE:
+Use ONLY the native script of ${languePrompt}. Zero Latin letters mixed in.
+${scenario.langue === 'Coréen' ? `Korean: ONLY Hangul (가나다...). ❌ "사 bose 요" ✅ "저도 비슷한 증상이 있어요"` : ''}${scenario.langue === 'Japonais' ? `Japanese: ONLY Hiragana/Katakana/Kanji.` : ''}${scenario.langue === 'Chinois' ? `Chinese: ONLY simplified Chinese characters.` : ''}${scenario.langue === 'Arabe' ? `Arabic: ONLY Arabic script.` : ''}
+Wrong script in any syllable → rewrite the entire phrase in pure native script.` : ''}
 
-Return ONLY a JSON array on one line, no markdown:
+Return ONLY a JSON array, no markdown, no explanation:
 ["phrase1", "phrase2", "phrase3"]`
 
             const triggerSugg =
-`${contextConversation ? `Conversation so far:\n${contextConversation}\n\n` : ''}AI CHARACTER just said: "${reponseIA}"
+`${contextConversation ? `CONVERSATION HISTORY:\n${contextConversation}\n\n` : ''}AI CHARACTER's last message: "${reponseIA}"
 
-Generate the 3 learner phrases.`
+Write 3 realistic learner replies that directly respond to this last message.`
 
             const resSugg = await envoyerMessage(systemSugg, [], triggerSugg, 1, modeleSuggestions)
             const cleanSugg = resSugg.replace(/```json|```/g, '').trim()

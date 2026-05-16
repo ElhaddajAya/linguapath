@@ -22,6 +22,48 @@ const LANGUE_EMOJI = {
 
 const NIVEAUX = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
+// ── Carte d'une phrase ───────────────────────────────────────
+
+function PhraseCard({ entry, onDelete }) {
+  return (
+    <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-5 flex flex-col gap-3 hover:border-orange-200 transition-colors'>
+      {/* Badge langue + thème */}
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <span className='text-lg'>{LANGUE_EMOJI[entry.langue] || "🌍"}</span>
+          <span className='text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 border border-orange-100 font-medium'>
+            {entry.theme}
+          </span>
+        </div>
+        <span className='text-xs px-2 py-0.5 rounded-full bg-warm-100 text-warm-500 font-medium'>
+          {entry.niveau}
+        </span>
+      </div>
+
+      {/* Phrase dans la langue cible */}
+      <p className='text-warm-900 font-semibold text-base leading-relaxed'>
+        {entry.phrase}
+      </p>
+
+      {/* Traduction française */}
+      <p className='text-warm-500 text-sm italic'>{entry.traduction}</p>
+
+      {/* Footer : source + supprimer */}
+      <div className='flex items-center justify-between pt-2 border-t border-warm-100'>
+        <span className={`text-xs px-2 py-0.5 rounded-full ${entry.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}>
+          {entry.source === "auto" ? "🤖 Auto" : "✍️ Manuel"}
+        </span>
+        <button
+          onClick={() => onDelete(entry._id)}
+          className='text-xs text-warm-400 hover:text-red-500 transition-colors'
+        >
+          🗑️ Supprimer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Composant principal ──────────────────────────────────────
 
 export default function LearningLog() {
@@ -147,7 +189,6 @@ export default function LearningLog() {
             </p>
           </div>
 
-          {/* Bouton Ajouter */}
           <button
             onClick={() => setShowModal(true)}
             className='flex items-center gap-2 px-5 py-2.5 rounded-xl
@@ -256,109 +297,32 @@ export default function LearningLog() {
         {loading ? (
           <div className='text-center py-20 text-warm-400'>Chargement...</div>
         ) : entries.length === 0 ? (
-          // Aucune phrase
-          <div
-            className='bg-white rounded-2xl border border-warm-200
-                                    shadow-soft p-12 text-center'
-          >
+          <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center'>
             <p className='text-4xl mb-4'>📝</p>
             <p className='text-warm-600 font-medium mb-2'>
-              {filtresActifs
-                ? "Aucune phrase pour ces filtres"
-                : "Aucune phrase apprise pour l'instant"}
+              {filtresActifs ? "Aucune phrase pour ces filtres" : "Aucune phrase apprise pour l'instant"}
             </p>
             <p className='text-warm-400 text-sm mb-6'>
-              {filtresActifs
-                ? "Essaie de modifier tes filtres"
-                : "Lance une conversation pour commencer à apprendre !"}
+              {filtresActifs ? "Essaie de modifier tes filtres" : "Lance une conversation pour commencer à apprendre !"}
             </p>
             {!filtresActifs && (
               <button
                 onClick={() => navigate("/scenarios")}
-                className='px-6 py-2.5 rounded-xl text-sm font-semibold
-                                           text-white hover:opacity-90 transition-opacity'
-                style={{
-                  background: "linear-gradient(135deg, #F59E0B, #EA580C)",
-                }}
+                className='px-6 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity'
+                style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
               >
                 Choisir un scénario
               </button>
             )}
           </div>
         ) : (
-          // Grille des phrases
           <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
             {entries.map((entry) => (
-              <div
+              <PhraseCard
                 key={entry._id}
-                className='bg-white rounded-2xl border border-warm-200
-                                           shadow-soft p-5 flex flex-col gap-3
-                                           hover:border-orange-200 transition-colors'
-              >
-                {/* Badge langue + thème */}
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-lg'>
-                      {LANGUE_EMOJI[entry.langue] || "🌍"}
-                    </span>
-                    <span
-                      className='text-xs px-2.5 py-1 rounded-full
-                                                         bg-orange-50 text-orange-600
-                                                         border border-orange-100 font-medium'
-                    >
-                      {entry.theme}
-                    </span>
-                  </div>
-
-                  {/* Badge niveau */}
-                  <span
-                    className='text-xs px-2 py-0.5 rounded-full
-                                                     bg-warm-100 text-warm-500 font-medium'
-                  >
-                    {entry.niveau}
-                  </span>
-                </div>
-
-                {/* Phrase dans la langue cible */}
-                <p
-                  className='text-warm-900 font-semibold text-base
-                                              leading-relaxed'
-                >
-                  {entry.phrase}
-                </p>
-
-                {/* Traduction française */}
-                <p className='text-warm-500 text-sm italic'>
-                  {entry.traduction}
-                </p>
-
-                {/* Footer : source + bouton supprimer */}
-                <div
-                  className='flex items-center justify-between
-                                                pt-2 border-t border-warm-100'
-                >
-                  {/* Source : auto ou manuel */}
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full
-                                                      ${
-                                                        entry.source === "auto"
-                                                          ? "bg-blue-50 text-blue-500"
-                                                          : "bg-green-50 text-green-600"
-                                                      }`}
-                  >
-                    {entry.source === "auto" ? "🤖 Auto" : "✍️ Manuel"}
-                  </span>
-
-                  {/* Bouton supprimer */}
-                  <button
-                    onClick={() => supprimerPhrase(entry._id)}
-                    className='text-xs text-warm-400 hover:text-red-500
-                                                   transition-colors'
-                  >
-                    🗑️ Supprimer
-                  </button>
-                </div>
-              </div>
+                entry={entry}
+                onDelete={supprimerPhrase}
+              />
             ))}
           </div>
         )}
