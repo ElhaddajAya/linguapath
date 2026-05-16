@@ -50,47 +50,81 @@ WHAT TO EXTRACT :
 - Maximum 5 phrases total
 - Each phrase: 3 to 12 words
 
-TRANSLATION RULE — mandatory :
+═══════════════════════════════════════════════
+PHRASE COMPLETENESS — the first mandatory check
+═══════════════════════════════════════════════
+Every extracted phrase MUST be a complete, standalone utterance
+that a real person would say exactly as-is in a real conversation.
+
+✅ COMPLETE — extract these :
+  "I'm sorry to hear that."
+  "I'm looking forward to meeting you."
+  "I have had a headache since this morning."
+  "Can I get a referral?"
+  "What brings you in today?"
+
+❌ INCOMPLETE — NEVER extract these :
+  "I'm looking forward to"     ← missing object, nobody says this alone
+  "I have been"                ← unfinished sentence
+  "Can I get"                  ← unfinished sentence
+  "I'm sorry to"               ← this is a pattern, not a phrase
+  "Let me"                     ← unfinished
+
+SIMPLE TEST before extracting : would a native speaker say this phrase
+exactly as-is and be fully understood? If NO → skip it.
+
+═══════════════════════════════════════════════
+TRANSLATION RULE — mandatory
+═══════════════════════════════════════════════
 "traduction" MUST always be in FRENCH, regardless of the conversation language.
-  ✅ "traduction": "Je suis désolé d'entendre ça" ← French
+  ✅ "traduction": "Je suis désolé d'entendre ça"
   ❌ "traduction": "I'm sorry to hear that" ← FORBIDDEN
 
 ═══════════════════════════════════════════════
-PATTERN ASSIGNMENT — the most important rule
+PATTERN ASSIGNMENT
 ═══════════════════════════════════════════════
-${patternsConnus.length > 0 ? `EXISTING PATTERNS ALREADY IN THE DATABASE — reuse them first:
+${patternsConnus.length > 0 ? `EXISTING PATTERNS IN DATABASE — reuse them first :
 ${patternsConnus.map(p => `  "${p}"`).join('\n')}
 
-For each extracted phrase:
+For each extracted phrase :
 1. Check if it fits one of the EXISTING patterns above
 2. If YES → copy the EXACT pattern string (character for character)
 3. If NO → create a NEW pattern following the rules below
 
-Reusing existing patterns is the priority. This is how multiple phrases group together.
-` : ''} 
+Reusing existing patterns is the priority.
+` : ''}
 
-PATTERN RULES (for creating new patterns only) :
-A pattern is the grammatical FRAME of the phrase — broad, short, reusable.
+PATTERN vs PHRASE — never confuse them :
+The pattern is DERIVED FROM the phrase, never the reverse.
+  Phrase : "I'm sorry to hear that."       → Pattern : "I'm sorry to..."
+  Phrase : "I'm looking forward to meeting you." → Pattern : "I'm looking forward to..."
+  Phrase : "Can I get a referral?"         → Pattern : "Can I...?"
+  Phrase : "I have had a headache."        → Pattern : "I have..."
+
+If a phrase IS the pattern (incomplete, ends with "to", "a", "the", preposition...) → SKIP THE PHRASE ENTIRELY.
+
+PATTERN RULES :
 - Use "..." where the variable part goes
-- A pattern can be a PREFIX, a SUFFIX, or both:
-  PREFIX : "I have...", "Could you...?", "I'd like...", "Sorry to..."
-  SUFFIX : "...고 싶어요", "...주세요", "...てください", "...はありますか?"
-  BOTH   : "I've been ...ing", "¿Puedo ...?"
 - Make it broad enough that 3+ different phrases could match it
-- If a phrase has no clear reusable structure → assign "Général"
+- Keep it short : 2 to 4 words maximum including "..."
 
 GOOD patterns :
-  English  : "I have...", "I've been...", "Can I...?", "Could you...?", "I'd like...", "Sorry to...", "I think..."
+  English  : "I have...", "I've been...", "Can I...?", "Could you...?",
+             "I'd like...", "Sorry to...", "I think...", "I'm looking forward to..."
   Spanish  : "Tengo...", "¿Puede...?", "Me duele...", "Lo siento...", "Quisiera..."
-  French   : "J'ai...", "Pouvez-vous...?", "Je voudrais...", "Je suis désolé..."
   Korean   : "...고 싶어요", "...주세요", "...있나요?", "...것 같아요"
-  Japanese : "...をください", "...はありますか?", "...たいです", "...てください"
+  Japanese : "...をください", "...はありますか?", "...たいです"
   Arabic   : "...أريد", "هل يمكنني...?", "...من فضلك"
 
-BAD patterns (too specific — never use these) :
-  ❌ "I have been having" → use "I have..." or "I've been..."
-  ❌ "Sorry to hear that" → use "Sorry to..."
-  ❌ "Can I get a referral" → use "Can I...?"
+PHRASES WITHOUT A PATTERN :
+Some phrases are complete and useful but have no reusable grammatical frame.
+For these, assign the pattern "Général".
+Examples : "I see.", "That makes sense.", "No problem at all.", "Let me think."
+
+BAD patterns — never create these :
+  ❌ "I have been having"     → too specific, use "I have..." or "I've been..."
+  ❌ "Sorry to hear that"     → too specific, use "Sorry to..."
+  ❌ "Can I get a referral"   → too specific, use "Can I...?"
 
 Return ONLY a valid JSON array, no markdown :
 [{"phrase":"...","traduction":"[FRENCH]","pattern":"..."}]`
