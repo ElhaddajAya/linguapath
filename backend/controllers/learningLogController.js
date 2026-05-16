@@ -67,7 +67,9 @@ For each extracted phrase:
 3. If NO → create a NEW pattern following the rules below
 
 Reusing existing patterns is the priority. This is how multiple phrases group together.
-` : ''}PATTERN RULES (for creating new patterns only) :
+` : ''} 
+
+PATTERN RULES (for creating new patterns only) :
 A pattern is the grammatical FRAME of the phrase — broad, short, reusable.
 - Use "..." where the variable part goes
 - A pattern can be a PREFIX, a SUFFIX, or both:
