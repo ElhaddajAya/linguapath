@@ -333,7 +333,7 @@ RÈGLES SUGGESTIONS :
                 .join('\n')
 
             const systemSugg =
-`You are helping a ${languePrompt} language learner practice a realistic conversation scenario.
+                `You are helping a ${languePrompt} language learner practice a realistic conversation scenario.
 
 Your task: write 3 natural, authentic replies the LEARNER could say next.
 These MUST sound like something a real person would actually say in this exact moment — not textbook exercises.
@@ -344,26 +344,24 @@ TARGET LANGUAGE: ${languePrompt} — ALL phrases in ${languePrompt}, native scri
 
 WHAT MAKES A GOOD SUGGESTION:
 ✅ Directly responds to the AI's last message (read it carefully)
-✅ Contains concrete, specific details (symptoms, times, quantities, preferences, feelings...)
 ✅ Sounds like natural spoken language a real person would use
-✅ Length: 8 to 20 words — long enough to be realistic, not just a fragment
+✅ Length: 5 to 8 words — short, punchy, natural
+❌ NOT a long or complex sentence — keep it brief
 ❌ NOT a generic phrase that could apply to any conversation
-❌ NOT a single vague question ("What are my options?", "Can you help me?")
 ❌ NOT a phrase the professional character (doctor, waiter, etc.) would say
-❌ NOT a one-word or two-word answer
 
 EXAMPLES showing the difference (doctor scenario, AI asked about symptoms):
-✅ "I've had a sharp pain in my lower abdomen since last night, and I also feel nauseous."
-✅ "The pain gets worse after eating. I think I might have eaten something bad yesterday evening."
-✅ "I also have a slight fever of 37.8 degrees. How serious do you think it is?"
-❌ "I have a stomach ache." — too vague, no detail
-❌ "What are my options?" — generic, ignores what the AI asked
+✅ "I've had a stomachache since yesterday."
+✅ "I feel nauseous and a bit dizzy."
+✅ "It's actually for my mother, not me."
+❌ "I've been experiencing persistent fatigue and headaches for the past few weeks." — too long
+❌ "What are my options?" — too vague
 ❌ "Can I get a diagnosis?" — patients don't say this
 
 GENERATE exactly 3 phrases with this variety:
-1. A DETAILED ANSWER to what the AI just asked, with specific information
-2. AN ELABORATION that adds a new relevant detail + a natural follow-up question
-3. AN ALTERNATIVE ANGLE — different concern or aspect the learner could raise
+1. A SHORT ANSWER to what the AI just asked, with one specific detail
+2. A BRIEF ELABORATION adding one new relevant piece of information
+3. AN ALTERNATIVE ANGLE — a different concern the learner could raise, concisely
 
 STRICT LANGUAGE RULES:
 - ALL phrases in ${languePrompt} ONLY — never French, never another language
@@ -379,7 +377,7 @@ Return ONLY a JSON array, no markdown, no explanation:
 ["phrase1", "phrase2", "phrase3"]`
 
             const triggerSugg =
-`${contextConversation ? `CONVERSATION HISTORY:\n${contextConversation}\n\n` : ''}AI CHARACTER's last message: "${reponseIA}"
+                `${contextConversation ? `CONVERSATION HISTORY:\n${contextConversation}\n\n` : ''}AI CHARACTER's last message: "${reponseIA}"
 
 Write 3 realistic learner replies that directly respond to this last message.`
 
