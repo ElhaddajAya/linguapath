@@ -23,6 +23,7 @@ const NIVEAU_COLORS = {
 const FORM_VIDE = {
   title: "", theme: "", description: "",
   langue: "", minLevel: "A1", maxLevel: "B2", emoji: "💬",
+  systemPrompt: "",
 };
 
 export default function AdminScenarios() {
@@ -73,14 +74,16 @@ export default function AdminScenarios() {
 
   const ouvrirEdition = (scenario) => {
     setEditTarget(scenario);
+    // Le modèle DB utilise titre/niveauMin/niveauMax — on mappe vers les noms du form
     setForm({
-      title:       scenario.title || "",
-      theme:       scenario.theme || "",
-      description: scenario.description || "",
-      langue:      scenario.langue || "",
-      minLevel:    scenario.minLevel || "A1",
-      maxLevel:    scenario.maxLevel || "B2",
-      emoji:       scenario.emoji || "💬",
+      title:        scenario.titre || "",
+      theme:        scenario.theme || "",
+      description:  scenario.description || "",
+      langue:       scenario.langue || "",
+      minLevel:     scenario.niveauMin || "A1",
+      maxLevel:     scenario.niveauMax || "B2",
+      emoji:        scenario.emoji || "💬",
+      systemPrompt: scenario.systemPrompt || "",
     });
     setShowModal(true);
   };
@@ -94,7 +97,7 @@ export default function AdminScenarios() {
   // ── Sauvegarder (create ou update) ────────────────────────
 
   const sauvegarder = async () => {
-    if (!form.title || !form.theme || !form.description || !form.langue) {
+    if (!form.title || !form.theme || !form.description || !form.langue || !form.systemPrompt) {
       showToast("Remplis tous les champs obligatoires.", "error");
       return;
     }
@@ -215,12 +218,12 @@ export default function AdminScenarios() {
                 className="bg-white rounded-2xl border border-warm-200 shadow-soft
                   p-5 flex flex-col gap-3 hover:border-orange-200 transition-colors"
               >
-                {/* Emoji + titre */}
+                {/* Emoji + titre (le modèle DB utilise sc.titre) */}
                 <div className="flex items-start gap-3">
                   <span className="text-3xl">{sc.emoji || "💬"}</span>
                   <div className="min-w-0">
                     <p className="font-semibold text-warm-900 text-base leading-tight">
-                      {sc.title}
+                      {sc.titre}
                     </p>
                     <p className="text-xs text-warm-400 mt-0.5">{sc.theme}</p>
                   </div>
@@ -231,17 +234,17 @@ export default function AdminScenarios() {
                   {sc.description}
                 </p>
 
-                {/* Badges */}
+                {/* Badges (le modèle DB utilise sc.niveauMin / sc.niveauMax) */}
                 <div className="flex flex-wrap gap-2">
                   <span className="text-xs px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 border border-orange-100 font-medium">
                     🌍 {sc.langue}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.minLevel]}`}>
-                    {sc.minLevel}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.niveauMin]}`}>
+                    {sc.niveauMin}
                   </span>
                   <span className="text-xs text-warm-400">→</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.maxLevel]}`}>
-                    {sc.maxLevel}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NIVEAU_COLORS[sc.niveauMax]}`}>
+                    {sc.niveauMax}
                   </span>
                 </div>
 
@@ -382,6 +385,25 @@ export default function AdminScenarios() {
                   bg-warm-50 focus:outline-none focus:border-orange-300 placeholder:text-warm-300
                   resize-none"
               />
+            </div>
+
+            {/* System Prompt */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-warm-600">
+                Rôle de l'IA (System Prompt) *
+              </label>
+              <textarea
+                value={form.systemPrompt}
+                onChange={(e) => setForm((f) => ({ ...f, systemPrompt: e.target.value }))}
+                placeholder="Ex: Tu es Carlos, serveur dans un restaurant à Madrid. Tu parles uniquement espagnol..."
+                rows={4}
+                className="px-4 py-2.5 rounded-xl border border-warm-200 text-sm text-warm-900
+                  bg-warm-50 focus:outline-none focus:border-orange-300 placeholder:text-warm-300
+                  resize-none"
+              />
+              <p className="text-xs text-warm-400">
+                Décrit le personnage que jouera l'IA pendant la conversation.
+              </p>
             </div>
 
             {/* Boutons */}

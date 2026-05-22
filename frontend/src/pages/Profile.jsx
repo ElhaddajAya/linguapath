@@ -65,7 +65,7 @@ export default function Profile() {
                   className='w-full py-2.5 rounded-xl text-sm font-medium
                              text-warm-400 bg-warm-100 cursor-not-allowed'
                 >
-                  Modifier le profil (bientôt)
+                  Changer le mot de passe (bientôt)
                 </button>
                 <button
                   onClick={() => navigate("/")}
@@ -79,59 +79,82 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Colonne droite — langues (2/3) */}
+          {/* Colonne droite — contenu selon le rôle */}
           <div className='lg:col-span-2'>
             <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-6'>
-              <p
-                className='text-xs font-semibold text-warm-400 uppercase
-                            tracking-widest mb-5'
-              >
-                Langues en apprentissage
-              </p>
 
-              {user.langues?.length > 0 ? (
-                <div className='flex flex-col gap-3'>
-                  {user.langues.map((l) => (
-                    <div
-                      key={l.langue}
-                      className='flex items-center justify-between px-5 py-4
-                                 rounded-xl border border-warm-200 bg-warm-50
-                                 hover:border-orange-200 transition-colors'
+              {user.role === 'admin' ? (
+                /* Panneau admin — pas de section langues */
+                <div className='text-center py-12'>
+                  <p className='text-5xl mb-4'>⚙️</p>
+                  <p className='font-semibold text-warm-900 mb-2'>Espace administrateur</p>
+                  <p className='text-warm-500 text-sm mb-6'>
+                    Gérez les utilisateurs et les scénarios depuis le panneau admin.
+                  </p>
+                  <div className='flex flex-col sm:flex-row gap-3 justify-center'>
+                    <button
+                      onClick={() => navigate("/admin/users")}
+                      className='px-6 py-2.5 rounded-xl text-sm font-semibold
+                                 text-white hover:opacity-90 transition-opacity'
+                      style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
                     >
-                      <div className='flex items-center gap-3'>
-                        {/* Indicateur coloré */}
-                        <div className='w-2 h-2 rounded-full bg-orange-500' />
-                        <span className='font-medium text-warm-900'>
-                          {l.langue}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-xs font-semibold px-3 py-1.5
-                                       rounded-full ${niveauStyle[l.niveau]}`}
-                      >
-                        {l.niveau}
-                      </span>
-                    </div>
-                  ))}
+                      Gérer les utilisateurs
+                    </button>
+                    <button
+                      onClick={() => navigate("/admin/scenarios")}
+                      className='px-6 py-2.5 rounded-xl text-sm font-semibold
+                                 text-warm-700 border border-warm-200 hover:bg-warm-50
+                                 transition-colors'
+                    >
+                      Gérer les scénarios
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className='text-center py-12'>
-                  <p className='text-5xl mb-4'>🌍</p>
-                  <p className='text-warm-500 text-sm mb-5'>
-                    Aucune langue en apprentissage pour l'instant.
+                /* Panneau utilisateur — langues en apprentissage */
+                <>
+                  <p className='text-xs font-semibold text-warm-400 uppercase tracking-widest mb-5'>
+                    Langues en apprentissage
                   </p>
-                  <button
-                    onClick={() => navigate("/")}
-                    className='px-6 py-2.5 rounded-xl text-sm font-semibold
-                               text-white hover:opacity-90 transition-opacity'
-                    style={{
-                      background: "linear-gradient(135deg, #F59E0B, #EA580C)",
-                    }}
-                  >
-                    Choisir une langue
-                  </button>
-                </div>
+
+                  {user.langues?.length > 0 ? (
+                    <div className='flex flex-col gap-3'>
+                      {user.langues.map((l) => (
+                        <div
+                          key={l.langue}
+                          className='flex items-center justify-between px-5 py-4
+                                     rounded-xl border border-warm-200 bg-warm-50
+                                     hover:border-orange-200 transition-colors'
+                        >
+                          <div className='flex items-center gap-3'>
+                            <div className='w-2 h-2 rounded-full bg-orange-500' />
+                            <span className='font-medium text-warm-900'>{l.langue}</span>
+                          </div>
+                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${niveauStyle[l.niveau]}`}>
+                            {l.niveau}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className='text-center py-12'>
+                      <p className='text-5xl mb-4'>🌍</p>
+                      <p className='text-warm-500 text-sm mb-5'>
+                        Aucune langue en apprentissage pour l'instant.
+                      </p>
+                      <button
+                        onClick={() => navigate("/")}
+                        className='px-6 py-2.5 rounded-xl text-sm font-semibold
+                                   text-white hover:opacity-90 transition-opacity'
+                        style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                      >
+                        Choisir une langue
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
+
             </div>
           </div>
         </div>

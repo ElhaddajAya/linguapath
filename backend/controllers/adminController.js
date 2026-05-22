@@ -75,23 +75,25 @@ const getAllScenariosAdmin = async (req, res) => {
 /**
  * POST /api/admin/scenarios
  * Crée un nouveau scénario
- * Body: { title, theme, description, langue, minLevel, maxLevel, emoji }
+ * Body: { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt }
+ * Note: le frontend envoie title/minLevel/maxLevel — on mappe vers les noms du modèle (titre/niveauMin/niveauMax)
  */
 const createScenario = async (req, res) => {
   try {
-    const { title, theme, description, langue, minLevel, maxLevel, emoji } = req.body
+    const { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt } = req.body
 
-    if (!title || !theme || !description || !langue || !minLevel || !maxLevel) {
+    if (!title || !theme || !description || !langue || !minLevel || !maxLevel || !systemPrompt) {
       return res.status(400).json({ message: 'Tous les champs obligatoires doivent être remplis.' })
     }
 
     const scenario = await Scenario.create({
-      title,
+      titre: title,
       theme,
       description,
       langue,
-      minLevel,
-      maxLevel,
+      niveauMin: minLevel,
+      niveauMax: maxLevel,
+      systemPrompt,
       emoji: emoji || '💬',
     })
 
@@ -105,12 +107,21 @@ const createScenario = async (req, res) => {
 /**
  * PUT /api/admin/scenarios/:id
  * Modifie un scénario existant
+ * Même mapping titre/niveauMin/niveauMax que pour la création
  */
 const updateScenario = async (req, res) => {
   try {
+    const { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt } = req.body
+
+    const update = { theme, description, langue, emoji }
+    if (title) update.titre = title
+    if (minLevel) update.niveauMin = minLevel
+    if (maxLevel) update.niveauMax = maxLevel
+    if (systemPrompt !== undefined) update.systemPrompt = systemPrompt
+
     const scenario = await Scenario.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: update },
       { new: true, runValidators: true }
     )
 
