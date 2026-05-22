@@ -5,7 +5,7 @@
 //   Root (LinguaPath)
 //     └── Langue (ex: Espagnol 🇪🇸)
 //           └── Thème (ex: Restaurant)
-//                 └── Sous-thème / Pattern (ex: Politesse)
+//                 └── Pattern (ex: Politesse)
 //                       └── Phrase (ex: ¿Cuánto cuesta?)
 //
 // Comportement interactif (géré via le paramètre "vue") :
@@ -17,8 +17,11 @@
 const LearningEntry = require('../models/LearningEntry')
 
 // ── Utilitaire : positionner N nœuds en cercle autour d'un centre ──
+// Formule : on divise 360° en N parts égales, chaque nœud prend sa part (index/total)
+// angleBase = -PI/2 pour commencer en haut (12h) plutôt qu'à droite (3h)
 const positionnerEnCercle = (centre, rayon, total, index, angleBase = -Math.PI / 2) =>
 {
+    // Si un seul nœud, on le place directement en haut sans calcul de répartition
     const angle = total === 1
         ? angleBase
         : angleBase + (2 * Math.PI * index) / total
@@ -29,13 +32,16 @@ const positionnerEnCercle = (centre, rayon, total, index, angleBase = -Math.PI /
 }
 
 // ── Utilitaire : positionner N nœuds en éventail autour d'un axe ──
+// Utilisé pour les phrases : on étale les nœuds sur un arc de 135° (PI*0.75)
+// centré sur un axe donné, au lieu d'un cercle complet
 const positionnerEnEventail = (centre, rayon, total, index, angleAxe) =>
 {
     if (total === 1) return {
         x: centre.x + Math.cos(angleAxe) * rayon,
         y: centre.y + Math.sin(angleAxe) * rayon,
     }
-    const spread = Math.PI * 0.75
+    const spread = Math.PI * 0.75  // éventail de 135°
+    // index/(total-1) va de 0 à 1 → on soustrait 0.5 pour centrer l'éventail sur l'axe
     const angle = angleAxe + spread * (index / (total - 1) - 0.5)
     return {
         x: centre.x + Math.cos(angle) * rayon,
@@ -59,12 +65,14 @@ const getMindMapData = async (req, res) =>
         const { vue = 'root', langue, theme, pattern, niveau } = req.query
 
         // ── Filtre de base ──
+        // On construit dynamiquement le filtre MongoDB selon les paramètres reçus
         const filtre = { userId: req.user._id }
         if (niveau) filtre.niveau = niveau
-        if (langue)  filtre.langue = langue
-        if (theme)   filtre.theme  = theme
+        if (langue) filtre.langue = langue
+        if (theme) filtre.theme = theme
         if (pattern) filtre.pattern = pattern
 
+        // Récupération initiale pour compter les entrées correspondantes
         const entries = await LearningEntry.find(filtre).sort({ createdAt: -1 })
 
         if (entries.length === 0)
@@ -72,19 +80,21 @@ const getMindMapData = async (req, res) =>
             return res.json({ nodes: [], edges: [], totalEntries: 0, vue })
         }
 
+        // nodes = liste des cercles/bulles affichés par React Flow
+        // edges = liste des lignes qui relient les nœuds entre eux
         const nodes = []
         const edges = []
-        const CENTRE = { x: 0, y: 0 }
+        const CENTRE = { x: 0, y: 0 }  // point central de l'écran
 
         // ════════════════════════════════════════════════════════════
         // VUE ROOT — affiche toutes les langues autour de la racine
         // ════════════════════════════════════════════════════════════
         if (vue === 'root')
         {
-            // Toutes les entrées (pas de filtre langue ici)
+            // On recharge TOUTES les entrées (sans filtre langue) pour cette vue globale
             const toutesEntries = await LearningEntry.find({ userId: req.user._id, ...(niveau ? { niveau } : {}) })
 
-            // Nœud racine
+            // Nœud racine central — point de départ de la mindmap
             nodes.push({
                 id: 'root',
                 type: 'rootNode',
@@ -92,7 +102,8 @@ const getMindMapData = async (req, res) =>
                 position: CENTRE,
             })
 
-            // Grouper par langue
+            // On regroupe les entrées par langue avec un simple compteur
+            // ex: { Espagnol: 12, Anglais: 8 }
             const parLangue = {}
             for (const e of toutesEntries)
             {
@@ -100,11 +111,13 @@ const getMindMapData = async (req, res) =>
                 parLangue[e.langue]++
             }
 
+            // On crée un nœud par langue + une arête (ligne) vers la racine
             const langues = Object.keys(parLangue)
             langues.forEach((lang, i) =>
             {
+                // Chaque langue est placée en cercle autour du centre, rayon 300px
                 const pos = positionnerEnCercle(CENTRE, 300, langues.length, i)
-                const id  = `langue-${lang}`
+                const id = `langue-${lang}`
 
                 nodes.push({
                     id,
@@ -119,11 +132,12 @@ const getMindMapData = async (req, res) =>
                     position: pos,
                 })
 
+                // Ligne entre la racine et ce nœud langue
                 edges.push({
                     id: `e-root-${id}`,
                     source: 'root',
                     target: id,
-                    type: 'smoothstep',
+                    type: 'smoothstep',       // courbe lisse (pas de ligne droite)
                     style: { stroke: '#F59E0B', strokeWidth: 2 },
                     animated: false,
                 })
@@ -137,7 +151,7 @@ const getMindMapData = async (req, res) =>
         {
             const entriesLangue = await LearningEntry.find({ userId: req.user._id, langue, ...(niveau ? { niveau } : {}) })
 
-            // Nœud racine réduit (anchor)
+            // La racine reste visible mais en petit (mini:true) à gauche = "fil d'Ariane"
             nodes.push({
                 id: 'root',
                 type: 'rootNode',
@@ -145,7 +159,7 @@ const getMindMapData = async (req, res) =>
                 position: { x: -500, y: 0 },
             })
 
-            // Nœud langue sélectionnée (au centre)
+            // La langue sélectionnée devient le nouveau centre de la vue
             const langueId = `langue-${langue}`
             nodes.push({
                 id: langueId,
@@ -161,7 +175,7 @@ const getMindMapData = async (req, res) =>
                 style: { stroke: '#F59E0B', strokeWidth: 2 },
             })
 
-            // Grouper par thème
+            // Même logique que la vue root : on groupe, on compte, on place en cercle
             const parTheme = {}
             for (const e of entriesLangue)
             {
@@ -172,7 +186,7 @@ const getMindMapData = async (req, res) =>
             const themes = Object.keys(parTheme)
             themes.forEach((th, i) =>
             {
-                const pos    = positionnerEnCercle(CENTRE, 300, themes.length, i)
+                const pos = positionnerEnCercle(CENTRE, 300, themes.length, i)
                 const themeId = `theme-${langue}-${th}`
 
                 nodes.push({
@@ -210,7 +224,7 @@ const getMindMapData = async (req, res) =>
                 ...(niveau ? { niveau } : {}),
             })
 
-            // Nœud langue (anchor)
+            // Nœud langue (anchor) — permet de remonter d'un niveau
             const langueId = `langue-${langue}`
             nodes.push({
                 id: langueId,
@@ -219,7 +233,7 @@ const getMindMapData = async (req, res) =>
                 position: { x: -500, y: 0 },
             })
 
-            // Nœud thème au centre
+            // Le thème sélectionné est maintenant au centre
             const themeId = `theme-${langue}-${theme}`
             nodes.push({
                 id: themeId,
@@ -235,7 +249,7 @@ const getMindMapData = async (req, res) =>
                 style: { stroke: '#EA580C', strokeWidth: 1.5 },
             })
 
-            // Grouper par pattern
+            // Grouper par pattern — si pas de pattern, on met 'Général' par défaut
             const parPattern = {}
             for (const e of entriesTheme)
             {
@@ -247,7 +261,8 @@ const getMindMapData = async (req, res) =>
             const patterns = Object.keys(parPattern)
             patterns.forEach((pat, i) =>
             {
-                const pos       = positionnerEnCercle(CENTRE, 280, patterns.length, i)
+                // Rayon légèrement réduit (280) car les labels de pattern sont plus longs
+                const pos = positionnerEnCercle(CENTRE, 280, patterns.length, i)
                 const patternId = `pattern-${langue}-${theme}-${pat}`
 
                 nodes.push({
@@ -279,6 +294,7 @@ const getMindMapData = async (req, res) =>
         // ════════════════════════════════════════════════════════════
         else if (vue === 'soustheme' && langue && theme && pattern)
         {
+            // Ici on récupère les vraies phrases (LearningEntry complètes), pas juste des comptes
             const phrasesFiltrees = await LearningEntry.find({
                 userId: req.user._id,
                 langue,
@@ -287,7 +303,7 @@ const getMindMapData = async (req, res) =>
                 ...(niveau ? { niveau } : {}),
             })
 
-            // Nœud thème (anchor)
+            // Nœud thème (anchor) — dernier ancêtre visible à gauche
             const themeId = `theme-${langue}-${theme}`
             nodes.push({
                 id: themeId,
@@ -296,7 +312,7 @@ const getMindMapData = async (req, res) =>
                 position: { x: -500, y: 0 },
             })
 
-            // Nœud pattern au centre
+            // Le pattern devient le centre — les phrases rayonnent autour de lui
             const patternId = `pattern-${langue}-${theme}-${pattern}`
             nodes.push({
                 id: patternId,
@@ -312,22 +328,25 @@ const getMindMapData = async (req, res) =>
                 style: { stroke: '#7C3AED', strokeWidth: 1.5 },
             })
 
-            // Phrases autour du pattern
+            // Les phrases sont placées en éventail (arc) et non en cercle complet
+            // car elles contiennent plus de texte et doivent être lisibles
             phrasesFiltrees.forEach((entry, i) =>
             {
-                const angleAxe  = -Math.PI / 2
-                const pos       = positionnerEnEventail(CENTRE, 260, phrasesFiltrees.length, i, angleAxe + (2 * Math.PI * i) / phrasesFiltrees.length)
-                const phraseId  = `phrase-${entry._id}`
+                // On recalcule l'axe pour chaque phrase pour mieux répartir l'éventail
+                const angleAxe = -Math.PI / 2
+                const pos = positionnerEnEventail(CENTRE, 260, phrasesFiltrees.length, i, angleAxe + (2 * Math.PI * i) / phrasesFiltrees.length)
+                const phraseId = `phrase-${entry._id}`
 
+                // Le nœud phrase contient les données complètes de l'entrée
                 nodes.push({
                     id: phraseId,
                     type: 'phraseNode',
                     data: {
-                        label:      entry.phrase,
+                        label: entry.phrase,
                         traduction: entry.traduction,
-                        niveau:     entry.niveau,
-                        source:     entry.source,
-                        entryId:    entry._id,
+                        niveau: entry.niveau,
+                        source: entry.source,
+                        entryId: entry._id,   // permet au frontend d'ouvrir la fiche détail
                     },
                     position: pos,
                 })
@@ -346,6 +365,7 @@ const getMindMapData = async (req, res) =>
             return res.status(400).json({ message: "Paramètres de vue invalides." })
         }
 
+        // On renvoie les nodes + edges au frontend React Flow qui les dessine directement
         res.json({
             nodes,
             edges,
