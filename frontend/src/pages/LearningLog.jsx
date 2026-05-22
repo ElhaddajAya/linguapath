@@ -177,7 +177,7 @@ export default function LearningLog() {
     <div className='min-h-screen bg-warm-50'>
       <Navbar />
 
-      <div className='max-w-7xl mx-auto px-6 md:px-10 py-10'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10'>
         {/* ── Header ── */}
         <div className='flex items-center justify-between mb-8 flex-wrap gap-4'>
           <div>

@@ -148,7 +148,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <div
               className="w-11 h-11 rounded-full flex items-center justify-center
-                text-white font-bold text-base flex-shrink-0"
+                text-white font-bold text-base shrink-0"
               style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
             >
               {user.nom?.charAt(0).toUpperCase() || "?"}

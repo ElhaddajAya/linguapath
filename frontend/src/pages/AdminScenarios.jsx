@@ -37,6 +37,10 @@ export default function AdminScenarios() {
   const [form, setForm]             = useState(FORM_VIDE);
   const [saving, setSaving]         = useState(false);
 
+  // ── Filtres ────────────────────────────────────────────────
+  const [search,        setSearch]        = useState("");
+  const [filtreLangue,  setFiltreLangue]  = useState("");
+
   // ── Suppression ────────────────────────────────────────────
   const [confirmDelete, setConfirmDelete] = useState(null); // id à supprimer
   const [deleting, setDeleting]           = useState(false);
@@ -166,7 +170,7 @@ export default function AdminScenarios() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 md:px-10 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
@@ -195,8 +199,41 @@ export default function AdminScenarios() {
           </button>
         </div>
 
+        {/* ── Filtres ── */}
+        {!loading && scenarios.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher par titre..."
+              className="flex-1 px-4 py-2.5 rounded-xl border border-warm-200 text-sm
+                text-warm-900 bg-white focus:outline-none focus:border-orange-300
+                placeholder:text-warm-300"
+            />
+            <select
+              value={filtreLangue}
+              onChange={(e) => setFiltreLangue(e.target.value)}
+              className="px-3 py-2.5 rounded-xl border border-warm-200 text-sm
+                text-warm-700 bg-white focus:outline-none focus:border-orange-300
+                sm:w-44"
+            >
+              <option value="">Toutes les langues</option>
+              {LANGUES.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        )}
+
         {/* ── Liste scénarios ── */}
-        {loading ? (
+        {(() => {
+          // Scénarios filtrés selon recherche + langue
+          const filtres = scenarios.filter((sc) => {
+            const matchRecherche = !search || sc.titre?.toLowerCase().includes(search.toLowerCase());
+            const matchLangue    = !filtreLangue || sc.langue === filtreLangue;
+            return matchRecherche && matchLangue;
+          });
+
+          return loading ? (
           <div className="text-center py-20 text-warm-400">Chargement...</div>
         ) : scenarios.length === 0 ? (
           <div className="bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center">
@@ -210,9 +247,14 @@ export default function AdminScenarios() {
               Créer le premier scénario
             </button>
           </div>
+        ) : filtres.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-warm-200 shadow-soft p-10 text-center">
+            <p className="text-3xl mb-3">🔍</p>
+            <p className="text-warm-600 font-medium">Aucun scénario ne correspond aux filtres</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {scenarios.map((sc) => (
+            {filtres.map((sc) => (
               <div
                 key={sc._id}
                 className="bg-white rounded-2xl border border-warm-200 shadow-soft
@@ -268,7 +310,8 @@ export default function AdminScenarios() {
               </div>
             ))}
           </div>
-        )}
+        );
+        })()}
       </div>
 
       {/* ── Modal Création / Édition ── */}

@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactFlow, {
-  Background, Controls, MiniMap,
+  Background, Controls,
   useNodesState, useEdgesState,
   Panel, Handle, Position,
   useReactFlow, ReactFlowProvider,
@@ -382,10 +382,11 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
   const navigate    = useNavigate();
   const { fitView } = useReactFlow();
 
-  const [vue,     setVue]     = useState("root");
-  const [langue,  setLangue]  = useState(null);
-  const [theme,   setTheme]   = useState(null);
-  const [pattern, setPattern] = useState(null);
+  const [vue,        setVue]        = useState("root");
+  const [langue,     setLangue]     = useState(null);
+  const [theme,      setTheme]      = useState(null);
+  const [pattern,    setPattern]    = useState(null);
+  const [showLegend, setShowLegend] = useState(true);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -486,16 +487,6 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
             <Background color="#F5F5F4" gap={20} size={1} />
             <Controls showInteractive={false}
               style={{ borderRadius: 12, border: "1px solid #E7E5E4", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }} />
-            <MiniMap
-              nodeColor={n =>
-                n.type === "rootNode"    ? "#F59E0B" :
-                n.type === "langueNode"  ? "#FCD34D" :
-                n.type === "themeNode"   ? "#FED7AA" :
-                n.type === "patternNode" ? "#C4B5FD" : "#E7E5E4"
-              }
-              style={{ borderRadius: 12, border: "1px solid #E7E5E4", overflow: "hidden" }}
-              maskColor="rgba(245,245,244,0.7)" />
-
             {/* Fil d'Ariane + Retour */}
             <Panel position="top-center">
               <div className="flex items-center gap-2 bg-white rounded-2xl border border-warm-200 shadow-soft px-4 py-2">
@@ -519,25 +510,39 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
               </div>
             </Panel>
 
-            {/* Légende */}
+            {/* Légende collapsible */}
             <Panel position="top-left">
-              <div className="bg-white rounded-xl border border-warm-200 shadow-soft p-3 text-xs text-warm-600 flex flex-col gap-2">
-                <div className="font-semibold text-warm-800 mb-1">Légende</div>
-                {[
-                  { color: "#F59E0B", label: "Racine" },
-                  { color: "#FCD34D", label: "Langue  (cliquable)" },
-                  { color: "#FED7AA", label: "Thème  (cliquable)" },
-                  { color: "#C4B5FD", label: "Pattern  (cliquable)" },
-                  { color: "#E7E5E4", label: "Phrase" },
-                ].map(({ color, label }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }} />
-                    <span>{label}</span>
+              <div className="bg-white rounded-xl border border-warm-200 shadow-soft text-xs text-warm-600 overflow-hidden">
+                {/* En-tête : toujours visible, clic pour toggle */}
+                <button
+                  onClick={() => setShowLegend(v => !v)}
+                  className="w-full flex items-center justify-between px-3 py-2.5
+                    text-warm-800 font-semibold hover:bg-warm-50 transition-colors"
+                >
+                  <span>Légende</span>
+                  <span className="text-warm-400 ml-4">{showLegend ? "▲" : "▼"}</span>
+                </button>
+
+                {/* Contenu masquable */}
+                {showLegend && (
+                  <div className="px-3 pb-3 flex flex-col gap-2 border-t border-warm-100">
+                    {[
+                      { color: "#F59E0B", label: "Racine" },
+                      { color: "#FCD34D", label: "Langue (cliquable)" },
+                      { color: "#FED7AA", label: "Thème (cliquable)" },
+                      { color: "#C4B5FD", label: "Pattern (cliquable)" },
+                      { color: "#E7E5E4", label: "Phrase" },
+                    ].map(({ color, label }) => (
+                      <div key={label} className="flex items-center gap-2 mt-2">
+                        <div style={{ width: 10, height: 10, borderRadius: 3, background: color, flexShrink: 0 }} />
+                        <span>{label}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-warm-100 pt-2 text-warm-400">
+                      Clique sur une phrase pour les détails
+                    </div>
                   </div>
-                ))}
-                <div className="border-t border-warm-100 pt-2 text-warm-400">
-                  Clique sur une phrase pour les détails
-                </div>
+                )}
               </div>
             </Panel>
           </ReactFlow>

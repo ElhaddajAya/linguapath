@@ -110,10 +110,10 @@ export default function AdminUsers() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 md:px-10 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10">
 
         {/* ── Header ── */}
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Link to="/admin/scenarios" className="text-xs text-warm-400 hover:text-orange-500 transition-colors">
@@ -128,7 +128,7 @@ export default function AdminUsers() {
             </p>
           </div>
 
-          {/* Barre de recherche */}
+          {/* Barre de recherche — pleine largeur sur mobile */}
           <input
             type="text"
             value={search}
@@ -136,7 +136,7 @@ export default function AdminUsers() {
             placeholder="Rechercher un utilisateur..."
             className="px-4 py-2.5 rounded-xl border border-warm-200 text-sm
               text-warm-900 bg-white focus:outline-none focus:border-orange-300
-              w-64 placeholder:text-warm-300"
+              w-full sm:w-64 placeholder:text-warm-300"
           />
         </div>
 
@@ -149,92 +149,138 @@ export default function AdminUsers() {
             <p className="text-warm-600 font-medium">Aucun utilisateur trouvé</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-warm-200 shadow-soft overflow-hidden">
-            {/* En-tête tableau */}
-            <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3
-              bg-warm-50 border-b border-warm-100
-              text-xs font-semibold text-warm-500 uppercase tracking-wide">
-              <span>Utilisateur</span>
-              <span>Langues pratiquées</span>
-              <span>Rôle</span>
-              <span>Action</span>
+          <>
+            {/* ── Tableau desktop (md+) ── */}
+            <div className="hidden md:block bg-white rounded-2xl border border-warm-200 shadow-soft overflow-hidden">
+              <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-3
+                bg-warm-50 border-b border-warm-100
+                text-xs font-semibold text-warm-500 uppercase tracking-wide">
+                <span>Utilisateur</span>
+                <span>Langues pratiquées</span>
+                <span>Rôle</span>
+                <span>Action</span>
+              </div>
+
+              {filtered.map((user) => {
+                const actif = user.isActive !== false;
+                return (
+                  <div
+                    key={user._id}
+                    className={`grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-4
+                      border-b border-warm-100 last:border-b-0 items-center
+                      hover:bg-warm-50 transition-colors
+                      ${!actif ? "opacity-50" : ""}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center
+                          text-white text-sm font-bold shrink-0"
+                        style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                      >
+                        {user.nom?.charAt(0).toUpperCase() || "?"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-warm-900 truncate">{user.nom}</p>
+                        <p className="text-xs text-warm-400 truncate">{user.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.langues?.length > 0 ? (
+                        user.langues.map((l) => (
+                          <span key={l.langue}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium
+                              ${NIVEAU_COLORS[l.niveau] || "bg-warm-100 text-warm-500"}`}>
+                            {LANGUE_EMOJI[l.langue] || "🌍"} {l.langue} · {l.niveau}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-warm-300 italic">Aucune</span>
+                      )}
+                    </div>
+
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium
+                      ${user.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-warm-100 text-warm-500"}`}>
+                      {user.role === "admin" ? "⚙️ Admin" : "Utilisateur"}
+                    </span>
+
+                    <button
+                      onClick={() => toggleStatus(user._id)}
+                      disabled={toggling === user._id}
+                      className={`text-xs px-3 py-1.5 rounded-xl font-medium border
+                        transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                        ${actif
+                          ? "border-red-200 text-red-500 hover:bg-red-50"
+                          : "border-green-200 text-green-600 hover:bg-green-50"}`}
+                    >
+                      {toggling === user._id ? "..." : actif ? "Désactiver" : "Réactiver"}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Lignes */}
-            {filtered.map((user) => {
-              const actif = user.isActive !== false;
-              return (
-                <div
-                  key={user._id}
-                  className={`grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-6 py-4
-                    border-b border-warm-100 last:border-b-0 items-center
-                    hover:bg-warm-50 transition-colors
-                    ${!actif ? "opacity-50" : ""}`}
-                >
-                  {/* Avatar + nom + email */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center
-                        text-white text-sm font-bold flex-shrink-0"
-                      style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+            {/* ── Cartes mobile (< md) ── */}
+            <div className="md:hidden flex flex-col gap-3">
+              {filtered.map((user) => {
+                const actif = user.isActive !== false;
+                return (
+                  <div
+                    key={user._id}
+                    className={`bg-white rounded-2xl border border-warm-200 shadow-soft p-4
+                      flex flex-col gap-3 ${!actif ? "opacity-50" : ""}`}
+                  >
+                    {/* Ligne 1 : avatar + nom + badge rôle */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center
+                          text-white text-sm font-bold shrink-0"
+                        style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                      >
+                        {user.nom?.charAt(0).toUpperCase() || "?"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-warm-900 truncate">{user.nom}</p>
+                        <p className="text-xs text-warm-400 truncate">{user.email}</p>
+                      </div>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0
+                        ${user.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-warm-100 text-warm-500"}`}>
+                        {user.role === "admin" ? "⚙️ Admin" : "User"}
+                      </span>
+                    </div>
+
+                    {/* Ligne 2 : langues */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.langues?.length > 0 ? (
+                        user.langues.map((l) => (
+                          <span key={l.langue}
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium
+                              ${NIVEAU_COLORS[l.niveau] || "bg-warm-100 text-warm-500"}`}>
+                            {LANGUE_EMOJI[l.langue] || "🌍"} {l.langue} · {l.niveau}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-warm-300 italic">Aucune langue</span>
+                      )}
+                    </div>
+
+                    {/* Ligne 3 : bouton action */}
+                    <button
+                      onClick={() => toggleStatus(user._id)}
+                      disabled={toggling === user._id}
+                      className={`w-full py-2 rounded-xl text-sm font-medium border
+                        transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                        ${actif
+                          ? "border-red-200 text-red-500 hover:bg-red-50"
+                          : "border-green-200 text-green-600 hover:bg-green-50"}`}
                     >
-                      {user.nom?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-warm-900 truncate">
-                        {user.nom}
-                      </p>
-                      <p className="text-xs text-warm-400 truncate">{user.email}</p>
-                    </div>
+                      {toggling === user._id ? "..." : actif ? "Désactiver le compte" : "Réactiver le compte"}
+                    </button>
                   </div>
-
-                  {/* Langues */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {user.langues?.length > 0 ? (
-                      user.langues.map((l) => (
-                        <span
-                          key={l.langue}
-                          className={`text-xs px-2 py-0.5 rounded-full font-medium
-                            ${NIVEAU_COLORS[l.niveau] || "bg-warm-100 text-warm-500"}`}
-                        >
-                          {LANGUE_EMOJI[l.langue] || "🌍"} {l.langue} · {l.niveau}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-warm-300 italic">Aucune</span>
-                    )}
-                  </div>
-
-                  {/* Rôle */}
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium
-                      ${user.role === "admin"
-                        ? "bg-purple-50 text-purple-600"
-                        : "bg-warm-100 text-warm-500"
-                      }`}
-                  >
-                    {user.role === "admin" ? "⚙️ Admin" : "Utilisateur"}
-                  </span>
-
-                  {/* Bouton toggle */}
-                  <button
-                    onClick={() => toggleStatus(user._id)}
-                    disabled={toggling === user._id}
-                    className={`text-xs px-3 py-1.5 rounded-xl font-medium
-                      border transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                      ${actif
-                        ? "border-red-200 text-red-500 hover:bg-red-50"
-                        : "border-green-200 text-green-600 hover:bg-green-50"
-                      }`}
-                  >
-                    {toggling === user._id
-                      ? "..."
-                      : actif ? "Désactiver" : "Réactiver"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>
