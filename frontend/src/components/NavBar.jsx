@@ -4,6 +4,7 @@ import Logo from "./Logo";
 export default function Navbar() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user.role === "admin";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -20,16 +21,7 @@ export default function Navbar() {
           <Logo size="navbar" />
         </Link>
 
-        {/* Droite */}
         <div className="flex items-center gap-6">
-
-          {/* Nombre de langues */}
-          {user.langues?.length > 0 && (
-            <span className="hidden sm:block text-xs font-medium
-              text-orange-600 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
-              {user.langues.length} langue{user.langues.length > 1 ? "s" : ""}
-            </span>
-          )}
 
           {/* Nom */}
           <span className="hidden sm:block text-sm font-medium text-warm-600">
@@ -38,34 +30,54 @@ export default function Navbar() {
 
           <div className="hidden sm:block w-px h-5 bg-warm-200" />
 
-          <Link to="/historique"
-            className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
-            Historique
-          </Link>
-
-          <Link to="/learning-log"
-            className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
-            Learning Log
-          </Link>
-
-          <Link to="/mindmap"
-            className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
-            MindMap
-          </Link>
-
-          {/* ── Lien Admin — visible uniquement si role === 'admin' ── */}
-          {user.role === "admin" && (
+          {/* ── Liens APPRENANT uniquement ── */}
+          {!isAdmin && (
             <>
-              <div className="hidden sm:block w-px h-5 bg-warm-200" />
-              <Link to="/admin/users"
-                className="hidden sm:block text-sm font-medium
-                  text-purple-600 hover:text-purple-800 transition-colors">
-                ⚙️ Admin
+              {/* Badge nombre de langues */}
+              {user.langues?.length > 0 && (
+                <span className="hidden sm:block text-xs font-medium
+                  text-orange-600 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+                  {user.langues.length} langue{user.langues.length > 1 ? "s" : ""}
+                </span>
+              )}
+
+              <Link to="/historique"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Historique
+              </Link>
+
+              <Link to="/learning-log"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Learning Log
+              </Link>
+
+              <Link to="/mindmap"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                MindMap
               </Link>
             </>
           )}
 
-          {/* Avatar → profil */}
+          {/* ── Liens ADMIN uniquement ── */}
+          {isAdmin && (
+            <>
+              <Link to="/admin/users"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Utilisateurs
+              </Link>
+              <Link to="/admin/scenarios"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Scénarios
+              </Link>
+              <div className="hidden sm:block w-px h-5 bg-warm-200" />
+              <span className="hidden sm:block text-xs font-semibold px-3 py-1 rounded-full
+                bg-purple-50 text-purple-600 border border-purple-100">
+                ⚙️ Admin
+              </span>
+            </>
+          )}
+
+          {/* Avatar → profil (tous les users) */}
           <Link to="/profile">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center

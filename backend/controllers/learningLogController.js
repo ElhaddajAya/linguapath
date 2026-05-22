@@ -26,52 +26,88 @@ const extrairePhrasesApprises = async (req, res) =>
             return res.status(404).json({ message: 'Scénario introuvable' })
         }
 
-        // 2. Formater l'historique pour Groq
-        // On garde uniquement les messages de l'assistant (les phrases de la langue cible)
-        // et les messages de l'utilisateur (pour le contexte des corrections)
+        // 2. Formater l'historique — on préfixe chaque ligne par le rôle
         const historiqueTexte = messages
-            .map(m => `${m.role === 'user' ? 'Utilisateur' : 'IA'}: ${m.contenu}`)
+            .map(m => `${m.role === 'user' ? 'LEARNER' : 'AI CHARACTER'}: ${m.contenu}`)
             .join('\n')
 
-        // 3. Prompt d'extraction — on utilise le petit modèle (économie de tokens)
-        const systemPrompt = `You are a language learning assistant. Extract SHORT, reusable phrases from this conversation.
+        // 3. Récupérer les patterns déjà existants en BDD pour cette langue
+        // → le modèle les réutilisera au lieu d'en créer de nouveaux à chaque fois
+        const patternsExistants = await LearningEntry.distinct('pattern', {
+            userId: req.user._id,
+            langue,
+        })
+        const patternsConnus = patternsExistants.filter(p => p && p !== 'Général')
 
-RULES — all mandatory, no exceptions :
-- Extract ONLY phrases said by the AI character, never the user
-- MAXIMUM 4 phrases total
-- Each phrase : 2 to 6 words ONLY — count the words, if more than 6 → SKIP IT
-- The phrase must be reusable in many different situations, not just this specific conversation
-- NEVER extract questions with medical details, diagnoses, or technical terms
-- NEVER extract phrases longer than 6 words, even if they seem useful
-- Identify the grammatical pattern : replace the variable part with "..."
+        // 4. Prompt d'extraction
+        const systemPrompt = `You are a language learning expert. Extract practical, reusable phrases from this conversation.
 
-GOOD examples (2-6 words, reusable) :
-  "I'm sorry to hear that." → pattern: "I'm sorry to hear..."
-  "I see." → pattern: "I see."
-  "How are you feeling?" → pattern: "How are you...?"
-  "That makes sense." → pattern: "That makes sense."
+WHAT TO EXTRACT :
+- Any phrase from the conversation (said by the learner OR the AI character) that is:
+  • Genuinely useful and natural to reuse in similar situations
+  • Not trivially basic (not: hello, goodbye, yes, no, thank you, please, OK, I understand)
+  • Not too specific to this exact exchange (not: unique proper names, specific one-time numbers)
+- Maximum 5 phrases total
+- Each phrase: 3 to 12 words
 
-BAD examples — NEVER extract these :
-  "On a scale of 1 to 10, how would you rate the soreness?" → 16 words, too long
-  "Are you currently taking any medication or have any known allergies?" → 11 words, too long
+TRANSLATION RULE — mandatory :
+"traduction" MUST always be in FRENCH, regardless of the conversation language.
+  ✅ "traduction": "Je suis désolé d'entendre ça" ← French
+  ❌ "traduction": "I'm sorry to hear that" ← FORBIDDEN
 
-If no phrase respects the 2-6 word rule → return []
+═══════════════════════════════════════════════
+PATTERN ASSIGNMENT — the most important rule
+═══════════════════════════════════════════════
+${patternsConnus.length > 0 ? `EXISTING PATTERNS ALREADY IN THE DATABASE — reuse them first:
+${patternsConnus.map(p => `  "${p}"`).join('\n')}
+
+For each extracted phrase:
+1. Check if it fits one of the EXISTING patterns above
+2. If YES → copy the EXACT pattern string (character for character)
+3. If NO → create a NEW pattern following the rules below
+
+Reusing existing patterns is the priority. This is how multiple phrases group together.
+` : ''}PATTERN RULES (for creating new patterns only) :
+A pattern is the grammatical FRAME of the phrase — broad, short, reusable.
+- Use "..." where the variable part goes
+- A pattern can be a PREFIX, a SUFFIX, or both:
+  PREFIX : "I have...", "Could you...?", "I'd like...", "Sorry to..."
+  SUFFIX : "...고 싶어요", "...주세요", "...てください", "...はありますか?"
+  BOTH   : "I've been ...ing", "¿Puedo ...?"
+- Make it broad enough that 3+ different phrases could match it
+- If a phrase has no clear reusable structure → assign "Général"
+
+GOOD patterns :
+  English  : "I have...", "I've been...", "Can I...?", "Could you...?", "I'd like...", "Sorry to...", "I think..."
+  Spanish  : "Tengo...", "¿Puede...?", "Me duele...", "Lo siento...", "Quisiera..."
+  French   : "J'ai...", "Pouvez-vous...?", "Je voudrais...", "Je suis désolé..."
+  Korean   : "...고 싶어요", "...주세요", "...있나요?", "...것 같아요"
+  Japanese : "...をください", "...はありますか?", "...たいです", "...てください"
+  Arabic   : "...أريد", "هل يمكنني...?", "...من فضلك"
+
+BAD patterns (too specific — never use these) :
+  ❌ "I have been having" → use "I have..." or "I've been..."
+  ❌ "Sorry to hear that" → use "Sorry to..."
+  ❌ "Can I get a referral" → use "Can I...?"
 
 Return ONLY a valid JSON array, no markdown :
-[{"phrase":"...","traduction":"...","pattern":"..."}]`
+[{"phrase":"...","traduction":"[FRENCH]","pattern":"..."}]`
 
-        const messageUser = `Conversation in ${langue} (level ${niveau}, theme: ${scenario.theme}):\n\n${historiqueTexte}\n\nExtract the most useful phrases from this conversation.`
+        const messageUser = `Conversation in ${langue} (level ${niveau}, scenario: "${scenario.titre}", theme: "${scenario.theme}"):
 
-        // On utilise le modèle léger — la tâche est simple
+${historiqueTexte}
+
+Extract up to 5 useful phrases following all the rules above.`
+
         const reponseRaw = await envoyerMessage(
             systemPrompt,
             [],
             messageUser,
             1,
-            'llama-3.1-8b-instant'
+            'llama-3.3-70b-versatile'
         )
 
-        // 4. Parser le JSON retourné par Groq
+        // 5. Parser le JSON retourné par Groq
         let phrasesExtraites = []
         try
         {
@@ -102,7 +138,7 @@ Return ONLY a valid JSON array, no markdown :
             phrasesExtraites = []
         }
 
-        // 5. Dédupliquer — éviter les phrases déjà existantes en BDD
+        // 6. Dédupliquer — éviter les phrases déjà existantes en BDD
         const entries = []
 
         for (const p of phrasesExtraites.filter(p => p.phrase && p.traduction))
