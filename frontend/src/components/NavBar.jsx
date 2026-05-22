@@ -4,6 +4,7 @@ import Logo from "./Logo";
 export default function Navbar() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user.role === "admin";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -12,67 +13,76 @@ export default function Navbar() {
   };
 
   return (
-    <nav className='sticky top-0 z-50 bg-white border-b border-warm-200 shadow-soft'>
-      {/* max-w-7xl au lieu de max-w-5xl + padding horizontal plus grand */}
-      <div className='max-w-7xl mx-auto px-10 h-16 flex items-center justify-between'>
-        {/* Logo cliquable */}
-        <Link
-          to='/'
-          className='hover:opacity-80 transition-opacity'
-        >
-          <Logo size='navbar' />
+    <nav className="sticky top-0 z-50 bg-white border-b border-warm-200 shadow-soft">
+      <div className="max-w-7xl mx-auto px-10 h-16 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/" className="hover:opacity-80 transition-opacity">
+          <Logo size="navbar" />
         </Link>
 
-        {/* Droite — gap augmenté entre les éléments */}
-        <div className='flex items-center gap-6'>
-          {/* Nombre de langues */}
-          {user.langues?.length > 0 && (
-            <span
-              className='hidden sm:block text-xs font-medium
-                             text-orange-600 bg-orange-50 px-3 py-1 rounded-full
-                             border border-orange-200'
-            >
-              {user.langues.length} langue{user.langues.length > 1 ? "s" : ""}
-            </span>
-          )}
+        <div className="flex items-center gap-6">
 
           {/* Nom */}
-          <span className='hidden sm:block text-sm font-medium text-warm-600'>
+          <span className="hidden sm:block text-sm font-medium text-warm-600">
             {user.nom}
           </span>
 
-          {/* Séparateur vertical discret */}
-          <div className='hidden sm:block w-px h-5 bg-warm-200' />
+          <div className="hidden sm:block w-px h-5 bg-warm-200" />
 
-          <Link
-            to='/historique'
-            className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'
-          >
-            Historique
-          </Link>
+          {/* ── Liens APPRENANT uniquement ── */}
+          {!isAdmin && (
+            <>
+              {/* Badge nombre de langues */}
+              {user.langues?.length > 0 && (
+                <span className="hidden sm:block text-xs font-medium
+                  text-orange-600 bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+                  {user.langues.length} langue{user.langues.length > 1 ? "s" : ""}
+                </span>
+              )}
 
-          <Link
-            to='/learning-log'
-            className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'
-          >
-            Learning Log
-          </Link>
+              <Link to="/historique"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Historique
+              </Link>
 
-          <Link
-          to='/mindmap'
-          className='hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors'>
-            MindMap
-          </Link>
+              <Link to="/learning-log"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Learning Log
+              </Link>
 
-          {/* Avatar → profil */}
-          <Link to='/profile'>
+              <Link to="/mindmap"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                MindMap
+              </Link>
+            </>
+          )}
+
+          {/* ── Liens ADMIN uniquement ── */}
+          {isAdmin && (
+            <>
+              <Link to="/admin/users"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Utilisateurs
+              </Link>
+              <Link to="/admin/scenarios"
+                className="hidden sm:block text-sm text-warm-500 hover:text-warm-700 transition-colors">
+                Scénarios
+              </Link>
+              <div className="hidden sm:block w-px h-5 bg-warm-200" />
+              <span className="hidden sm:block text-xs font-semibold px-3 py-1 rounded-full
+                bg-purple-50 text-purple-600 border border-purple-100">
+                ⚙️ Admin
+              </span>
+            </>
+          )}
+
+          {/* Avatar → profil (tous les users) */}
+          <Link to="/profile">
             <div
-              className='w-9 h-9 rounded-full flex items-center justify-center
-                            text-white text-sm font-bold cursor-pointer
-                            hover:opacity-80 transition-opacity'
-              style={{
-                background: "linear-gradient(135deg, #F59E0B, #EA580C)",
-              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center
+                text-white text-sm font-bold cursor-pointer hover:opacity-80 transition-opacity"
+              style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
             >
               {user.nom?.charAt(0).toUpperCase() || "?"}
             </div>
@@ -81,8 +91,7 @@ export default function Navbar() {
           {/* Déconnexion */}
           <button
             onClick={handleLogout}
-            className='text-sm text-warm-400 hover:text-warm-700
-                       transition-colors font-medium'
+            className="text-sm text-warm-400 hover:text-warm-700 transition-colors font-medium"
           >
             Déconnexion
           </button>
