@@ -9,7 +9,7 @@ LinguaPath est une application d'apprentissage de langues intelligente.
 ### Prérequis
 
 - Node.js
-- MongoDB
+- MongoDB Atlas
 
 ### Backend
 
