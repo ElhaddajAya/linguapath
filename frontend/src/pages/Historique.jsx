@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { Clock, ChevronUp, ChevronDown, ArrowRight } from "lucide-react";
 import api from "../services/api";
 
 // Emoji par langue
@@ -146,8 +147,8 @@ export default function Historique() {
                       <p className='text-xs font-medium text-warm-600'>
                         {formatDate(conv.createdAt)}
                       </p>
-                      <p className='text-xs text-warm-400 mt-0.5'>
-                        ⏱ {formatDuree(conv.duree)}
+                      <p className='text-xs text-warm-400 mt-0.5 flex items-center gap-1'>
+                        <Clock size={11} /> {formatDuree(conv.duree)}
                       </p>
                     </div>
                   </div>
@@ -159,20 +160,20 @@ export default function Historique() {
                       onClick={() => togglePreview(conv)}
                     >
                       {selected?._id === conv._id
-                        ? "▲ Masquer l'aperçu"
-                        : "▼ Aperçu"}
+                        ? <span className="flex items-center gap-1"><ChevronUp size={13} /> Masquer l'aperçu</span>
+                        : <span className="flex items-center gap-1"><ChevronDown size={13} /> Aperçu</span>}
                     </p>
                     <button
                       onClick={() =>
                         navigate(`/chat/${conv.scenarioId}?resume=${conv._id}`)
                       }
                       className='text-xs font-semibold text-white px-3 py-1.5
-                   rounded-lg hover:opacity-90 transition-opacity'
+                   rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1'
                       style={{
                         background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                       }}
                     >
-                      Ouvrir →
+                      Ouvrir <ArrowRight size={13} />
                     </button>
                   </div>
                 </div>

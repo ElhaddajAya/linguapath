@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { ArrowLeft, Calendar, Clock, MessageSquare } from "lucide-react";
 import api from "../services/api";
 
 export default function HistoriqueDetail() {
@@ -63,9 +64,9 @@ export default function HistoriqueDetail() {
         <button
           onClick={() => navigate("/historique")}
           className='text-sm text-warm-500 hover:text-warm-700
-                               transition-colors mb-6 flex items-center gap-1'
+                               transition-colors mb-6 flex items-center gap-1.5'
         >
-          ← Retour à l'historique
+          <ArrowLeft size={15} /> Retour à l'historique
         </button>
 
         {/* Header conversation */}
@@ -84,10 +85,10 @@ export default function HistoriqueDetail() {
               </p>
             </div>
           </div>
-          <div className='flex gap-4 text-xs text-warm-400 pt-3 border-t border-warm-100'>
-            <span>📅 {formatDate(conversation.createdAt)}</span>
-            <span>⏱ {formatDuree(conversation.duree)}</span>
-            <span>💬 {conversation.messages.length} messages</span>
+          <div className='flex flex-wrap gap-4 text-xs text-warm-400 pt-3 border-t border-warm-100'>
+            <span className='flex items-center gap-1'><Calendar size={12} /> {formatDate(conversation.createdAt)}</span>
+            <span className='flex items-center gap-1'><Clock size={12} /> {formatDuree(conversation.duree)}</span>
+            <span className='flex items-center gap-1'><MessageSquare size={12} /> {conversation.messages.length} messages</span>
           </div>
         </div>
 

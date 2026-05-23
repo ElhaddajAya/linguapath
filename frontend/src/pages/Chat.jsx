@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Loader2,
+  EyeOff,
+  Languages,
+  Mic,
+  ArrowRight,
+} from "lucide-react";
 import api from "../services/api";
 
 // ──────────────────────────────────────
@@ -73,8 +81,8 @@ function Message({ msg, langue }) {
               data.romanisation !== "—" && (
                 <>
                   <div className='flex gap-2 items-start'>
-                    <span className='text-orange-400 font-semibold shrink-0'>
-                      🔤
+                    <span className='text-orange-400 shrink-0 mt-0.5'>
+                      <Languages size={12} />
                     </span>
                     <span className='text-warm-600 font-mono leading-relaxed'>
                       {data.romanisation}
@@ -85,7 +93,9 @@ function Message({ msg, langue }) {
               )}
             {/* Traduction — toujours affichée */}
             <div className='flex gap-2 items-start'>
-              <span className='text-orange-400 font-semibold shrink-0'>🇫🇷</span>
+              <span className='text-orange-400 shrink-0 mt-0.5'>
+                <Languages size={12} />
+              </span>
               <span className='text-warm-600 leading-relaxed italic'>
                 {data.traduction}
               </span>
@@ -100,13 +110,27 @@ function Message({ msg, langue }) {
           className='self-start text-xs text-warm-400 hover:text-orange-500
                      transition-colors px-1'
         >
-          {loading
-            ? "⏳ Chargement..."
-            : show
-              ? "🙈 Masquer"
-              : needsRomanisation
-                ? "🔤 Romanisation & traduction"
-                : "🇫🇷 Traduction"}
+          {loading ? (
+            <span className='flex items-center gap-1'>
+              <Loader2
+                size={12}
+                className='animate-spin'
+              />{" "}
+              Chargement...
+            </span>
+          ) : show ? (
+            <span className='flex items-center gap-1'>
+              <EyeOff size={12} /> Masquer
+            </span>
+          ) : needsRomanisation ? (
+            <span className='flex items-center gap-1'>
+              <Languages size={12} /> Romanisation & traduction
+            </span>
+          ) : (
+            <span className='flex items-center gap-1'>
+              <Languages size={12} /> Traduction
+            </span>
+          )}
         </button>
       </div>
     </div>
@@ -319,7 +343,7 @@ export default function Chat() {
     try {
       const res = await api.post("/chat/message", {
         scenarioId,
-        historique: nouvelHistorique,
+        historique: historique, // historique AVANT le nouveau message
         message: messageUser,
       });
 
@@ -478,7 +502,7 @@ export default function Chat() {
             onClick={() => navigate("/scenarios")}
             className='text-warm-400 hover:text-warm-700 transition-colors mr-1'
           >
-            ←
+            <ArrowLeft size={18} />
           </button>
           <span className='text-2xl'>{scenario?.emoji}</span>
           <div>
@@ -567,11 +591,12 @@ export default function Chat() {
                    transition-all max-w-45'
                 >
                   <span className='font-medium text-warm-800'>{s.texte}</span>
-                  {s.roman && LANGUES_NON_LATINES.includes(scenario?.langue) && (
-                    <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
-                      {s.roman}
-                    </span>
-                  )}
+                  {s.roman &&
+                    LANGUES_NON_LATINES.includes(scenario?.langue) && (
+                      <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
+                        {s.roman}
+                      </span>
+                    )}
                   {s.trad && (
                     <span className='text-orange-500 italic text-[10px]'>
                       {s.trad}
@@ -611,7 +636,11 @@ export default function Chat() {
                                                  : "bg-warm-50 border-warm-200 text-warm-500 hover:border-orange-300 hover:text-orange-500"
                                            }`}
               >
-                {microState === "listening" ? "🔴" : "🎙️"}
+                {microState === "listening" ? (
+                  <span className='w-3 h-3 rounded-full bg-red-500 animate-pulse block' />
+                ) : (
+                  <Mic size={18} />
+                )}
               </button>
             )}
 
@@ -625,19 +654,19 @@ export default function Chat() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              →
+              <ArrowRight size={18} />
             </button>
           </div>
 
           {/* Message d'aide micro */}
           {microState === "listening" && (
-            <p className='text-xs text-red-400 text-center animate-pulse'>
-              🎙️ Écoute en cours... Parle maintenant
+            <p className='text-xs text-red-400 text-center animate-pulse flex items-center justify-center gap-1'>
+              <Mic size={12} /> Écoute en cours... Parle maintenant
             </p>
           )}
           {microState === "error" && (
             <p className='text-xs text-red-400 text-center'>
-              ❌ Micro non disponible — vérifie les permissions du navigateur
+              Micro non disponible — vérifie les permissions du navigateur
             </p>
           )}
         </div>

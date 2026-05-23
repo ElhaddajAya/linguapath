@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Globe, FolderOpen, Diamond, Pin, X, ArrowLeft, Bot, PenLine, Map, BookOpen, ChevronUp, ChevronDown, ArrowRight } from "lucide-react";
 import ReactFlow, {
   Background, Controls,
   useNodesState, useEdgesState,
@@ -61,7 +62,7 @@ function RootNode({ data }) {
       position: "relative",
     }}>
       <Handles />
-      <span style={{ fontSize: 26 }}>🌍</span>
+      <Globe size={26} color="white" />
       <span style={{ color: "white", fontWeight: 700, fontSize: 11, marginTop: 4 }}>LinguaPath</span>
       <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 10 }}>{data.count} phrases</span>
     </div>
@@ -83,7 +84,9 @@ function LangueNode({ data }) {
       transition: "all 0.25s ease", position: "relative",
     }}>
       <Handles />
-      <span style={{ fontSize: 20 }}>{LANGUE_EMOJI[data.label] || "🌍"}</span>
+      {LANGUE_EMOJI[data.label]
+        ? <span style={{ fontSize: 20 }}>{LANGUE_EMOJI[data.label]}</span>
+        : <Globe size={20} color={data.dimmed ? "#A8A29E" : "#F59E0B"} />}
       <div>
         <div style={{ fontWeight: 700, fontSize: 13, color: data.dimmed ? "#A8A29E" : "#1C1917" }}>{data.label}</div>
         <div style={{ fontSize: 10, color: "#78716C" }}>{data.count} phrase{data.count > 1 ? "s" : ""}</div>
@@ -107,7 +110,7 @@ function ThemeNode({ data }) {
       transition: "all 0.25s ease", position: "relative",
     }}>
       <Handles />
-      <span style={{ fontSize: 14 }}>📂</span>
+      <FolderOpen size={14} color={data.dimmed ? "#A8A29E" : "#EA580C"} />
       <div>
         <div style={{ fontWeight: 600, fontSize: 12, color: data.dimmed ? "#A8A29E" : "#EA580C" }}>{data.label}</div>
         <div style={{ fontSize: 10, color: data.dimmed ? "#C4B5AC" : "#9A3412" }}>{data.count} phrase{data.count > 1 ? "s" : ""}</div>
@@ -132,7 +135,7 @@ function PatternNode({ data }) {
       maxWidth: 160,
     }}>
       <Handles />
-      <span style={{ fontSize: 13 }}>🔷</span>
+      <Diamond size={13} color={data.dimmed ? "#A8A29E" : "#7C3AED"} />
       <div>
         <div style={{ fontWeight: 600, fontSize: 11, color: data.dimmed ? "#A8A29E" : "#7C3AED", lineHeight: 1.3 }}>{data.label}</div>
         <div style={{ fontSize: 9, color: data.dimmed ? "#C4B5AC" : "#6D28D9" }}>{data.count} phrase{data.count > 1 ? "s" : ""}</div>
@@ -160,7 +163,7 @@ function PhraseNode({ data, selected: rfSelected }) {
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
         <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 999, background: niveauColor + "20", color: niveauColor, fontWeight: 600 }}>{data.niveau}</span>
         <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 999, background: data.source === "auto" ? "#EFF6FF" : "#F0FDF4", color: data.source === "auto" ? "#3B82F6" : "#16A34A" }}>
-          {data.source === "auto" ? "🤖" : "✍️"}
+          {data.source === "auto" ? <Bot size={9} /> : <PenLine size={9} />}
         </span>
       </div>
     </div>
@@ -433,10 +436,10 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
   }, [setSelectedPhrase]);
 
   const filAriane = useMemo(() => {
-    const p = [{ label: "🌍 LinguaPath" }];
-    if (langue)  p.push({ label: `${LANGUE_EMOJI[langue] || "🌍"} ${langue}` });
-    if (theme)   p.push({ label: `📂 ${theme}` });
-    if (pattern) p.push({ label: `🔷 ${pattern}` });
+    const p = [{ label: "LinguaPath" }];
+    if (langue)  p.push({ label: `${LANGUE_EMOJI[langue] || ""} ${langue}`.trim() });
+    if (theme)   p.push({ label: theme });
+    if (pattern) p.push({ label: pattern });
     return p;
   }, [langue, theme, pattern]);
 
@@ -464,7 +467,7 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
         ) : !allEntries.length ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-5xl mb-4">🗺️</p>
+              <Map size={48} className="text-warm-300 mx-auto mb-4" />
               <p className="text-warm-600 font-medium mb-2">Aucune phrase à visualiser</p>
               <p className="text-warm-400 text-sm mb-6">Lance une conversation pour commencer à apprendre !</p>
               <button onClick={() => navigate("/scenarios")}
@@ -493,7 +496,7 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
                 {vue !== "root" && (
                   <button onClick={retour}
                     className="flex items-center gap-1 text-xs text-orange-500 font-semibold hover:text-orange-700 transition-colors mr-2">
-                    ← Retour
+                    <ArrowLeft size={13} /> Retour
                   </button>
                 )}
                 {filAriane.map((part, i) => (
@@ -520,7 +523,9 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
                     text-warm-800 font-semibold hover:bg-warm-50 transition-colors"
                 >
                   <span>Légende</span>
-                  <span className="text-warm-400 ml-4">{showLegend ? "▲" : "▼"}</span>
+                  {showLegend
+                    ? <ChevronUp size={14} className="text-warm-400 ml-4" />
+                    : <ChevronDown size={14} className="text-warm-400 ml-4" />}
                 </button>
 
                 {/* Contenu masquable */}
@@ -553,8 +558,8 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
       {selectedPhrase && (
         <div className="w-72 bg-white rounded-2xl border border-warm-200 shadow-soft p-5 flex flex-col gap-4 self-start">
           <div className="flex items-start justify-between">
-            <h3 className="font-semibold text-warm-900 text-sm">📌 Phrase sélectionnée</h3>
-            <button onClick={() => setSelectedPhrase(null)} className="text-warm-400 hover:text-warm-700 text-lg leading-none">✕</button>
+            <h3 className="font-semibold text-warm-900 text-sm flex items-center gap-1.5"><Pin size={13} /> Phrase sélectionnée</h3>
+            <button onClick={() => setSelectedPhrase(null)} className="text-warm-400 hover:text-warm-700"><X size={16} /></button>
           </div>
           <div className="bg-warm-50 rounded-xl p-3">
             <p className="text-warm-900 font-semibold text-base leading-relaxed">{selectedPhrase.label}</p>
@@ -575,13 +580,15 @@ function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }
               Niveau {selectedPhrase.niveau}
             </span>
             <span className={`text-xs px-2.5 py-1 rounded-full ${selectedPhrase.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}>
-              {selectedPhrase.source === "auto" ? "🤖 Extrait auto" : "✍️ Ajout manuel"}
+              {selectedPhrase.source === "auto"
+                ? <span className="flex items-center gap-1"><Bot size={11} /> Extrait auto</span>
+                : <span className="flex items-center gap-1"><PenLine size={11} /> Ajout manuel</span>}
             </span>
           </div>
           <button onClick={() => navigate("/learning-log")}
             className="w-full py-2.5 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-opacity"
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}>
-            Voir dans le Learning Log →
+            <span className="flex items-center justify-center gap-1.5">Voir dans le Learning Log <ArrowRight size={13} /></span>
           </button>
         </div>
       )}
@@ -625,7 +632,7 @@ export default function MindMap() {
 
       <div className="px-6 md:px-10 py-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-warm-900">🗺️ MindMap</h1>
+          <h1 className="text-2xl font-semibold text-warm-900 flex items-center gap-2"><Map size={22} className="text-orange-500" /> MindMap</h1>
           <p className="text-warm-500 text-sm mt-1">
             {allEntries.length} phrase{allEntries.length !== 1 ? "s" : ""} organisée{allEntries.length !== 1 ? "s" : ""} par langue → thème → pattern
           </p>
@@ -640,7 +647,7 @@ export default function MindMap() {
           )}
           <button onClick={() => navigate("/learning-log")}
             className="px-4 py-2 rounded-xl text-sm border border-warm-200 text-warm-600 hover:border-orange-300 hover:text-orange-500 transition-colors bg-white">
-            📖 Learning Log
+            <BookOpen size={15} className="inline mr-1" /> Learning Log
           </button>
         </div>
       </div>

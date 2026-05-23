@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { Check, X, Settings } from "lucide-react";
 import api from "../services/api";
 
 // Niveaux possibles par langue
@@ -105,7 +106,9 @@ export default function AdminUsers() {
               : "bg-red-50 text-red-700 border border-red-200"
             }`}
         >
-          {toast.type === "success" ? "✓ " : "✕ "}
+          {toast.type === "success"
+            ? <Check size={14} className="inline mr-1" />
+            : <X size={14} className="inline mr-1" />}
           {toast.msg}
         </div>
       )}
@@ -201,7 +204,9 @@ export default function AdminUsers() {
 
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium
                       ${user.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-warm-100 text-warm-500"}`}>
-                      {user.role === "admin" ? "⚙️ Admin" : "Utilisateur"}
+                      {user.role === "admin"
+                      ? <span className="inline-flex items-center gap-1"><Settings size={11} /> Admin</span>
+                      : "Utilisateur"}
                     </span>
 
                     <button
@@ -245,7 +250,9 @@ export default function AdminUsers() {
                       </div>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0
                         ${user.role === "admin" ? "bg-purple-50 text-purple-600" : "bg-warm-100 text-warm-500"}`}>
-                        {user.role === "admin" ? "⚙️ Admin" : "User"}
+                        {user.role === "admin"
+                      ? <span className="inline-flex items-center gap-1"><Settings size={11} /> Admin</span>
+                      : "User"}
                       </span>
                     </div>
 

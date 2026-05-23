@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar.jsx";
+import { ArrowLeft, Settings } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -71,9 +72,9 @@ export default function Profile() {
                   onClick={() => navigate("/")}
                   className='w-full py-2.5 rounded-xl text-sm font-medium
                              text-warm-600 border border-warm-200 hover:bg-warm-100
-                             transition-colors'
+                             transition-colors flex items-center justify-center gap-1.5'
                 >
-                  ← Retour à l'accueil
+                  <ArrowLeft size={14} /> Retour à l'accueil
                 </button>
               </div>
             </div>
@@ -86,7 +87,7 @@ export default function Profile() {
               {user.role === 'admin' ? (
                 /* Panneau admin — pas de section langues */
                 <div className='text-center py-12'>
-                  <p className='text-5xl mb-4'>⚙️</p>
+                  <div className='flex justify-center mb-4'><Settings size={48} className="text-warm-300" /></div>
                   <p className='font-semibold text-warm-900 mb-2'>Espace administrateur</p>
                   <p className='text-warm-500 text-sm mb-6'>
                     Gérez les utilisateurs et les scénarios depuis le panneau admin.

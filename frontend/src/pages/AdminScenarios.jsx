@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { Check, X, Plus, Pencil, Trash2, Sparkles } from "lucide-react";
 import api from "../services/api";
 
 const NIVEAUX = ["A1", "A2", "B1", "B2", "C1", "C2"];
@@ -165,7 +166,9 @@ export default function AdminScenarios() {
               : "bg-red-50 text-red-700 border border-red-200"
             }`}
         >
-          {toast.type === "success" ? "✓ " : "✕ "}
+          {toast.type === "success"
+            ? <Check size={14} className="inline mr-1" />
+            : <X size={14} className="inline mr-1" />}
           {toast.msg}
         </div>
       )}
@@ -195,7 +198,7 @@ export default function AdminScenarios() {
               transition-opacity shadow-soft"
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
-            + Nouveau scénario
+            <Plus size={16} /> Nouveau scénario
           </button>
         </div>
 
@@ -297,14 +300,14 @@ export default function AdminScenarios() {
                     className="flex-1 text-xs px-3 py-2 rounded-xl border border-warm-200
                       text-warm-600 hover:border-orange-300 hover:text-orange-600 transition-colors font-medium"
                   >
-                    ✏️ Modifier
+                    <Pencil size={13} className="inline mr-1" /> Modifier
                   </button>
                   <button
                     onClick={() => setConfirmDelete(sc._id)}
                     className="flex-1 text-xs px-3 py-2 rounded-xl border border-warm-200
                       text-warm-400 hover:border-red-200 hover:text-red-500 transition-colors font-medium"
                   >
-                    🗑️ Supprimer
+                    <Trash2 size={13} className="inline mr-1" /> Supprimer
                   </button>
                 </div>
               </div>
@@ -329,10 +332,12 @@ export default function AdminScenarios() {
             {/* Header modal */}
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-warm-900 text-lg">
-                {editTarget ? "✏️ Modifier le scénario" : "✨ Nouveau scénario"}
+                {editTarget
+                  ? <><Pencil size={16} className="inline mr-1.5" />Modifier le scénario</>
+                  : <><Sparkles size={16} className="inline mr-1.5" />Nouveau scénario</>}
               </h2>
-              <button onClick={fermerModal} className="text-warm-400 hover:text-warm-700 text-xl leading-none">
-                ✕
+              <button onClick={fermerModal} className="text-warm-400 hover:text-warm-700">
+                <X size={18} />
               </button>
             </div>
 

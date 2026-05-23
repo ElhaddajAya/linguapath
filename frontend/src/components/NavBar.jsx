@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  Home, ClipboardList, BookOpen, Map, User, Users,
+  Clapperboard, LogOut, Settings, X, Menu,
+} from "lucide-react";
 import Logo from "./Logo";
 
 export default function Navbar() {
@@ -65,9 +69,9 @@ export default function Navbar() {
                   Scénarios
                 </Link>
                 <div className="w-px h-5 bg-warm-200" />
-                <span className="text-xs font-semibold px-3 py-1 rounded-full
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full
                   bg-purple-50 text-purple-600 border border-purple-100">
-                  ⚙️ Admin
+                  <Settings size={12} /> Admin
                 </span>
               </>
             )}
@@ -106,9 +110,7 @@ export default function Navbar() {
               className="p-2 rounded-lg text-warm-600 hover:bg-warm-100 transition-colors"
               aria-label="Ouvrir le menu"
             >
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              <Menu size={22} />
             </button>
           </div>
         </div>
@@ -137,9 +139,7 @@ export default function Navbar() {
             className="p-2 rounded-lg text-warm-500 hover:bg-warm-100 transition-colors"
             aria-label="Fermer le menu"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M2 2l14 14M16 2L2 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <X size={18} />
           </button>
         </div>
 
@@ -157,9 +157,9 @@ export default function Navbar() {
               <p className="font-semibold text-warm-900 text-sm truncate">{user.nom}</p>
               <p className="text-xs text-warm-400 truncate">{user.email}</p>
               {isAdmin && (
-                <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5
+                <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2 py-0.5
                   rounded-full bg-purple-50 text-purple-600">
-                  ⚙️ Admin
+                  <Settings size={11} /> Admin
                 </span>
               )}
               {!isAdmin && user.langues?.length > 0 && (
@@ -175,19 +175,19 @@ export default function Navbar() {
         {/* Liens de navigation */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
           <Link to="/" onClick={close} className={navLink}>
-            🏠 <span>Accueil</span>
+            <Home size={16} /> <span>Accueil</span>
           </Link>
 
           {!isAdmin && (
             <>
               <Link to="/historique" onClick={close} className={navLink}>
-                📋 <span>Historique</span>
+                <ClipboardList size={16} /> <span>Historique</span>
               </Link>
               <Link to="/learning-log" onClick={close} className={navLink}>
-                📚 <span>Learning Log</span>
+                <BookOpen size={16} /> <span>Learning Log</span>
               </Link>
               <Link to="/mindmap" onClick={close} className={navLink}>
-                🗺️ <span>MindMap</span>
+                <Map size={16} /> <span>MindMap</span>
               </Link>
             </>
           )}
@@ -195,16 +195,16 @@ export default function Navbar() {
           {isAdmin && (
             <>
               <Link to="/admin/users" onClick={close} className={navLink}>
-                👥 <span>Utilisateurs</span>
+                <Users size={16} /> <span>Utilisateurs</span>
               </Link>
               <Link to="/admin/scenarios" onClick={close} className={navLink}>
-                🎭 <span>Scénarios</span>
+                <Clapperboard size={16} /> <span>Scénarios</span>
               </Link>
             </>
           )}
 
           <Link to="/profile" onClick={close} className={navLink}>
-            👤 <span>Mon profil</span>
+            <User size={16} /> <span>Mon profil</span>
           </Link>
         </nav>
 
@@ -215,7 +215,7 @@ export default function Navbar() {
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl
               text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
           >
-            🚪 <span>Déconnexion</span>
+            <LogOut size={16} /> <span>Déconnexion</span>
           </button>
         </div>
       </div>

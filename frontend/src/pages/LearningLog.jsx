@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { BookOpen, Plus, X, Bot, PenLine, Trash2 } from "lucide-react";
 import api from "../services/api";
 
 // ── Constantes ──────────────────────────────────────────────
@@ -51,13 +52,15 @@ function PhraseCard({ entry, onDelete }) {
       {/* Footer : source + supprimer */}
       <div className='flex items-center justify-between pt-2 border-t border-warm-100'>
         <span className={`text-xs px-2 py-0.5 rounded-full ${entry.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}>
-          {entry.source === "auto" ? "🤖 Auto" : "✍️ Manuel"}
+          {entry.source === "auto"
+            ? <span className="inline-flex items-center gap-1"><Bot size={12} /> Auto</span>
+            : <span className="inline-flex items-center gap-1"><PenLine size={12} /> Manuel</span>}
         </span>
         <button
           onClick={() => onDelete(entry._id)}
-          className='text-xs text-warm-400 hover:text-red-500 transition-colors'
+          className='text-xs text-warm-400 hover:text-red-500 transition-colors flex items-center gap-1'
         >
-          🗑️ Supprimer
+          <Trash2 size={13} /> Supprimer
         </button>
       </div>
     </div>
@@ -181,8 +184,8 @@ export default function LearningLog() {
         {/* ── Header ── */}
         <div className='flex items-center justify-between mb-8 flex-wrap gap-4'>
           <div>
-            <h1 className='text-2xl font-semibold text-warm-900'>
-              📖 Learning Log
+            <h1 className='text-2xl font-semibold text-warm-900 flex items-center gap-2'>
+              <BookOpen size={22} className="text-orange-500" /> Learning Log
             </h1>
             <p className='text-warm-500 text-sm mt-1'>
               {entries.length} phrase{entries.length !== 1 ? "s" : ""} apprises
@@ -196,7 +199,7 @@ export default function LearningLog() {
                                    transition-opacity shadow-soft'
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
-            + Ajouter une phrase
+            <Plus size={16} /> Ajouter une phrase
           </button>
         </div>
 
@@ -287,7 +290,7 @@ export default function LearningLog() {
                                            border border-warm-200 hover:border-orange-300
                                            hover:text-orange-500 transition-colors'
               >
-                ✕ Effacer les filtres
+                <X size={13} className="inline mr-1" /> Effacer les filtres
               </button>
             )}
           </div>
@@ -344,15 +347,14 @@ export default function LearningLog() {
           >
             {/* Header modal */}
             <div className='flex items-center justify-between'>
-              <h2 className='font-semibold text-warm-900 text-lg'>
-                ✍️ Ajouter une phrase
+              <h2 className='font-semibold text-warm-900 text-lg flex items-center gap-2'>
+                <PenLine size={18} className="text-orange-500" /> Ajouter une phrase
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className='text-warm-400 hover:text-warm-700
-                                           text-xl leading-none'
+                className='text-warm-400 hover:text-warm-700'
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
