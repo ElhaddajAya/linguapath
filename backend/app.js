@@ -6,18 +6,16 @@
 const express = require('express')
 const cors = require('cors')
 
-// ── Controllers (importés directement — pas de Groq ici) ──
 const { register, login } = require('./controllers/authController')
 const { getScenarios, getScenarioById } = require('./controllers/scenarioController')
-const { getLearningLog, ajouterPhraseManuelle, supprimerPhrase } = require('./controllers/learningLogController')
 const { getQuestions, saveResult } = require('./controllers/quizController')
 const { protect, adminOnly } = require('./middleware/authMiddleware')
 
 const app = express()
 
 // ── Middlewares globaux ──
-app.use(cors())           // Autorise les requêtes cross-origin
-app.use(express.json())   // Parse automatiquement le body JSON des requêtes
+app.use(cors())
+app.use(express.json())
 
 // ── Routes Auth ──
 app.post('/api/auth/register', register)
@@ -28,16 +26,34 @@ app.get('/api/scenarios', protect, getScenarios)
 app.get('/api/scenarios/:id', protect, getScenarioById)
 
 // ── Routes Learning Log (protégées) ──
-// Note : on n'expose PAS /extraire ici — elle appelle Groq et est testée séparément
-app.get('/api/learning-log', protect, getLearningLog)
-app.post('/api/learning-log', protect, ajouterPhraseManuelle)
-app.delete('/api/learning-log/:id', protect, supprimerPhrase)
+const learningLogRoutes = require('./routes/learningLog')
+app.use('/api/learning-log', learningLogRoutes)
 
 // ── Routes Quiz (protégées) ──
 app.get('/api/quiz/:langue', protect, getQuestions)
 app.post('/api/quiz/result', protect, saveResult)
 
-// ── Route de santé — vérifie que le serveur tourne ──
+// ── Routes Chat (protégées) ──
+const chatRoutes = require('./routes/chat')
+app.use('/api/chat', chatRoutes)
+
+// ── Routes Traduction (protégées) ──
+const traductionRoutes = require('./routes/traduction')
+app.use('/api/traduction', traductionRoutes)
+
+// ── Routes Conversations (protégées) ──
+const conversationRoutes = require('./routes/conversations')
+app.use('/api/conversations', conversationRoutes)
+
+// ── Routes MindMap (protégées) ──
+const mindmapRoutes = require('./routes/mindmap')
+app.use('/api/mindmap', mindmapRoutes)
+
+// ── Routes Admin (protect + adminOnly dans le router) ──
+const adminRoutes = require('./routes/adminRoutes')
+app.use('/api/admin', adminRoutes)
+
+// ── Route de santé ──
 app.get('/', (req, res) =>
 {
   res.json({ message: 'LinguaPath Backend is running ✅' })
