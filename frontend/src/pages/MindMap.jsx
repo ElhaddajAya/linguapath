@@ -5,14 +5,14 @@
 // Clic Pattern  → seul ce pattern + ses phrases visible
 // Bouton Retour → remonte d'un niveau
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe, FolderOpen, Diamond, Pin, X, ArrowLeft, Bot, PenLine, Map, BookOpen, ChevronUp, ChevronDown, ArrowRight } from "lucide-react";
+import { Globe, FolderOpen, Diamond, Pin, X, ArrowLeft, Bot, PenLine, Map, BookOpen, ChevronUp, ChevronDown, ArrowRight, Download } from "lucide-react";
 import ReactFlow, {
   Background, Controls,
   useNodesState, useEdgesState,
   Panel, Handle, Position,
-  useReactFlow, ReactFlowProvider,
+  useReactFlow, ReactFlowProvider, getNodesBounds, getViewportForBounds,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import Navbar from "../components/NavBar";
@@ -381,9 +381,42 @@ function appliquerFiltre(nodesBase, edgesBase, vue, langSel, themeSel, patSel, o
 // ════════════════════════════════════════════════════════════════════════════
 // Inner component
 // ════════════════════════════════════════════════════════════════════════════
-function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase }) {
+function MindMapInner({ allEntries, loading, selectedPhrase, setSelectedPhrase, onExportReady }) {
   const navigate    = useNavigate();
-  const { fitView } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
+
+  const exportPNG = useCallback(() => {
+    const allNodes = getNodes();
+    if (!allNodes.length) return;
+    const nodesBounds = getNodesBounds(allNodes);
+    const imageWidth  = 1920;
+    const imageHeight = 1080;
+    const viewport    = getViewportForBounds(nodesBounds, imageWidth, imageHeight, 0.05, 2, 0.12);
+    const rfEl = document.querySelector(".react-flow__viewport");
+    if (!rfEl) return;
+    import("html-to-image").then(({ toPng }) => {
+      toPng(rfEl, {
+        backgroundColor: "#F7F9FC",
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+          width: imageWidth + "px",
+          height: imageHeight + "px",
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          transformOrigin: "top left",
+        },
+      }).then((dataUrl) => {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "linguapath-mindmap.png";
+        a.click();
+      }).catch(err => console.error("Export PNG failed:", err));
+    });
+  }, [getNodes]);
+
+  useEffect(() => {
+    if (onExportReady) onExportReady(() => exportPNG);
+  }, [exportPNG, onExportReady]);
 
   const [vue,        setVue]        = useState("root");
   const [langue,     setLangue]     = useState(null);
@@ -609,6 +642,7 @@ export default function MindMap() {
   const user        = JSON.parse(localStorage.getItem("user") || "{}");
   const languesUser = user.langues?.map((l) => l.langue) || [];
   const [filtreLangue, setFiltreLangue] = useState("");
+  const [exportFn, setExportFn] = useState(null);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -649,6 +683,16 @@ export default function MindMap() {
             className="px-4 py-2 rounded-xl text-sm border border-warm-200 text-warm-600 hover:border-orange-300 hover:text-orange-500 transition-colors bg-white">
             <BookOpen size={15} className="inline mr-1" /> Learning Log
           </button>
+          <button
+            onClick={() => exportFn && exportFn()()}
+            disabled={!allEntries.length}
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white
+              hover:opacity-90 transition-opacity flex items-center gap-1.5
+              disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+          >
+            <Download size={15} /> Exporter PNG
+          </button>
         </div>
       </div>
 
@@ -658,6 +702,7 @@ export default function MindMap() {
           loading={loading}
           selectedPhrase={selectedPhrase}
           setSelectedPhrase={setSelectedPhrase}
+          onExportReady={(fn) => setExportFn(fn)}
         />
       </ReactFlowProvider>
     </div>
