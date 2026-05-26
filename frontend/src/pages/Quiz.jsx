@@ -144,7 +144,7 @@ export default function Quiz() {
             Quelle langue veux-tu pratiquer ?
           </h1>
           <p className='text-warm-500 text-sm text-center mb-8'>
-            On va évaluer ton niveau en 10 questions rapides.
+            On va évaluer ton niveau en quelques questions rapides.
           </p>
 
           {error && (
@@ -173,17 +173,6 @@ export default function Quiz() {
               </button>
             ))}
           </div>
-
-          {/* Lien pour passer le test si déjà expérimenté */}
-          <p className='text-center mt-8 text-sm text-warm-400'>
-            Tu connais déjà ton niveau ?{" "}
-            <button
-              onClick={() => navigate("/")}
-              className='text-orange-600 font-medium hover:underline'
-            >
-              Passer pour l'instant
-            </button>
-          </p>
         </div>
       </div>
     );

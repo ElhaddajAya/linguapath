@@ -1,30 +1,37 @@
-// Logique du test d'évaluation :
-//   - getQuestions : récupère 10 questions aléatoires par langue
-//   - saveResult   : calcule le niveau et le sauvegarde dans le profil
+// Logique du quiz d'évaluation — VERSION 2
+// Changements vs v1 :
+//   - $sample MongoDB = tirage ALÉATOIRE (pas toujours les mêmes questions)
+//   - 4 questions par niveau = 24 questions au total (même précision qu'avant)
+//   - Pool de 6 questions par niveau → C(6,4) = 15 combinaisons possibles
+//   - Seuil à 60% (était 50%) → niveau plus précis et crédible
 
 const Quiz = require('../models/Quiz')
 const User = require('../models/User')
 
 // ── GET /api/quiz/:langue ──
-// Retourne 10 questions pour la langue demandée
-// On prend des questions de chaque niveau (A1→C2) pour couvrir tout le spectre
+// Retourne 24 questions pour la langue demandée (4 par niveau, tirées au hasard)
 const getQuestions = async (req, res) =>
 {
     const { langue } = req.params
 
     try
     {
-        // On récupère 2 questions par niveau — total = 12 questions max
-        // On prend seulement les champs nécessaires, PAS reponseCorrecte
-        // (on ne veut pas envoyer les réponses au frontend !)
         const niveaux = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
         let questions = []
 
         for (const niveau of niveaux)
         {
-            const q = await Quiz.find({ langue, niveau })
-                .select('-reponseCorrecte')
-                .limit(4)  // ← 4 questions par niveau
+            // $sample = tirage ALÉATOIRE dans le pool de questions de ce niveau
+            // Avec 6 questions disponibles et size:4 → 15 combinaisons différentes par niveau
+            const q = await Quiz.aggregate([
+                { $match: { langue, niveau } },   // filtre par langue + niveau
+                { $sample: { size: 4 } }           // tire 4 questions au hasard
+            ])
+
+            // Supprimer la bonne réponse avant d'envoyer au frontend
+            // (on ne veut pas que l'utilisateur puisse la voir dans la réponse HTTP)
+            q.forEach(question => delete question.reponseCorrecte)
+
             questions = [...questions, ...q]
         }
 
@@ -35,7 +42,8 @@ const getQuestions = async (req, res) =>
             })
         }
 
-        // On mélange les questions pour éviter un ordre prévisible
+        // Mélanger l'ordre global — les niveaux sont entremêlés
+        // L'utilisateur ne voit pas la progression A1 → C2 clairement
         questions = questions.sort(() => Math.random() - 0.5)
 
         res.json({ questions, langue })
@@ -47,10 +55,9 @@ const getQuestions = async (req, res) =>
 }
 
 // ── POST /api/quiz/result ──
-// Reçoit les réponses de l'utilisateur, calcule le niveau, sauvegarde dans le profil
+// Reçoit les réponses, calcule le niveau CECRL, sauvegarde dans le profil
 const saveResult = async (req, res) =>
 {
-    // reponses = [{ questionId, reponseChoisie (index 0-3) }]
     const { langue, reponses } = req.body
 
     if (!langue || !reponses?.length)
@@ -60,11 +67,11 @@ const saveResult = async (req, res) =>
 
     try
     {
-        // 1. On récupère toutes les questions avec les bonnes réponses cette fois
+        // 1. Récupérer les questions avec les bonnes réponses (cette fois on les inclut)
         const ids = reponses.map(r => r.questionId)
         const questions = await Quiz.find({ _id: { $in: ids } })
 
-        // 2. On calcule le score par niveau
+        // 2. Calculer le score par niveau
         const scoreParNiveau = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 }
         const totalParNiveau = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0 }
 
@@ -80,47 +87,45 @@ const saveResult = async (req, res) =>
             }
         }
 
-        // 3. Déterminer le niveau — approche progressive
-        // On part de A1 et on monte. Dès qu'un niveau est raté --> on s'arrête.
+        // 3. Déterminer le niveau — approche progressive avec seuil à 60%
+        // On monte de A1 vers C2 : on valide un niveau si score >= 60%
+        // Au premier échec → on s'arrête (niveau trop difficile)
+        // Exemple : A1 ✅ A2 ✅ B1 ✅ B2 ❌ → niveau B1
+        const SEUIL_REUSSITE = 0.60  // 60% = au moins 3/4 bonnes réponses par niveau
         const niveaux = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-        let niveauFinal = 'A1' // valeur par défaut si tout est raté
+        let niveauFinal = 'A1'  // valeur par défaut si tout est raté
 
         for (const niveau of niveaux)
         {
-
-            // Si pas de questions pour ce niveau → on skip sans changer le résultat
+            // Aucune question pour ce niveau (ne devrait pas arriver) → on skip
             if (totalParNiveau[niveau] === 0) continue
 
             const pourcentage = scoreParNiveau[niveau] / totalParNiveau[niveau]
 
-            if (pourcentage >= 0.5)
+            if (pourcentage >= SEUIL_REUSSITE)
             {
-                // Niveau validé → on avance
-                niveauFinal = niveau
+                niveauFinal = niveau  // niveau validé → on monte
             } else
             {
-                // Niveau raté → on s'arrête immédiatement
-                break
+                break  // niveau raté → on s'arrête ici
             }
         }
 
         // 4. Sauvegarder dans le profil utilisateur
-        // Si la langue existe déjà → on met à jour le niveau
-        // Sinon → on l'ajoute
         const user = await User.findById(req.user._id)
         const langueExistante = user.langues.find(l => l.langue === langue)
 
         if (langueExistante)
         {
-            langueExistante.niveau = niveauFinal
+            langueExistante.niveau = niveauFinal  // mise à jour
         } else
         {
-            user.langues.push({ langue, niveau: niveauFinal })
+            user.langues.push({ langue, niveau: niveauFinal })  // nouvelle langue
         }
 
         await user.save()
 
-        // 5. Retourner le résultat
+        // 5. Retourner le résultat avec le détail par niveau
         res.json({
             message: 'Niveau sauvegardé',
             niveau: niveauFinal,
