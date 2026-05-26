@@ -1,8 +1,7 @@
 const User = require('../models/User')
-const jwt = require('jsonwebtoken')
+const jwt  = require('jsonwebtoken')
 
-const generateToken = (userId) =>
-{
+const generateToken = (userId) => {
   return jwt.sign(
     { id: userId },
     process.env.JWT_SECRET,
@@ -11,20 +10,16 @@ const generateToken = (userId) =>
 }
 
 // ── POST /api/auth/register ──
-const register = async (req, res) =>
-{
+const register = async (req, res) => {
   const { nom, email, password } = req.body
 
-  if (!nom || !email || !password)
-  {
+  if (!nom || !email || !password) {
     return res.status(400).json({ message: 'Nom, email et mot de passe sont requis' })
   }
 
-  try
-  {
+  try {
     const existingUser = await User.findOne({ email })
-    if (existingUser)
-    {
+    if (existingUser) {
       return res.status(400).json({ message: 'Cet email est déjà utilisé' })
     }
 
@@ -40,38 +35,40 @@ const register = async (req, res) =>
         id: user._id,
         nom: user.nom,
         email: user.email,
-        langues: user.langues,  // tableau vide au départ
+        langues: user.langues,
         role: user.role,
       },
     })
-  } catch (err)
-  {
-    console.error('ERREUR REGISTER DÉTAIL:', err) // ← temporaire pour debug
+  } catch (err) {
+    console.error('ERREUR REGISTER DÉTAIL:', err)
     res.status(500).json({ message: 'Erreur serveur', error: err.message })
   }
 }
 
 // ── POST /api/auth/login ──
-const login = async (req, res) =>
-{
+const login = async (req, res) => {
   const { email, password } = req.body
 
-  if (!email || !password)
-  {
+  if (!email || !password) {
     return res.status(400).json({ message: 'Email et mot de passe sont requis' })
   }
 
-  try
-  {
+  try {
     const user = await User.findOne({ email })
-    if (!user)
-    {
+
+    // 1. User introuvable
+    if (!user) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect' })
     }
 
+    // 2. Compte désactivé ← vérification au bon endroit
+    if (user.isActive === false) {
+      return res.status(403).json({ message: 'Votre compte a été désactivé. Contactez un administrateur.' })
+    }
+
+    // 3. Mauvais mot de passe
     const isMatch = await user.comparePassword(password)
-    if (!isMatch)
-    {
+    if (!isMatch) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect' })
     }
 
@@ -84,12 +81,11 @@ const login = async (req, res) =>
         id: user._id,
         nom: user.nom,
         email: user.email,
-        langues: user.langues,  // [ { langue, niveau } ]
+        langues: user.langues,
         role: user.role,
       },
     })
-  } catch (err)
-  {
+  } catch (err) {
     res.status(500).json({ message: 'Erreur serveur', error: err.message })
   }
 }
