@@ -15,6 +15,16 @@ import api from "../services/api";
 // ──────────────────────────────────────
 const LANGUES_NON_LATINES = ["Coréen", "Japonais", "Chinois", "Arabe"];
 
+// Filet de sécurité : si le backend renvoie accidentellement le JSON brut, on extrait "reponse"
+function extraireContenu(valeur) {
+  if (typeof valeur !== "string") return valeur;
+  try {
+    const parsed = JSON.parse(valeur);
+    if (parsed && typeof parsed.reponse === "string") return parsed.reponse;
+  } catch {}
+  return valeur;
+}
+
 function Message({ msg, langue }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -213,7 +223,7 @@ export default function Chat() {
 
           const introMessage = {
             role: "assistant",
-            contenu: intro.data.reponse,
+            contenu: extraireContenu(intro.data.reponse),
           };
           setHistorique([introMessage]);
 
@@ -306,7 +316,7 @@ export default function Chat() {
         message: `Start the conversation now. Greet the user briefly in your role (2-3 sentences max), ask ONE simple opening question, and provide 3 suggestions of what the user could reply.`,
       });
 
-      const introMessage = { role: "assistant", contenu: intro.data.reponse };
+      const introMessage = { role: "assistant", contenu: extraireContenu(intro.data.reponse) };
       setHistorique([introMessage]);
 
       if (intro.data.suggestions?.length) {
@@ -349,7 +359,7 @@ export default function Chat() {
 
       setHistorique((prev) => [
         ...prev,
-        { role: "assistant", contenu: res.data.reponse },
+        { role: "assistant", contenu: extraireContenu(res.data.reponse) },
       ]);
 
       // Mettre à jour les suggestions pour le prochain tour

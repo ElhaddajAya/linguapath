@@ -2,6 +2,41 @@
 // Utilise Groq (LLaMA 3.3 70B) — 14 400 req/jour gratuit
 
 const express = require('express')
+
+// Répare le JSON malformé que les LLMs produisent parfois :
+// - vrais sauts de ligne à l'intérieur des strings → \n
+// - séquences d'échappement invalides (ex: \→, \—) → backslash doublé
+const VALID_ESCAPES = new Set(['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'])
+function repairJson(str)
+{
+    let out = ''
+    let inStr = false
+    for (let i = 0; i < str.length; i++)
+    {
+        const c = str[i]
+        if (c === '\\' && inStr)
+        {
+            const next = str[i + 1]
+            if (VALID_ESCAPES.has(next))
+            {
+                // Séquence d'échappement valide — on la garde telle quelle
+                out += c + next
+                i++
+            } else
+            {
+                // Mauvais caractère échappé (ex: \→, \—) — on échappe le backslash
+                out += '\\\\'
+            }
+            continue
+        }
+        if (c === '"') inStr = !inStr
+        else if (inStr && c === '\n') { out += '\\n'; continue }
+        else if (inStr && c === '\r') { out += '\\r'; continue }
+        else if (inStr && c === '\t') { out += '\\t'; continue }
+        out += c
+    }
+    return out
+}
 const router = express.Router()
 const { protect } = require('../middleware/authMiddleware')
 const { envoyerMessage } = require('../services/groqService')
@@ -120,7 +155,8 @@ Do NOT respond to the text. Do NOT answer questions. Do NOT explain anything. Do
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `
 
-        const modelAUtiliser = 'llama-3.3-70b-versatile'
+        // llama-3.1-8b-instant : suffisant pour traduction/romanisation, quota séparé du 70B
+        const modelAUtiliser = 'llama-3.1-8b-instant'
 
         const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()
@@ -131,8 +167,8 @@ Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations
             data = JSON.parse(clean)
         } catch
         {
-            const match = clean.match(/\{[\s\S]*?\}/)
-            if (match) data = JSON.parse(match[0])
+            const jsonStr = clean.match(/\{[\s\S]*?\}/)?.[0] || clean
+            data = JSON.parse(repairJson(jsonStr))
         }
 
         res.json({

@@ -3,6 +3,36 @@
 // pour qu'il garde le contexte de la conversation.
 
 const Scenario = require('../models/Scenario')
+
+const VALID_ESCAPES = new Set(['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'])
+function repairJson(str)
+{
+    let out = ''
+    let inStr = false
+    for (let i = 0; i < str.length; i++)
+    {
+        const c = str[i]
+        if (c === '\\' && inStr)
+        {
+            const next = str[i + 1]
+            if (VALID_ESCAPES.has(next))
+            {
+                out += c + next
+                i++
+            } else
+            {
+                out += '\\\\'
+            }
+            continue
+        }
+        if (c === '"') inStr = !inStr
+        else if (inStr && c === '\n') { out += '\\n'; continue }
+        else if (inStr && c === '\r') { out += '\\r'; continue }
+        else if (inStr && c === '\t') { out += '\\t'; continue }
+        out += c
+    }
+    return out
+}
 const { envoyerMessage } = require('../services/groqService')
 
 // ──────────────────────────────────────────────────────────────
@@ -285,7 +315,16 @@ RÈGLES SUGGESTIONS :
         {
             const cleanRaw = reponseRaw.replace(/```json|```/g, '').trim()
             const jsonMatch = cleanRaw.match(/\{[\s\S]*\}/)
-            const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleanRaw)
+            const jsonStr = jsonMatch ? jsonMatch[0] : cleanRaw
+
+            let parsed
+            try
+            {
+                parsed = JSON.parse(jsonStr)
+            } catch
+            {
+                parsed = JSON.parse(repairJson(jsonStr))
+            }
             reponseIA = parsed.reponse || reponseRaw
         } catch
         {
