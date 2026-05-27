@@ -7,6 +7,8 @@ require('dotenv').config()
 
 const app = require('./app') // l'app Express (routes, middlewares)
 const connectDB = require('./config/db') // connexion MongoDB Atlas
+const userRoutes = require('./routes/userRoutes')
+app.use('/api/users', userRoutes)
 
 // Connexion à la base
 connectDB()
