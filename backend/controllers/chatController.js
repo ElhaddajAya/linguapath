@@ -1,5 +1,5 @@
 // Gère l'envoi et la réception des messages dans une conversation.
-// À chaque message, on envoie TOUT l'historique à Groq
+// À chaque message, on envoie TOUT l'historique à OpenAI
 // pour qu'il garde le contexte de la conversation.
 
 const Scenario = require('../models/Scenario')
@@ -33,42 +33,42 @@ function repairJson(str)
     }
     return out
 }
+
 const { envoyerMessage } = require('../services/groqService')
 
 // ──────────────────────────────────────────────────────────────
-// Instructions de niveau CECRL — une entrée par niveau
-// Chaque niveau définit ce qui est AUTORISÉ et ce qui est INTERDIT
-// Ces règles s'appliquent à TOUTES les langues sans exception
+// Instructions de niveau CECRL — vocabulaire ET longueur de réponse
 // ──────────────────────────────────────────────────────────────
 const niveauInstructions = {
     'A1': `NIVEAU A1 — DÉBUTANT ABSOLU :
-✅ AUTORISÉ : phrases 3-6 mots, vocabulaire basique, présent simple uniquement, questions simples.
-❌ INTERDIT : conditionnel, subjonctif, imparfait, futur, passé composé, expressions idiomatiques, phrases complexes.`,
+✅ AUTORISÉ : phrases 3-5 mots MAX, vocabulaire basique du quotidien, présent simple uniquement, une seule question simple.
+❌ INTERDIT : conditionnel, subjonctif, imparfait, futur, passé composé, expressions idiomatiques, mots rares, phrases longues.
+📏 LONGUEUR RÉPONSE : 1-2 phrases très courtes. Jamais plus de 15 mots au total.`,
 
     'A2': `NIVEAU A2 — ÉLÉMENTAIRE :
-✅ AUTORISÉ : phrases max 12-15 mots, vocabulaire quotidien, présent + passé composé simple + futur proche, connecteurs simples (et, mais, parce que).
-❌ INTERDIT : subjonctif, conditionnel, imparfait narratif, phrases trop longues, vocabulaire spécialisé.`,
+✅ AUTORISÉ : phrases max 10 mots, vocabulaire quotidien simple, présent + passé composé + futur proche, connecteurs basiques (and, but, because).
+❌ INTERDIT : subjonctif, conditionnel, imparfait narratif, vocabulaire spécialisé ou soutenu, phrases longues.
+📏 LONGUEUR RÉPONSE : 2 phrases courtes maximum. Jamais plus de 25 mots au total.`,
 
     'B1': `NIVEAU B1 — INTERMÉDIAIRE :
-✅ AUTORISÉ : phrases bien construites, vocabulaire varié courant, présent/passé/futur/conditionnel présent, subjonctif très courant, quelques expressions idiomatiques fréquentes.
-❌ INTERDIT : subjonctif imparfait, vocabulaire littéraire ou technique, structures grammaticales rares.`,
+✅ AUTORISÉ : phrases bien construites, vocabulaire courant naturel, temps courants + conditionnel présent, expressions idiomatiques très fréquentes.
+❌ INTERDIT : vocabulaire littéraire, technique ou médical rare, structures grammaticales rares, jargon de spécialité.
+📏 LONGUEUR RÉPONSE : 2-3 phrases naturelles. Jamais plus de 40 mots au total.`,
 
     'B2': `NIVEAU B2 — INTERMÉDIAIRE AVANCÉ :
-✅ AUTORISÉ : phrases complexes, vocabulaire riche courant, tous les temps courants, subjonctif présent, expressions idiomatiques naturelles.
-❌ INTERDIT : registre littéraire soutenu, vocabulaire rare ou archaïque, subjonctif imparfait.`,
+✅ AUTORISÉ : phrases variées et naturelles, vocabulaire riche MAIS COURANT (pas de jargon rare), tous les temps courants, expressions idiomatiques naturelles.
+❌ INTERDIT : vocabulaire rare ou archaïque, jargon médical/technique non expliqué (ex: "debilitating", "alleviate" sans contexte clair), registre littéraire.
+📏 LONGUEUR RÉPONSE : 2-3 phrases. Chaque phrase : max 20 mots. Total : max 50 mots.`,
 
     'C1': `NIVEAU C1 — AVANCÉ :
-✅ Langue naturelle et fluide. Vocabulaire riche et précis. Toutes les structures grammaticales. Expressions idiomatiques, registres variés.`,
+✅ Langue naturelle et fluide. Vocabulaire riche et précis. Toutes les structures. Expressions idiomatiques. Registres variés.
+📏 LONGUEUR RÉPONSE : 2-3 phrases naturelles. Max 60 mots.`,
 
     'C2': `NIVEAU C2 — MAÎTRISE :
-✅ Aucune restriction. Parle comme un locuteur natif cultivé. Tous registres, toutes nuances.`,
+✅ Aucune restriction. Locuteur natif cultivé. Tous registres, toutes nuances.
+📏 LONGUEUR RÉPONSE : 2-3 phrases. Max 70 mots.`,
 }
 
-// ──────────────────────────────────────────────────────────────
-// Règles de saisie par langue
-// L'utilisateur peut écrire en romanisation — c'est un mode de saisie valide
-// Le modèle doit comprendre et NE PAS corriger la romanisation si elle est correcte
-// ──────────────────────────────────────────────────────────────
 const reglesSaisie = {
     'Coréen': `
   CORÉEN — CAS CONCRETS :
@@ -105,10 +105,6 @@ const reglesSaisie = {
   ✅ VALIDE   : "shukraan jazeelan" → "shukran jazeilan" — phonétique incorrecte`,
 }
 
-// ──────────────────────────────────────────────────────────────
-// Exemples de correction par langue
-// Utilisés dans le prompt pour guider le modèle avec des cas concrets
-// ──────────────────────────────────────────────────────────────
 const exemplesCorrectionParLangue = {
     'Espagnol': `
 Exemples pour l'Espagnol :
@@ -118,48 +114,44 @@ Exemples pour l'Espagnol :
 
     'Anglais': `
 Exemples pour l'Anglais :
-  ❌ "moorning" → ✅ "morning" — spelling: only one 'o'.
-  ❌ "stomache" → ✅ "stomach" — spelling: no 'e' at the end.
+  ❌ "moorning" → ✅ "morning" — only one 'o'.
+  ❌ "stomache" → ✅ "stomach" — no 'e' at the end.
   ❌ "yestarday" → ✅ "yesterday" — spelling error.
-  ❌ "beleive" → ✅ "believe" — spelling: 'ie' not 'ei'.
-  ❌ "I have went" → ✅ "I have gone" — "gone" is the past participle of "go".
-  ❌ "She don't know" → ✅ "She doesn't know" — with "she", use "doesn't".
+  ❌ "beleive" → ✅ "believe" — 'ie' not 'ei'.
+  ❌ "I have went" → ✅ "I have gone" — past participle of "go".
+  ❌ "She don't know" → ✅ "She doesn't know" — 3rd person singular.
   ❌ "I am agree" → ✅ "I agree" — "agree" is a verb, not an adjective.`,
 
     'Français': `
 Exemples pour le Français :
-  ❌ "j'ai achetais" → ✅ "j'ai acheté" — avec "avoir", on utilise le participe passé, pas l'imparfait.
-  ❌ "Il faut que tu viens" → ✅ "Il faut que tu viennes" — après "il faut que", on utilise le subjonctif.`,
+  ❌ "j'ai achetais" → ✅ "j'ai acheté" — participe passé avec "avoir".
+  ❌ "Il faut que tu viens" → ✅ "Il faut que tu viennes" — subjonctif après "il faut que".`,
 
     'Allemand': `
 Exemples pour l'Allemand :
   ❌ "Ich habe gegessen haben" → ✅ "Ich habe gegessen" — kein doppeltes Hilfsverb.
-  ❌ "Ich gehe in die Schule gestern" → ✅ "Ich bin gestern in die Schule gegangen" — Bewegungsverb mit "sein".`,
+  ❌ "Ich gehe in die Schule gestern" → ✅ "Ich bin gestern in die Schule gegangen".`,
 
     'Coréen': `
 Exemples pour le Coréen (romanisation) :
-  ❌ "gamsahamnidda" → ✅ "gamsahamnida" — 받침이 잘못되었어요. "다"로 끝나야 해요.
-  ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — 모음이 틀렸어요. "세요"가 맞아요.
-  ❌ "mogo sipeo" → ✅ "meokgo sipeo" — "먹고"의 발음은 "meokgo"예요.
-  ✅ "annyeonghaseyo", "baega appayo", "achim buteo" → 맞아요, 수정하지 마세요.`,
+  ❌ "gamsahamnidda" → ✅ "gamsahamnida" — "다"로 끝나야 해요.
+  ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — "세요"가 맞아요.
+  ✅ "annyeonghaseyo", "baega appayo" → 맞아요, 수정하지 마세요.`,
 
     'Japonais': `
 Exemples pour le Japonais (romaji) :
   ❌ "taberu tai" → ✅ "tabetai" — "〜たい"は一つの単語です。
-  ❌ "arigatougozaimasu" → ✅ "arigatou gozaimasu" — 分けて書きます。
-  ✅ "sumimasen", "arigatou", "ohayou gozaimasu" → 正しいです、直さないでください。`,
+  ✅ "sumimasen", "arigatou" → 正しいです、直さないでください。`,
 
     'Chinois': `
 Exemples pour le Chinois (Pinyin) :
-  ❌ "wo hen hao" → ✅ "wǒ hěn hǎo" — 声调很重要，请注意标注。
-  ❌ "ni shuo shenme" → ✅ "nǐ shuō shénme" — 声调不正确。
-  ✅ "ni hao", "xie xie", "wo yao" → 没问题，不需要纠正。`,
+  ❌ "wo hen hao" → ✅ "wǒ hěn hǎo" — 声调很重要。
+  ✅ "ni hao", "xie xie" → 没问题，不需要纠正。`,
 
     'Arabe': `
 Exemples pour l'Arabe (translittération) :
-  ❌ "ana mabsoot" (locutrice) → ✅ "ana mabsoota" — المؤنث يحتاج إلى "ة" في النهاية.
-  ❌ "shukraan jazeelan" → ✅ "shukran jazeilan" — الكتابة الصوتية غير صحيحة.
-  ✅ "marhaba", "shukran", "sabah el kheir" → صحيح، لا تصحح.`,
+  ❌ "ana mabsoot" (locutrice) → ✅ "ana mabsoota" — المؤنث يحتاج إلى "ة".
+  ✅ "marhaba", "shukran" → صحيح، لا تصحح.`,
 }
 
 // ── POST /api/chat/message ──
@@ -174,171 +166,167 @@ const envoyerMessageChat = async (req, res) =>
 
     try
     {
-        // 1. Récupérer le scénario
         const scenario = await Scenario.findById(scenarioId)
         if (!scenario)
         {
             return res.status(404).json({ message: 'Scénario introuvable' })
         }
 
-        // 2. Récupérer le niveau de l'utilisateur pour cette langue
         const user = req.user
         const langueUser = user.langues?.find(l => l.langue === scenario.langue)
         const niveauUser = langueUser?.niveau || 'A1'
-
-        // 3. Récupérer les règles spécifiques à la langue (si disponibles)
         const regleSaisie = reglesSaisie[scenario.langue] || ''
         const exemplesCorrection = exemplesCorrectionParLangue[scenario.langue] || ''
-
-        // 4. Construire le system prompt complet
         const estLangueNonLatine = ['Coréen', 'Japonais', 'Chinois', 'Arabe'].includes(scenario.langue)
 
         const systemPrompt =
             `${scenario.systemPrompt}
 
 ════════════════════════════════════════════════════════
-TON DOUBLE RÔLE — LIS CECI EN PREMIER
+TON DOUBLE RÔLE
 ════════════════════════════════════════════════════════
 
-Tu as DEUX rôles simultanés que tu dois jouer à chaque réponse, sans exception :
-
-RÔLE 1 — TUTEUR DE LANGUE :
-Avant de répondre en tant que personnage, tu DOIS analyser le message de l'apprenant et corriger toute erreur.
-C'est NON NÉGOCIABLE. Chaque message DOIT être analysé.
-
-RÔLE 2 — PERSONNAGE DU SCÉNARIO :
-Après la correction (s'il y en a une), tu continues la scène naturellement dans ton rôle.
+RÔLE 1 — TUTEUR : Analyse chaque message et corrige les vraies erreurs.
+RÔLE 2 — PERSONNAGE : Continue la scène après la correction.
 
 ════════════════════════════════════════════════════════
-ÉTAPE 1 OBLIGATOIRE — ANALYSE DES ERREURS (AVANT TOUT)
+ÉTAPE 1 — CORRECTION (OBLIGATOIRE AVANT TOUT)
 ════════════════════════════════════════════════════════
 
-${estLangueNonLatine ? `Le message est en alphabet natif OU en romanisation ?
-→ Si ROMANISATION (lettres latines a-z) : cherche uniquement les erreurs phonétiques dans la transcription.
-   ❌ JAMAIS convertir la romanisation en alphabet natif — c'est un mode de saisie valide.
-   ❌ JAMAIS répéter ce que l'utilisateur a écrit en alphabet natif au début de ta réponse.
-   ✅ Corriger uniquement si la phonétique est fausse (mauvaise consonne/voyelle).
+${estLangueNonLatine ? `Le message est en romanisation (lettres a-z) ou en alphabet natif ?
+→ ROMANISATION : cherche uniquement les erreurs phonétiques (mauvaise consonne/voyelle).
+   ❌ JAMAIS convertir la romanisation en alphabet natif.
+   ❌ JAMAIS répéter le message de l'user en alphabet natif dans ta réponse.
 ${regleSaisie}
-→ Si ALPHABET NATIF : cherche toutes les erreurs orthographiques et grammaticales.` :
-`Cherche TOUTES les erreurs dans le message :`}
+→ ALPHABET NATIF : cherche toutes les erreurs orthographiques et grammaticales.` :
+                `Cherche les erreurs réelles dans le message.`}
 
-TYPES D'ERREURS À CORRIGER — TOUS OBLIGATOIRES :
-✅ Orthographe : "moorning"→"morning", "stomache"→"stomach", "yestarday"→"yesterday", "beleive"→"believe"
-✅ Mots répétés : "i have have" → "I have", "je suis suis" → "je suis"
-✅ Conjugaison : "She don't know" → "She doesn't know", "I have went" → "I have gone"
-✅ Accord : "un mesa" → "una mesa", "les livre" → "les livres"
-✅ Vocabulaire mal utilisé ou expression incorrecte
-✅ Structure grammaticalement fausse
+QU'EST-CE QU'UNE VRAIE ERREUR ? — RÈGLE FONDAMENTALE
+Une vraie erreur = faute qui rend la phrase grammaticalement incorrecte ou inintelligible.
+✅ À CORRIGER :
+  - Orthographe incorrecte : "moorning", "beleive", "stomache"
+  - Ponctuation manquante sur pronom : "i am" → "I am"
+  - Conjugaison fausse : "She don't" → "She doesn't", "I have went" → "I have gone"
+  - Accord incorrect : "un mesa" → "una mesa"
+  - Mot vraiment mal utilisé
+
+❌ NE PAS CORRIGER — ces phrases sont CORRECTES :
+  - "I have trouble standing for long" → ✅ parfaitement correct en anglais
+  - "It's in my lower back" → ✅ correct
+  - "I think it's because of..." → ✅ correct
+  - Toute phrase qui est grammaticalement acceptable, même si une autre formulation existe
+  - Les variantes stylistiques ou expressions informelles mais correctes
+  - Les phrases courtes et elliptiques qui sont naturelles à l'oral
+
+TEST AVANT DE CORRIGER : "Est-ce que cette phrase est grammaticalement incorrecte ?"
+→ Si NON → ne pas corriger, passer directement à la réplique de personnage.
+→ Si OUI → corriger avec une explication COURTE (max 8 mots).
 ${exemplesCorrection}
 
-RÈGLE SI AUCUNE ERREUR : ne mentionne RIEN. Pas de "c'est correct", "bien dit", "no hay error". Silence total — passe directement à ta réplique.
+FORMAT CORRECTION — COURT ET PRÉCIS :
+💡 Correction : "[erreur]" → "[correct]" — [explication max 8 mots en ${scenario.langue}]
 
-FORMAT DE CORRECTION — STRUCTURE EXACTE ET OBLIGATOIRE :
-💡 Correction : "[mot/phrase erroné(e)]" → "[forme correcte]" — [explication COURTE en ${scenario.langue}]
+❌ INTERDIT : explication longue avec "although", "whereas", "in this context", etc.
+❌ INTERDIT : corriger une phrase correcte sous prétexte qu'une formulation "plus élégante" existe.
+❌ INTERDIT : répondre avec seulement la correction sans continuer la scène.
 
-[ligne vide]
+RÈGLE SILENCE ABSOLUE : si aucune vraie erreur →
+Ta réponse COMMENCE DIRECTEMENT par la réplique du personnage. Aucun mot avant.
+❌ JAMAIS écrire : "No correction needed.", "No error.", "Correct!", "Well done.", ou TOUTE phrase similaire.
+❌ JAMAIS écrire : "Correction : None.", "Correction : Aucune.", "Aucune correction.", "Aucune faute.", ou TOUTE phrase similaire.
+❌ Même avec "💡" devant — si il n'y a PAS d'erreur, RIEN ne précède ta réplique.
 
-[ta réplique de personnage]
+EXEMPLE EXACT — message sans erreur : "About three days now."
+✅ TA RÉPONSE (correcte) : "Is the cough painful or just annoying?"
+❌ TA RÉPONSE (interdite) : "💡 No correction needed.\n\nIs the cough painful or just annoying?"
+❌ TA RÉPONSE (interdite) : "No correction needed. Is the cough painful or just annoying?"
 
-EXEMPLE — scénario médecin, utilisateur écrit "good moorning doctor! i have have a cough" :
-💡 Correction : "moorning" → "morning" — only one 'o' in morning.
-💡 Correction : "i have have" → "I have" — do not repeat the verb.
-
-I'm sorry to hear that. How long have you had this cough?
-
-❌ INTERDIT : répondre SANS correction quand il y a des erreurs évidentes.
-❌ INTERDIT : répondre avec SEULEMENT la correction sans continuer la scène.
-
-════════════════════════════════════════════════════════
-ÉTAPE 2 — INCARNATION DU PERSONNAGE
-════════════════════════════════════════════════════════
-
-${scenario.systemPrompt ? '' : 'Joue ton personnage pleinement.'}
-- Vocabulaire de ton métier et contexte (un médecin parle de symptômes, un vendeur de prix...).
-- Réagis comme TON personnage réagirait — ses expressions, ses habitudes propres.
-- Varie la structure de tes phrases — jamais deux réponses identiques.
-- Maximum 3 phrases. UNE SEULE question à la fois.
+La SEULE chose qui doit apparaître avant ta réplique c'est "💡 Correction : ..." ET SEULEMENT s'il y a une vraie erreur.
 
 ════════════════════════════════════════════════════════
-RÈGLE — NIVEAU ${niveauUser}
+ÉTAPE 2 — RÉPLIQUE DU PERSONNAGE
+════════════════════════════════════════════════════════
+
+- Reste dans ton rôle. Vocabulaire naturel de ton métier.
+- UNE SEULE question à la fois.
+- Ne reviens pas sur un sujet déjà abordé dans l'historique.
+
+════════════════════════════════════════════════════════
+RÈGLE NIVEAU ${niveauUser} — VOCABULAIRE ET LONGUEUR
 ════════════════════════════════════════════════════════
 
 ${niveauInstructions[niveauUser]}
 
-════════════════════════════════════════════════════════
-RÈGLE — LANGUE DE RÉPONSE
-════════════════════════════════════════════════════════
-
-Ta réplique de personnage : EXCLUSIVEMENT en ${scenario.langue}, alphabet natif.
-L'explication dans 💡 Correction : en ${scenario.langue} également, jamais en français.
-
-════════════════════════════════════════════════════════
-RÈGLE — NE JAMAIS RÉPÉTER
-════════════════════════════════════════════════════════
-
-Lis l'historique avant de poser une question. Si un sujet a déjà été abordé → avance naturellement.
+VOCABULAIRE ADAPTÉ AU NIVEAU — exemples concrets :
+❌ "debilitating", "alleviate", "rule out underlying conditions" → trop avancé pour B2 et moins
+✅ "really painful", "help with the pain", "check if something is wrong" → naturel pour B2
+❌ "I'd like to examine further to rule out any underlying conditions" → trop formel, trop long
+✅ "Let me take a closer look. Where exactly does it hurt?" → naturel, court, efficace
 
 ════════════════════════════════════════════════════════
-FORMAT JSON OBLIGATOIRE — DERNIÈRE INSTRUCTION
+RÈGLE LANGUE
 ════════════════════════════════════════════════════════
 
-Réponds TOUJOURS et UNIQUEMENT avec ce JSON valide. Zéro texte en dehors.
+Réplique : EXCLUSIVEMENT en ${scenario.langue}, alphabet natif.
+Explication dans 💡 : en ${scenario.langue}, jamais en français.
 
-RAPPEL FINAL AVANT DE GÉNÉRER LE JSON :
-→ As-tu vérifié les erreurs du message ? → Si oui et erreurs trouvées : le champ "reponse" COMMENCE par les 💡 Correction.
-→ As-tu continué la scène après la correction ? → Obligatoire.
+════════════════════════════════════════════════════════
+FORMAT JSON — OBLIGATOIRE
+════════════════════════════════════════════════════════
+
+Réponds UNIQUEMENT avec ce JSON. Zéro texte en dehors.
 
 {
-  "reponse": "💡 Correction : ... (si erreur) \n\n [réplique personnage]",
+  "reponse": "💡 Correction : ... (seulement si vraie erreur) \n\n [réplique personnage courte]",
   "suggestions": [
-    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}",
-    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}",
-    "Phrase complète que L'UTILISATEUR pourrait dire — ${scenario.langue}, alphabet natif, niveau ${niveauUser}"
+    "Phrase DE L'APPRENANT — ${scenario.langue}, alphabet natif, niveau ${niveauUser}, 5-8 mots",
+    "Phrase DE L'APPRENANT — ${scenario.langue}, alphabet natif, niveau ${niveauUser}, 5-8 mots",
+    "Phrase DE L'APPRENANT — ${scenario.langue}, alphabet natif, niveau ${niveauUser}, 5-8 mots"
   ]
-}
+}`
 
-RÈGLES SUGGESTIONS :
-- Phrases DE L'APPRENANT, pas du personnage
-- 3 phrases complètes, variées, pertinentes par rapport à ta dernière réplique
-- Niveau ${niveauUser} strict — ${scenario.langue} uniquement, alphabet natif`
-
-        // 5. Envoyer à Groq avec tout l'historique
         const reponseRaw = await envoyerMessage(
             systemPrompt,
             historique || [],
             message
         )
 
-        // 6. Parser le JSON retourné par Groq
         let reponseIA = ''
         try
         {
             const cleanRaw = reponseRaw.replace(/```json|```/g, '').trim()
             const jsonMatch = cleanRaw.match(/\{[\s\S]*\}/)
             const jsonStr = jsonMatch ? jsonMatch[0] : cleanRaw
-
             let parsed
-            try
+            try { parsed = JSON.parse(jsonStr) }
+            catch { parsed = JSON.parse(repairJson(jsonStr)) }
+            if (parsed.reponse)
             {
-                parsed = JSON.parse(jsonStr)
-            } catch
-            {
-                parsed = JSON.parse(repairJson(jsonStr))
+                reponseIA = parsed.reponse
             }
-            reponseIA = parsed.reponse || reponseRaw
-        } catch
-        {
-            reponseIA = reponseRaw
-        }
+            else if (jsonMatch)
+            {
+                // Le modèle a mis le texte AVANT le bloc JSON — on l'extrait
+                const textAvant = cleanRaw.slice(0, cleanRaw.indexOf(jsonMatch[0])).trim()
+                reponseIA = textAvant || reponseRaw
+            }
+            else
+            {
+                reponseIA = reponseRaw
+            }
+        } catch { reponseIA = reponseRaw }
 
-        // Appel séparé pour les suggestions
-        // Langues non-latines : le modèle 8B échoue sur les alphabets non-latins → on utilise le 70B
+        // ── Filet de sécurité — supprime les variantes "aucune correction" même si le modèle les écrit ──
+        reponseIA = reponseIA
+            .replace(/^💡\s*(no correction needed\.?|no error[s]?\.?|no error found\.?|your sentence is correct\.?|well done\.?|good job\.?|that's correct\.?|no mistakes?\.?)\s*\n*/gi, '')
+            .replace(/^(no correction needed\.?|no error[s]?\.?|your sentence is correct\.?|well done\.?|that's correct\.?)\s*\n*/gi, '')
+            .replace(/^💡\s*correction\s*:\s*(none\.?|aucune\.?|aucune faute\.?|aucune erreur\.?|pas d['']erreur\.?|pas de faute\.?|no correction\.?)\s*\n*/gi, '')
+            .replace(/^correction\s*:\s*(none\.?|aucune\.?|aucune faute\.?|aucune erreur\.?)\s*\n*/gi, '')
+            .trim()
+
         let suggestions = []
         try
         {
-            const modeleSuggestions = 'llama-3.3-70b-versatile'
-
-            // Noms de langues en anglais pour éviter que le modèle génère en français
             const langueEnAnglais = {
                 'Anglais': 'English', 'Espagnol': 'Spanish', 'Français': 'French',
                 'Allemand': 'German', 'Coréen': 'Korean', 'Japonais': 'Japanese',
@@ -346,84 +334,42 @@ RÈGLES SUGGESTIONS :
             }
             const languePrompt = langueEnAnglais[scenario.langue] || scenario.langue
 
-            // Inclure les derniers échanges pour que les suggestions soient contextuelles
             const historiqueRecent = (historique || []).slice(-6)
             const contextConversation = historiqueRecent
                 .map(m => `${m.role === 'user' ? 'LEARNER' : 'AI CHARACTER'}: ${m.contenu}`)
                 .join('\n')
 
             const systemSugg =
-                `You are helping a ${languePrompt} language learner practice a realistic conversation scenario.
+                `You are helping a ${languePrompt} language learner (level ${niveauUser}) practice a conversation.
+Write 3 short, natural replies the LEARNER could say next — directly responding to the AI's last message.
 
-Your task: write 3 natural, authentic replies the LEARNER could say next.
-These MUST sound like something a real person would actually say in this exact moment — not textbook exercises.
+RULES:
+- ALL phrases in ${languePrompt} native script only
+- 5 to 8 words each — short and natural, not textbook sentences
+- Level ${niveauUser}: ${['A1', 'A2'].includes(niveauUser) ? 'very simple, common words only' : ['B1', 'B2'].includes(niveauUser) ? 'natural everyday vocabulary' : 'rich natural language'}
+- NOT phrases the doctor/waiter/character would say — only the LEARNER
+${estLangueNonLatine ? `- Native script ONLY. Zero Latin letters.` : ''}
 
-SCENARIO: "${scenario.titre}"
-LEARNER LEVEL: ${niveauUser}
-TARGET LANGUAGE: ${languePrompt} — ALL phrases in ${languePrompt}, native script only
+Return ONLY a JSON array: ["phrase1", "phrase2", "phrase3"]`
 
-WHAT MAKES A GOOD SUGGESTION:
-✅ Directly responds to the AI's last message (read it carefully)
-✅ Sounds like natural spoken language a real person would use
-✅ Length: 5 to 8 words — short, punchy, natural
-❌ NOT a long or complex sentence — keep it brief
-❌ NOT a generic phrase that could apply to any conversation
-❌ NOT a phrase the professional character (doctor, waiter, etc.) would say
+            const triggerSugg = `${contextConversation ? `HISTORY:\n${contextConversation}\n\n` : ''}AI last message: "${reponseIA}"\n\nWrite 3 learner replies.`
 
-EXAMPLES showing the difference (doctor scenario, AI asked about symptoms):
-✅ "I've had a stomachache since yesterday."
-✅ "I feel nauseous and a bit dizzy."
-✅ "It's actually for my mother, not me."
-❌ "I've been experiencing persistent fatigue and headaches for the past few weeks." — too long
-❌ "What are my options?" — too vague
-❌ "Can I get a diagnosis?" — patients don't say this
-
-GENERATE exactly 3 phrases with this variety:
-1. A SHORT ANSWER to what the AI just asked, with one specific detail
-2. A BRIEF ELABORATION adding one new relevant piece of information
-3. AN ALTERNATIVE ANGLE — a different concern the learner could raise, concisely
-
-STRICT LANGUAGE RULES:
-- ALL phrases in ${languePrompt} ONLY — never French, never another language
-- Learner's history messages may be in French — IGNORE THIS, generate in ${languePrompt}
-- Level ${niveauUser}: ${['A1', 'A2'].includes(niveauUser) ? 'simple but complete sentences, common vocabulary' : ['B1', 'B2'].includes(niveauUser) ? 'varied vocabulary, natural expressions' : 'rich, idiomatic, natural language'}
-${estLangueNonLatine ? `
-SCRIPT PURITY — ABSOLUTE:
-Use ONLY the native script of ${languePrompt}. Zero Latin letters mixed in.
-${scenario.langue === 'Coréen' ? `Korean: ONLY Hangul (가나다...). ❌ "사 bose 요" ✅ "저도 비슷한 증상이 있어요"` : ''}${scenario.langue === 'Japonais' ? `Japanese: ONLY Hiragana/Katakana/Kanji.` : ''}${scenario.langue === 'Chinois' ? `Chinese: ONLY simplified Chinese characters.` : ''}${scenario.langue === 'Arabe' ? `Arabic: ONLY Arabic script.` : ''}
-Wrong script in any syllable → rewrite the entire phrase in pure native script.` : ''}
-
-Return ONLY a JSON array, no markdown, no explanation:
-["phrase1", "phrase2", "phrase3"]`
-
-            const triggerSugg =
-                `${contextConversation ? `CONVERSATION HISTORY:\n${contextConversation}\n\n` : ''}AI CHARACTER's last message: "${reponseIA}"
-
-Write 3 realistic learner replies that directly respond to this last message.`
-
-            const resSugg = await envoyerMessage(systemSugg, [], triggerSugg, 1, modeleSuggestions)
+            const resSugg = await envoyerMessage(systemSugg, [], triggerSugg)
             const cleanSugg = resSugg.replace(/```json|```/g, '').trim()
             const arrMatch = cleanSugg.match(/\[[\s\S]*?\]/)
             const parsed = JSON.parse(arrMatch ? arrMatch[0] : cleanSugg)
             if (Array.isArray(parsed) && parsed.length > 0) suggestions = parsed.slice(0, 3)
-        } catch
-        {
-            suggestions = []
-        }
+        } catch { suggestions = [] }
 
-        // 7. Retourner la réponse au frontend
         res.json({
             reponse: reponseIA,
             suggestions,
-            nouveauMessage: {
-                role: 'assistant',
-                contenu: reponseIA,
-            }
+            nouveauMessage: { role: 'assistant', contenu: reponseIA }
         })
 
     } catch (err)
     {
-        console.error('Erreur Groq DÉTAIL:', err) // ← remplace le console.error existant
+        console.error('Erreur IA :', err.message)
         res.status(500).json({ message: "Erreur lors de la communication avec l'IA", detail: err.message })
     }
 }

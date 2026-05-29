@@ -57,10 +57,11 @@ router.post('/', protect, async (req, res) =>
             ? `You are a professional French translator. Your ONLY job is to translate text into French.
 
 CRITICAL RULES:
-- TRANSLATE the text exactly. Do NOT answer it, explain it, describe it, or add any information.
-- If the text is a question → translate the question as a question. Do NOT answer the question.
-- If the text mentions a concept → translate the words. Do NOT explain the concept.
-- Output must be a direct, natural French translation — nothing more.
+- TRANSLATE the ENTIRE text from first word to last word. NEVER stop halfway. NEVER skip any paragraph.
+- If the text has multiple paragraphs → translate ALL of them, in order, separated by a blank line.
+- If a paragraph is a question → translate the question as a question. Do NOT answer it.
+- Lines starting with "💡 Correction :" are grammar corrections → translate the ENTIRE line including the explanation after the dash (—).
+- Do NOT answer, explain, describe, or add any information beyond the translation.
 
 PRONOUN RULES — very important:
 - The text is a dialogue between a speaker and a listener.
@@ -69,19 +70,28 @@ PRONOUN RULES — very important:
 - "I/je/yo/ich" = first person → keep as first person in French
 - NEVER introduce a third person ("il", "elle", "lui") if the original has none.
 
+EXAMPLE — input with correction + character response:
+INPUT:
+💡 Correction : "Ive" → "I've" — "I've" is a contraction of "I have".
+
+How long have you been experiencing these symptoms?
+
+CORRECT OUTPUT (translate EVERYTHING):
+💡 Correction : « Ive » → « I've » — « I've » est une contraction de « I have ».
+
+Depuis combien de temps ressentez-vous ces symptômes ?
+
 EXAMPLES OF CORRECT TRANSLATIONS:
   "¿Quiere que le preparemos una tabla?" → "Voulez-vous que nous vous préparions un plateau ?"
-  "Me gustan los montaditos, por favor" → "J'aime les montaditos, s'il vous plaît"
   "I'd be happy to show you our menu" → "Je serais ravi de vous montrer notre menu"
-  "¿Qué es el gazpacho?" → "Qu'est-ce que le gaspacho ?"
 
 EXAMPLES OF FORBIDDEN TRANSLATIONS:
   "¿Quiere que le preparemos...?" → "...que je lui prépare..." ← WRONG (lui ≠ vous)
-  "Me gustan los montaditos" → "Je m'appelle les montaditos" ← COMPLETELY WRONG
+  Stopping after the 💡 Correction line ← FORBIDDEN — translate ALL paragraphs
   "¿Qué es el gazpacho?" → "Le gaspacho est une soupe froide..." ← NEVER explain
 
 Return ONLY this exact JSON format on one line, nothing else:
-{"romanisation":"","traduction":"[French translation here]"}`
+{"romanisation":"","traduction":"FRENCH_TRANSLATION_HERE"}`
 
             : langue === 'Coréen'
                 ? `You are a Korean linguistics expert. Convert Korean text to Revised Romanization of Korean (RR / 국어의 로마자 표기법) and translate to French.
@@ -102,8 +112,11 @@ CRITICAL PHONOLOGICAL RULES (apply in this order):
 5. ㅎ before ㄱ/ㄷ/ㅂ/ㅈ → k/t/p/ch (aspiration): 좋다→jota, 많다→manta
 6. ASSIMILATION of ㄱ/ㄷ/ㅂ before ㄴ/ㅁ: 먹는→meongneun, 국민→gungmin
 
+Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
+Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
 Return ONLY this exact JSON on one line:
-{"romanisation":"[RR result]","traduction":"[French translation]"}`
+{"romanisation":"RR_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
 
                 : langue === 'Japonais'
                     ? `You are a Japanese linguistics expert. Convert Japanese text to standard Hepburn romanization and translate to French.
@@ -117,8 +130,11 @@ STANDARD HEPBURN RULES:
 - ん/ン: →n normally; →m before b/p/m (三味線→shamisen); add apostrophe before vowel/n (金一→kin'ichi)
 - ぢ=ji, づ=zu (same as じ/ず in modern usage)
 
+Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
+Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
 Return ONLY this exact JSON on one line:
-{"romanisation":"[Hepburn result]","traduction":"[French translation]"}`
+{"romanisation":"HEPBURN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
 
                     : langue === 'Chinois'
                         ? `You are a Mandarin Chinese linguistics expert. Convert Chinese text to standard Pinyin with tone marks and translate to French.
@@ -130,8 +146,11 @@ SPECIAL INITIALS: zh ch sh r / z c s / j q x / b p m f d t n l g k h
 SPECIAL FINALS: -ian=-iān (not -yen), -iu=-iǔ, -ui=-uéi, -un=-ún, -ün=-üén
 NEUTRAL TONE: common particles and suffixes (的 de, 了 le, 吗 ma, 吧 ba, 呢 ne, 们 men) have no tone mark
 
+Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
+Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
 Return ONLY this exact JSON on one line:
-{"romanisation":"[Pinyin with tones]","traduction":"[French translation]"}`
+{"romanisation":"PINYIN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
 
                         : langue === 'Arabe'
                             ? `You are an Arabic linguistics expert. Convert Arabic text to readable phonetic romanization and translate to French.
@@ -143,20 +162,23 @@ COMMON WORDS (use these exact spellings): مرحبا=marhaba, شكراً=shukran
 
 RULES: write phonetically as a French speaker would read it; no capital letters; separate words with spaces; shadda (ّ) doubles the consonant
 
+Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
+Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
 Return ONLY this exact JSON on one line:
-{"romanisation":"[phonetic romanization]","traduction":"[French translation]"}`
+{"romanisation":"PHONETIC_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
 
                             : `Translate the given text to French.
 Return ONLY this exact JSON format on one line:
-{"romanisation":"","traduction":"[French translation here]"}
+{"romanisation":"","traduction":"FRENCH_TRANSLATION_HERE"}
 
-Your ONLY job is to translate/romanize the text.
-Do NOT respond to the text. Do NOT answer questions. Do NOT explain anything. Do NOT add any commentary.
+Your ONLY job is to translate/romanize the entire text from first to last word. NEVER stop halfway.
+Do NOT respond to the text. Translate questions as questions. Do NOT explain anything.
+Lines starting with "💡 Correction :" → keep the format, translate the explanation after the dash (—) into French.
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `
 
-        // llama-3.1-8b-instant : suffisant pour traduction/romanisation, quota séparé du 70B
-        const modelAUtiliser = 'llama-3.1-8b-instant'
+        const modelAUtiliser = 'llama-3.3-70b-versatile'
 
         const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()
@@ -171,10 +193,23 @@ Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations
             data = JSON.parse(repairJson(jsonStr))
         }
 
-        res.json({
-            romanisation: data?.romanisation || '',
-            traduction: data?.traduction || '',
-        })
+        const decodeHtml = (str) => str
+            .replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
+            .replace(/^\[|\]$/g, '').trim()
+
+        let traduction = decodeHtml(data?.traduction || '')
+        // Écarte le placeholder non remplacé ou les traductions hallucinées trop longues
+        const PLACEHOLDERS = ['FRENCH_TRANSLATION_HERE', 'RR_RESULT', 'HEPBURN_RESULT', 'PINYIN_RESULT', 'PHONETIC_RESULT']
+        if (PLACEHOLDERS.includes(traduction)) traduction = ''
+        const inputMots = texte.trim().split(/\s+/).length
+        const outputMots = traduction.split(/\s+/).length
+        if (outputMots > inputMots * 5) traduction = ''
+
+        let romanisation = decodeHtml(data?.romanisation || '')
+        if (PLACEHOLDERS.includes(romanisation)) romanisation = ''
+
+        res.json({ romanisation, traduction })
 
     } catch (err)
     {

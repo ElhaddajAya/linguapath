@@ -87,9 +87,10 @@ export default function Profile() {
       if (changePwd) { body.currentPassword = currentPwd; body.newPassword = newPwd; }
 
       const res = await api.put("/users/me", body);
-      const updatedUser = { ...user, nom: res.data.user.nom, avatar: res.data.user.avatar };
+      const updatedUser = { ...user, nom: res.data.user.nom, avatar: res.data.user.avatar ?? "" };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
+      window.dispatchEvent(new Event("userUpdated"));
       setEditing(false);
       setChangePwd(false);
       setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");

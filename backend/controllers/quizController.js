@@ -136,6 +136,7 @@ const saveResult = async (req, res) =>
                 email: user.email,
                 langues: user.langues,
                 role: user.role,
+                avatar: user.avatar || '',
             }
         })
 

@@ -43,10 +43,37 @@ const extrairePhrasesApprises = async (req, res) =>
         const systemPrompt = `You are a language learning expert. Extract practical, reusable phrases from this conversation.
 
 WHAT TO EXTRACT :
-- Any phrase from the conversation (said by the learner OR the AI character) that is:
-  • Genuinely useful and natural to reuse in similar situations
-  • Not trivially basic (not: hello, goodbye, yes, no, thank you, please, OK, I understand)
-  • Not too specific to this exact exchange (not: unique proper names, specific one-time numbers)
+Your goal is to find phrases the learner can REUSE in a real-life situation similar to this scenario.
+Source doesn't matter — extract from LEARNER or AI CHARACTER lines, whichever are more useful.
+
+A phrase is worth extracting if ALL of these are true :
+  ✅ Useful in real life — someone would actually say this in a similar real situation
+  ✅ Contains specific vocabulary related to the scenario theme (medical, shopping, travel, work...)
+  ✅ Grammatically correct — NEVER extract a phrase containing an error
+     (the learner may have made mistakes — skip those phrases entirely)
+  ✅ Natural and complete — a real person would say it exactly as-is
+
+A phrase is NOT worth extracting if ANY of these apply :
+  ❌ Too basic : "Hello", "Thank you", "Yes", "No", "Okay", "See you", "I understand"
+  ❌ Too vague and usable in any situation without specific vocabulary
+  ❌ Contains a grammar or spelling error (even if said by the learner)
+  ❌ Too specific to this exact exchange (unique names, one-time specific numbers)
+
+REAL-LIFE USEFULNESS TEST — ask yourself :
+"If someone goes to a doctor / shop / interview tomorrow, would this phrase help them?"
+→ YES + has specific vocabulary → extract it
+→ NO or too generic → skip it
+
+GOOD examples for a medical scenario :
+  ✅ "It comes and goes, especially when I bend over." — specific symptom description
+  ✅ "The pain radiates to my left leg." — medical vocabulary, reusable
+  ✅ "I've been taking ibuprofen for the pain." — useful medical context
+  ✅ "I'd like to get a referral to a specialist." — useful administrative phrase
+  ✅ "What brings you to the clinic today?" — useful for understanding/context
+  ❌ "Yes it does." — too basic
+  ❌ "That sounds good." — too vague
+  ❌ "Hello doctor." — too basic
+
 - Maximum 5 phrases total
 - Each phrase: 3 to 12 words
 
