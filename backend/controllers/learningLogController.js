@@ -3,7 +3,7 @@
 
 const LearningEntry = require('../models/LearningEntry')
 const Scenario = require('../models/Scenario')
-const { envoyerMessage } = require('../services/groqService')
+const { envoyerMessage } = require('../services/openaiService')
 
 // ── POST /api/learning-log/extraire ──
 // Analyse une conversation et extrait les phrases importantes
@@ -167,7 +167,7 @@ Extract up to 5 useful phrases following all the rules above.`
             [],
             messageUser,
             1,
-            'llama-3.3-70b-versatile'
+            'gpt-4o-mini'
         )
 
         // 5. Parser le JSON retourné par Groq

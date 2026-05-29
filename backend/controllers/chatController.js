@@ -34,7 +34,7 @@ function repairJson(str)
     return out
 }
 
-const { envoyerMessage } = require('../services/groqService')
+const { envoyerMessage } = require('../services/openaiService')
 
 // ──────────────────────────────────────────────────────────────
 // Instructions de niveau CECRL — vocabulaire ET longueur de réponse
@@ -343,12 +343,21 @@ Réponds UNIQUEMENT avec ce JSON. Zéro texte en dehors.
                 `You are helping a ${languePrompt} language learner (level ${niveauUser}) practice a conversation.
 Write 3 short, natural replies the LEARNER could say next — directly responding to the AI's last message.
 
-RULES:
-- ALL phrases in ${languePrompt} native script only
+GRAMMAR — MANDATORY :
+Every suggestion MUST be grammatically correct in ${languePrompt}.
+Before including a suggestion, verify: "Is this phrase grammatically correct?"
+→ NO → rewrite it correctly before including it.
+❌ "No never had." → incomplete/incorrect
+❌ "I not understand." → incorrect
+✅ "No, I've never had any." → correct
+✅ "I don't understand that." → correct
+
+RULES :
+- ALL phrases in ${languePrompt} native script only — NEVER in French
 - 5 to 8 words each — short and natural, not textbook sentences
 - Level ${niveauUser}: ${['A1', 'A2'].includes(niveauUser) ? 'very simple, common words only' : ['B1', 'B2'].includes(niveauUser) ? 'natural everyday vocabulary' : 'rich natural language'}
 - NOT phrases the doctor/waiter/character would say — only the LEARNER
-${estLangueNonLatine ? `- Native script ONLY. Zero Latin letters.` : ''}
+${estLangueNonLatine ? `- Native script ONLY. Zero Latin letters mixed in.` : ''}
 
 Return ONLY a JSON array: ["phrase1", "phrase2", "phrase3"]`
 
