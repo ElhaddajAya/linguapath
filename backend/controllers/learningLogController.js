@@ -42,39 +42,57 @@ const extrairePhrasesApprises = async (req, res) =>
         // 4. Prompt d'extraction
         const systemPrompt = `You are a language learning expert. Extract practical, reusable phrases from this conversation.
 
-WHAT TO EXTRACT :
-Your goal is to find phrases the learner can REUSE in a real-life situation similar to this scenario.
-Source doesn't matter — extract from LEARNER or AI CHARACTER lines, whichever are more useful.
+═══════════════════════════════════════════════
+EXTRACTION THRESHOLD — read this first
+═══════════════════════════════════════════════
+Returning [] is a VALID and EXPECTED output.
+NEVER force an extraction just to fill the list.
+A short, basic, or off-topic conversation → return [].
+Only extract if a phrase genuinely passes ALL criteria below.
 
-A phrase is worth extracting if ALL of these are true :
-  ✅ Useful in real life — someone would actually say this in a similar real situation
-  ✅ Contains specific vocabulary related to the scenario theme (medical, shopping, travel, work...)
-  ✅ Grammatically correct — NEVER extract a phrase containing an error
-     (the learner may have made mistakes — skip those phrases entirely)
+Quality over quantity : 1 truly useful phrase is better than 5 mediocre ones.
+
+═══════════════════════════════════════════════
+WHAT TO EXTRACT
+═══════════════════════════════════════════════
+Your goal : find phrases a learner can REUSE in a real-life situation similar to this scenario.
+Source doesn't matter — extract from LEARNER or AI CHARACTER, whichever is more useful.
+
+A phrase is worth extracting ONLY if ALL of these are true :
+  ✅ Useful in real life — a stranger could say this in a similar situation tomorrow
+  ✅ Contains specific vocabulary tied to the scenario theme (medical, work, shopping, travel...)
+  ✅ Grammatically correct — NEVER extract a phrase with any error
   ✅ Natural and complete — a real person would say it exactly as-is
+  ✅ Reusable — not tied to the specific details of this exact exchange
 
 A phrase is NOT worth extracting if ANY of these apply :
-  ❌ Too basic : "Hello", "Thank you", "Yes", "No", "Okay", "See you", "I understand"
-  ❌ Too vague and usable in any situation without specific vocabulary
-  ❌ Contains a grammar or spelling error (even if said by the learner)
-  ❌ Too specific to this exact exchange (unique names, one-time specific numbers)
+  ❌ Too basic : "Hello", "Thank you", "Yes", "No", "Okay", "I understand"
+  ❌ Too personal / too specific to this person or this exchange
+     Ex: "I'm co-developing a website for learning languages." → too specific, skip
+     Ex: "I'm a student in the fourth year at EMSI." → too personal, skip
+     Ex: "We're using React.js for the front-end." → too project-specific, skip
+  ❌ Too vague : usable in ANY situation without scenario-specific vocabulary
+  ❌ Contains a grammar or spelling error (even from the learner)
 
-REAL-LIFE USEFULNESS TEST — ask yourself :
-"If someone goes to a doctor / shop / interview tomorrow, would this phrase help them?"
-→ YES + has specific vocabulary → extract it
-→ NO or too generic → skip it
+REAL-LIFE USEFULNESS TEST — mandatory before each extraction :
+Ask : "If a complete stranger goes to a [doctor / interview / shop] tomorrow,
+       would this EXACT phrase help them — not just this learner, but anyone?"
+→ YES + scenario-specific vocabulary → extract it
+→ NO, too personal, or too generic → skip it, return [] if nothing qualifies
 
-GOOD examples for a medical scenario :
-  ✅ "It comes and goes, especially when I bend over." — specific symptom description
-  ✅ "The pain radiates to my left leg." — medical vocabulary, reusable
-  ✅ "I've been taking ibuprofen for the pain." — useful medical context
+GOOD extractions — job interview scenario :
+  ✅ "I encountered a bug that was tricky to fix." — concrete, reusable in any tech interview
+  ✅ "I'd be happy to walk you through my approach." — natural interview phrase
+  ❌ "I'm co-developing a website for learning languages." — too specific to this person
+  ❌ "We're using React.js for the front-end." — too project-specific
+
+GOOD extractions — medical scenario :
+  ✅ "It comes and goes, especially when I bend over." — specific symptom, reusable
   ✅ "I'd like to get a referral to a specialist." — useful administrative phrase
-  ✅ "What brings you to the clinic today?" — useful for understanding/context
   ❌ "Yes it does." — too basic
-  ❌ "That sounds good." — too vague
   ❌ "Hello doctor." — too basic
 
-- Maximum 5 phrases total
+- Maximum 5 phrases — but [] is perfectly valid if nothing qualifies
 - Each phrase: 3 to 12 words
 
 ═══════════════════════════════════════════════
@@ -110,49 +128,50 @@ TRANSLATION RULE — mandatory
 ═══════════════════════════════════════════════
 PATTERN ASSIGNMENT
 ═══════════════════════════════════════════════
+A pattern is OPTIONAL — only create one if the phrase has a genuinely reusable grammatical frame.
+
+DOES THIS PHRASE NEED A PATTERN ?
+Ask : "Can I replace the variable part to make 3+ different natural phrases?"
+→ YES → create a pattern
+→ NO  → assign "Général"
+
 ${patternsConnus.length > 0 ? `EXISTING PATTERNS IN DATABASE — reuse them first :
 ${patternsConnus.map(p => `  "${p}"`).join('\n')}
 
 For each extracted phrase :
 1. Check if it fits one of the EXISTING patterns above
 2. If YES → copy the EXACT pattern string (character for character)
-3. If NO → create a NEW pattern following the rules below
+3. If NO → create a NEW pattern ONLY if the phrase has a clear reusable frame
 
-Reusing existing patterns is the priority.
 ` : ''}
-
-PATTERN vs PHRASE — never confuse them :
-The pattern is DERIVED FROM the phrase, never the reverse.
+PATTERN vs PHRASE — the pattern is DERIVED FROM the phrase, never the reverse :
   Phrase : "I'm sorry to hear that."       → Pattern : "I'm sorry to..."
-  Phrase : "I'm looking forward to meeting you." → Pattern : "I'm looking forward to..."
   Phrase : "Can I get a referral?"         → Pattern : "Can I...?"
   Phrase : "I have had a headache."        → Pattern : "I have..."
-
-If a phrase IS the pattern (incomplete, ends with "to", "a", "the", preposition...) → SKIP THE PHRASE ENTIRELY.
+  Phrase : "I encountered a bug."         → Pattern : "Général" (no reusable frame)
 
 PATTERN RULES :
 - Use "..." where the variable part goes
-- Make it broad enough that 3+ different phrases could match it
+- Broad enough that 3+ different phrases could match it
 - Keep it short : 2 to 4 words maximum including "..."
 
 GOOD patterns :
-  English  : "I have...", "I've been...", "Can I...?", "Could you...?",
-             "I'd like...", "Sorry to...", "I think...", "I'm looking forward to..."
-  Spanish  : "Tengo...", "¿Puede...?", "Me duele...", "Lo siento...", "Quisiera..."
+  English  : "I have...", "I've been...", "Can I...?", "Could you...?", "I'd like...", "I think..."
+  Spanish  : "Tengo...", "¿Puede...?", "Me duele...", "Quisiera..."
   Korean   : "...고 싶어요", "...주세요", "...있나요?", "...것 같아요"
   Japanese : "...をください", "...はありますか?", "...たいです"
   Arabic   : "...أريد", "هل يمكنني...?", "...من فضلك"
 
-PHRASES WITHOUT A PATTERN :
-Some phrases are complete and useful but have no reusable grammatical frame.
-For these, assign the pattern "Général".
-Examples : "I see.", "That makes sense.", "No problem at all.", "Let me think."
+WHEN TO USE "Général" :
+  - Useful phrase but no reusable grammatical frame
+  - Scenario-specific and doesn't generalize well
+  Examples : "I see.", "I encountered a bug that was tricky to fix.", "That makes sense."
 
-BAD patterns — never create these :
-  ❌ "I have been having"     → too specific, use "I have..." or "I've been..."
-  ❌ "Sorry to hear that"     → too specific, use "Sorry to..."
-  ❌ "Can I get a referral"   → too specific, use "Can I...?"
-
+BAD patterns — NEVER create these :
+  ❌ "We're using... for the..."   → meaningless truncation, use "Général"
+  ❌ "I'm co-developing a..."     → too specific, use "Général"
+  ❌ "I'm a student in the..."    → too specific, use "Général"
+  ❌ "I have been having"         → too specific, use "I have..." instead
 Return ONLY a valid JSON array, no markdown :
 [{"phrase":"...","traduction":"[FRENCH]","pattern":"..."}]`
 
