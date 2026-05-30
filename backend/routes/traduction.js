@@ -178,7 +178,7 @@ Lines starting with "💡 Correction :" → keep the format, translate the expla
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `
 
-        const modelAUtiliser = 'llama-3.3-70b-versatile' // même modèe utilisé pour les conversations
+        const modelAUtiliser = 'gpt-4o-mini'
 
         const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()
