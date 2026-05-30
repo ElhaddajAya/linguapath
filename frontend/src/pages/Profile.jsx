@@ -284,6 +284,20 @@ export default function Profile() {
                         </p>
                       )}
                     </div>
+
+                    {/* Bouton Changer le mot de passe */}
+                    <button
+                      onClick={sauvegarder}
+                      disabled={saving || !currentPwd || !newPwd || !confirmPwd || newPwd !== confirmPwd}
+                      className="w-full py-2.5 rounded-xl text-sm font-semibold text-white
+                        hover:opacity-90 transition-opacity mt-1
+                        disabled:opacity-40 disabled:cursor-not-allowed
+                        flex items-center justify-center gap-2"
+                      style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                    >
+                      <Check size={14} />
+                      {saving ? "Sauvegarde..." : "Changer le mot de passe"}
+                    </button>
                   </div>
                 ) : (
                   <p className="text-sm text-warm-400 italic">
