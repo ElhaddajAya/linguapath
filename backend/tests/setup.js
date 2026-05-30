@@ -7,6 +7,7 @@
 process.env.GROQ_API_KEY = 'test_fake_groq_key'
 process.env.GEMINI_API_KEY = 'test_fake_gemini_key'
 process.env.JWT_SECRET = 'test_secret_key_linguapath'
+process.env.OPENAI_API_KEY = 'test_fake_openai_key'
 
 const { MongoMemoryServer } = require('mongodb-memory-server')
 const mongoose = require('mongoose')

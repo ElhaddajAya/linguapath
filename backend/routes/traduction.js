@@ -39,7 +39,7 @@ function repairJson(str)
 }
 const router = express.Router()
 const { protect } = require('../middleware/authMiddleware')
-const { envoyerMessage } = require('../services/groqService')
+const { envoyerMessage } = require('../services/openaiService')
 
 router.post('/', protect, async (req, res) =>
 {
@@ -178,7 +178,7 @@ Lines starting with "💡 Correction :" → keep the format, translate the expla
 Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
 `
 
-        const modelAUtiliser = 'llama-3.3-70b-versatile' // modele comme celui utilisé pour les conversations
+        const modelAUtiliser = 'llama-3.3-70b-versatile' // même modèe utilisé pour les conversations
 
         const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
         const clean = reponse.replace(/```json|```/g, '').trim()
