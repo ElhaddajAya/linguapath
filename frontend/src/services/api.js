@@ -4,7 +4,9 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: "/api",
+  // En production → VITE_API_URL pointe vers Render
+  // En local → "/api" (proxy Vite)
+  baseURL: import.meta.env.VITE_API_URL || "/api",
 })
 
 // Intercepteur — s'exécute AVANT chaque requête
