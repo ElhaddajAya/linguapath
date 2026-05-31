@@ -20,7 +20,7 @@ export default function Login() {
       const res = await login(form);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       setError(err.response?.data?.message || "Erreur de connexion");
     } finally {
