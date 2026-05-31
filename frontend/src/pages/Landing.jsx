@@ -265,6 +265,19 @@ export default function Landing() {
             Plateforme IA d'apprentissage des langues
           </div>
 
+          <p
+            style={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              letterSpacing: "0.25em",
+              color: "#78716c",
+              textTransform: "uppercase",
+              margin: "0 0 16px 0",
+            }}
+          >
+            LEARN · SPEAK · GROW
+          </p>
+
           <h1
             className='text-3xl sm:text-5xl md:text-6xl font-bold text-warm-900
             mb-6 leading-tight tracking-tight'
@@ -475,7 +488,7 @@ export default function Landing() {
 
       {/* ── FOOTER ── */}
       <footer className='py-10 bg-white'>
-          <div className='max-w-6xl mx-auto px-4 sm:px-10 text-center'>
+        <div className='max-w-6xl mx-auto px-4 sm:px-10 text-center'>
           <div className='flex justify-center mb-4'>
             <Logo size='navbar' />
           </div>
