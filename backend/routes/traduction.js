@@ -113,7 +113,14 @@ CRITICAL PHONOLOGICAL RULES (apply in this order):
 6. ASSIMILATION of ㄱ/ㄷ/ㅂ before ㄴ/ㅁ: 먹는→meongneun, 국민→gungmin
 
 Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
+💡 CORRECTION LINES — mandatory rule :
+Lines starting with "💡 Correction :" MUST be translated to French like this :
+  INPUT  : 💡 Correction : "chajgoisseoyo" → "chajgo isseoyo" — "있어요"가 맞아요.
+  OUTPUT : 💡 Correction : "chajgoisseoyo" → "chajgo isseoyo" — « isseoyo » est la bonne orthographe.
+  INPUT  : 💡 Correction : "salkkeyo" → "살게요" — "살게요"가 맞아요.
+  OUTPUT : 💡 Correction : "salkkeyo" → "살게요" — « salgeyo » est la forme correcte.
+Rule : keep "💡 Correction : X → Y —" exactly as-is, translate ONLY the explanation after "—" into French.
 
 Return ONLY this exact JSON on one line:
 {"romanisation":"RR_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
@@ -131,7 +138,12 @@ STANDARD HEPBURN RULES:
 - ぢ=ji, づ=zu (same as じ/ず in modern usage)
 
 Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
+💡 CORRECTION LINES — mandatory rule :
+Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
+translate ONLY the explanation after "—" into French.
+  INPUT  : 💡 Correction : "taberu tai" → "tabetai" — "〜たい"は一つの単語です。
+  OUTPUT : 💡 Correction : "taberu tai" → "tabetai" — «〜たい » est un seul mot.
 
 Return ONLY this exact JSON on one line:
 {"romanisation":"HEPBURN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
@@ -147,7 +159,10 @@ SPECIAL FINALS: -ian=-iān (not -yen), -iu=-iǔ, -ui=-uéi, -un=-ún, -ün=-üé
 NEUTRAL TONE: common particles and suffixes (的 de, 了 le, 吗 ma, 吧 ba, 呢 ne, 们 men) have no tone mark
 
 Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
+💡 CORRECTION LINES — mandatory rule :
+Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
+translate ONLY the explanation after "—" into French.
 
 Return ONLY this exact JSON on one line:
 {"romanisation":"PINYIN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
@@ -163,7 +178,10 @@ COMMON WORDS (use these exact spellings): مرحبا=marhaba, شكراً=shukran
 RULES: write phonetically as a French speaker would read it; no capital letters; separate words with spaces; shadda (ّ) doubles the consonant
 
 Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-Lines starting with "💡 Correction :" → keep the format, translate only the explanation after the dash (—) into French.
+
+💡 CORRECTION LINES — mandatory rule :
+Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
+translate ONLY the explanation after "—" into French.
 
 Return ONLY this exact JSON on one line:
 {"romanisation":"PHONETIC_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
