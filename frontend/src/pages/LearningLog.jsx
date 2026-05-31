@@ -51,10 +51,18 @@ function PhraseCard({ entry, onDelete }) {
 
       {/* Footer : source + supprimer */}
       <div className='flex items-center justify-between pt-2 border-t border-warm-100'>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${entry.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}>
-          {entry.source === "auto"
-            ? <span className="inline-flex items-center gap-1"><Bot size={12} /> Auto</span>
-            : <span className="inline-flex items-center gap-1"><PenLine size={12} /> Manuel</span>}
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full ${entry.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}
+        >
+          {entry.source === "auto" ? (
+            <span className='inline-flex items-center gap-1'>
+              <Bot size={12} /> Auto
+            </span>
+          ) : (
+            <span className='inline-flex items-center gap-1'>
+              <PenLine size={12} /> Manuel
+            </span>
+          )}
         </span>
         <button
           onClick={() => onDelete(entry._id)}
@@ -185,7 +193,11 @@ export default function LearningLog() {
         <div className='flex items-center justify-between mb-8 flex-wrap gap-4'>
           <div>
             <h1 className='text-2xl font-semibold text-warm-900 flex items-center gap-2'>
-              <BookOpen size={22} className="text-orange-500" /> Learning Log
+              <BookOpen
+                size={22}
+                className='text-orange-500'
+              />{" "}
+              Learning Log
             </h1>
             <p className='text-warm-500 text-sm mt-1'>
               {entries.length} phrase{entries.length !== 1 ? "s" : ""} apprises
@@ -208,19 +220,18 @@ export default function LearningLog() {
           className='bg-white rounded-2xl border border-warm-200
                                 shadow-soft p-5 mb-6'
         >
-          <div className='flex flex-wrap gap-4 items-end'>
+          <div className='flex flex-wrap gap-4 items-end w-full'>
             {/* Filtre langue */}
-            <div className='flex flex-col gap-1.5'>
+            <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
               <label className='text-xs font-medium text-warm-600'>
                 Langue
               </label>
               <select
                 value={filtreLangue}
                 onChange={(e) => setFiltreLangue(e.target.value)}
-                className='px-3 py-2 rounded-xl border border-warm-200
+                className='w-full px-3 py-2 rounded-xl border border-warm-200
                                            text-sm text-warm-700 bg-warm-50
-                                           focus:outline-none focus:border-orange-300
-                                           min-w-[130px]'
+                                           focus:outline-none focus:border-orange-300'
               >
                 <option value=''>Toutes</option>
                 {languesUser.map((l) => (
@@ -235,15 +246,14 @@ export default function LearningLog() {
             </div>
 
             {/* Filtre thème */}
-            <div className='flex flex-col gap-1.5'>
+            <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
               <label className='text-xs font-medium text-warm-600'>Thème</label>
               <select
                 value={filtreTheme}
                 onChange={(e) => setFiltreTheme(e.target.value)}
-                className='px-3 py-2 rounded-xl border border-warm-200
+                className='w-full px-3 py-2 rounded-xl border border-warm-200
                                            text-sm text-warm-700 bg-warm-50
-                                           focus:outline-none focus:border-orange-300
-                                           min-w-[150px]'
+                                           focus:outline-none focus:border-orange-300'
               >
                 <option value=''>Tous</option>
                 {themes.map((t) => (
@@ -258,17 +268,16 @@ export default function LearningLog() {
             </div>
 
             {/* Filtre niveau */}
-            <div className='flex flex-col gap-1.5'>
+            <div className='flex flex-col gap-1.5 flex-1 min-w-25'>
               <label className='text-xs font-medium text-warm-600'>
                 Niveau
               </label>
               <select
                 value={filtreNiveau}
                 onChange={(e) => setFiltreNiveau(e.target.value)}
-                className='px-3 py-2 rounded-xl border border-warm-200
+                className='w-full px-3 py-2 rounded-xl border border-warm-200
                                            text-sm text-warm-700 bg-warm-50
-                                           focus:outline-none focus:border-orange-300
-                                           min-w-[100px]'
+                                           focus:outline-none focus:border-orange-300'
               >
                 <option value=''>Tous</option>
                 {NIVEAUX.map((n) => (
@@ -290,7 +299,11 @@ export default function LearningLog() {
                                            border border-warm-200 hover:border-orange-300
                                            hover:text-orange-500 transition-colors'
               >
-                <X size={13} className="inline mr-1" /> Effacer les filtres
+                <X
+                  size={13}
+                  className='inline mr-1'
+                />{" "}
+                Effacer les filtres
               </button>
             )}
           </div>
@@ -303,16 +316,22 @@ export default function LearningLog() {
           <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center'>
             <p className='text-4xl mb-4'>📝</p>
             <p className='text-warm-600 font-medium mb-2'>
-              {filtresActifs ? "Aucune phrase pour ces filtres" : "Aucune phrase apprise pour l'instant"}
+              {filtresActifs
+                ? "Aucune phrase pour ces filtres"
+                : "Aucune phrase apprise pour l'instant"}
             </p>
             <p className='text-warm-400 text-sm mb-6'>
-              {filtresActifs ? "Essaie de modifier tes filtres" : "Lance une conversation pour commencer à apprendre !"}
+              {filtresActifs
+                ? "Essaie de modifier tes filtres"
+                : "Lance une conversation pour commencer à apprendre !"}
             </p>
             {!filtresActifs && (
               <button
                 onClick={() => navigate("/scenarios")}
                 className='px-6 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity'
-                style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+                style={{
+                  background: "linear-gradient(135deg, #F59E0B, #EA580C)",
+                }}
               >
                 Choisir un scénario
               </button>
@@ -348,7 +367,11 @@ export default function LearningLog() {
             {/* Header modal */}
             <div className='flex items-center justify-between'>
               <h2 className='font-semibold text-warm-900 text-lg flex items-center gap-2'>
-                <PenLine size={18} className="text-orange-500" /> Ajouter une phrase
+                <PenLine
+                  size={18}
+                  className='text-orange-500'
+                />{" "}
+                Ajouter une phrase
               </h2>
               <button
                 onClick={() => setShowModal(false)}
