@@ -255,7 +255,7 @@ export default function Landing() {
       {/* ── HERO ── */}
       <section className='bg-white relative'>
         <AnimatedBackground />{" "}
-        <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10 py-5 sm:py-12 text-center'>
+        <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10 py-6 sm:py-12 text-center'>
           {/* Badge */}
           <div
             className='inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full
