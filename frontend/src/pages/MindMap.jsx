@@ -810,10 +810,10 @@ function MindMapInner({
           : null;
 
   return (
-    <div className='flex flex-1 px-6 md:px-10 pb-8 gap-4'>
+    <div className='flex flex-col md:flex-row flex-1 px-3 md:px-10 pb-4 md:pb-8 gap-3 md:gap-4'>
       <div
         className='flex-1 bg-white rounded-2xl border border-warm-200 shadow-soft overflow-hidden'
-        style={{ minHeight: 550 }}
+        style={{ minHeight: 400 }}
       >
         {loading ? (
           <div className='flex items-center justify-center h-full'>
@@ -971,7 +971,7 @@ function MindMapInner({
 
       {/* Panel détail phrase */}
       {selectedPhrase && (
-        <div className='w-72 bg-white rounded-2xl border border-warm-200 shadow-soft p-5 flex flex-col gap-4 self-start'>
+        <div className='w-full md:w-72 bg-white rounded-2xl border border-warm-200 shadow-soft p-4 md:p-5 flex flex-col gap-3 md:gap-4 self-start'>
           <div className='flex items-start justify-between'>
             <h3 className='font-semibold text-warm-900 text-sm flex items-center gap-1.5'>
               <Pin size={13} /> Phrase sélectionnée
@@ -1082,16 +1082,13 @@ export default function MindMap() {
     <div className='min-h-screen bg-warm-50 flex flex-col'>
       <Navbar />
 
-      <div className='px-6 md:px-10 py-6 flex items-center justify-between flex-wrap gap-4'>
+      <div className='px-4 md:px-10 py-4 md:py-6 flex items-center justify-between flex-wrap gap-3'>
         <div>
-          <h1 className='text-2xl font-semibold text-warm-900 flex items-center gap-2'>
-            <Map
-              size={22}
-              className='text-orange-500'
-            />{" "}
+          <h1 className='text-xl md:text-2xl font-semibold text-warm-900 flex items-center gap-2'>
+            <Map size={20} className='text-orange-500' />
             MindMap
           </h1>
-          <p className='text-warm-500 text-sm mt-1'>
+          <p className='text-warm-500 text-xs sm:text-sm mt-1'>
             {allEntries.length} phrase{allEntries.length !== 1 ? "s" : ""}{" "}
             organisée{allEntries.length !== 1 ? "s" : ""} par langue → thème →
             pattern
@@ -1118,12 +1115,13 @@ export default function MindMap() {
           <button
             onClick={() => exportFn && exportFn()()}
             disabled={!allEntries.length}
-            className='px-4 py-2 rounded-xl text-sm font-semibold text-white
+            className='px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold text-white
               hover:opacity-90 transition-opacity flex items-center gap-1.5
               disabled:opacity-40 disabled:cursor-not-allowed'
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
-            <Download size={15} /> Exporter PNG
+            <Download size={15} />
+            <span className='hidden sm:inline'>Exporter PNG</span>
           </button>
         </div>
       </div>

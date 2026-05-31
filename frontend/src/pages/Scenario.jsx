@@ -62,10 +62,10 @@ export default function Scenarios() {
     <div className='min-h-screen bg-warm-50'>
       <Navbar />
 
-      <div className='max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-10 py-5 sm:py-10'>
         {/* Header */}
-        <div className='mb-8'>
-          <h1 className='text-2xl font-semibold text-warm-900'>
+        <div className='mb-5 sm:mb-8'>
+          <h1 className='text-xl sm:text-2xl font-semibold text-warm-900'>
             Choisir un scénario
           </h1>
           <p className='text-warm-500 text-sm mt-1'>
@@ -78,7 +78,7 @@ export default function Scenarios() {
 
         {/* Sélecteur de langue — visible seulement si l'utilisateur a plusieurs langues */}
         {user.langues?.length > 1 && (
-          <div className='flex gap-2 mb-8 flex-wrap'>
+          <div className='flex gap-2 mb-5 sm:mb-8 flex-wrap'>
             {user.langues.map((l) => (
               <button
                 key={l.langue}
@@ -122,8 +122,8 @@ export default function Scenarios() {
         ) : error ? (
           <div className='text-center py-20 text-red-500'>{error}</div>
         ) : scenarios.length === 0 ? (
-          <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center'>
-            <p className='text-4xl mb-4'>🔍</p>
+          <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-8 sm:p-12 text-center'>
+            <p className='text-3xl sm:text-4xl mb-3 sm:mb-4'>🔍</p>
             <p className='text-warm-600 font-medium mb-2'>
               Aucun scénario disponible pour ce niveau
             </p>
@@ -133,19 +133,19 @@ export default function Scenarios() {
           </div>
         ) : (
           // Grille des scénarios
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5'>
             {scenarios.map((scenario) => (
               <div
                 key={scenario._id}
                 onClick={() => navigate(`/chat/${scenario._id}`)}
                 className='bg-white rounded-2xl border border-warm-200
-                           shadow-soft p-6 flex flex-col gap-4
+                           shadow-soft p-4 sm:p-6 flex flex-col gap-3 sm:gap-4
                            hover:shadow-card hover:border-orange-200
                            transition-all cursor-pointer'
               >
                 {/* Emoji + thème */}
                 <div className='flex items-center justify-between'>
-                  <span className='text-3xl'>{scenario.emoji}</span>
+                  <span className='text-2xl sm:text-3xl'>{scenario.emoji}</span>
                   <span
                     className='text-xs font-medium text-warm-400
                                    bg-warm-100 px-3 py-1 rounded-full'

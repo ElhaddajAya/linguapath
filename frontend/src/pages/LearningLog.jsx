@@ -188,39 +188,41 @@ export default function LearningLog() {
     <div className='min-h-screen bg-warm-50'>
       <Navbar />
 
-      <div className='max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-10 py-5 sm:py-10'>
         {/* ── Header ── */}
-        <div className='flex items-center justify-between mb-8 flex-wrap gap-4'>
+        <div className='flex items-center justify-between mb-5 sm:mb-8 flex-wrap gap-3'>
           <div>
-            <h1 className='text-2xl font-semibold text-warm-900 flex items-center gap-2'>
+            <h1 className='text-xl sm:text-2xl font-semibold text-warm-900 flex items-center gap-2'>
               <BookOpen
-                size={22}
+                size={20}
                 className='text-orange-500'
               />{" "}
               Learning Log
             </h1>
-            <p className='text-warm-500 text-sm mt-1'>
+            <p className='text-warm-500 text-xs sm:text-sm mt-1'>
               {entries.length} phrase{entries.length !== 1 ? "s" : ""} apprises
             </p>
           </div>
 
           <button
             onClick={() => setShowModal(true)}
-            className='flex items-center gap-2 px-5 py-2.5 rounded-xl
+            className='flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl
                                    text-sm font-semibold text-white hover:opacity-90
                                    transition-opacity shadow-soft'
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
-            <Plus size={16} /> Ajouter une phrase
+            <Plus size={15} />
+            <span className='hidden sm:inline'>Ajouter une phrase</span>
+            <span className='sm:hidden'>Ajouter</span>
           </button>
         </div>
 
         {/* ── Filtres ── */}
         <div
           className='bg-white rounded-2xl border border-warm-200
-                                shadow-soft p-5 mb-6'
+                                shadow-soft p-4 sm:p-5 mb-4 sm:mb-6'
         >
-          <div className='flex flex-wrap gap-4 items-end w-full'>
+          <div className='flex flex-wrap gap-2 sm:gap-4 items-end w-full'>
             {/* Filtre langue */}
             <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
               <label className='text-xs font-medium text-warm-600'>

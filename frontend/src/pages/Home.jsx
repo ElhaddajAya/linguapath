@@ -145,8 +145,8 @@ function UserHome({ user }) {
                   shadow-soft p-5 flex items-center justify-between
                   hover:shadow-card transition-shadow'
               >
-                <div className='flex items-center gap-4'>
-                  <span className='text-3xl'>
+                <div className='flex items-center gap-3'>
+                  <span className='text-2xl sm:text-3xl'>
                     {LANGUE_EMOJI[l.langue] || "🌐"}
                   </span>
                   <div>
@@ -158,8 +158,8 @@ function UserHome({ user }) {
                 </div>
                 <button
                   onClick={() => navigate(`/scenarios?langue=${l.langue}`)}
-                  className='px-5 py-2 rounded-xl text-sm font-semibold text-white
-                    hover:opacity-90 transition-opacity'
+                  className='px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white
+                    hover:opacity-90 transition-opacity shrink-0'
                   style={{
                     background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                   }}
@@ -181,9 +181,9 @@ function UserHome({ user }) {
             </button>
           </div>
         ) : (
-          <div className='bg-white rounded-2xl border border-warm-200 shadow-card p-10 text-center'>
-            <div className='text-4xl mb-4'>🌍</div>
-            <h2 className='text-lg font-semibold text-warm-900 mb-2'>
+          <div className='bg-white rounded-2xl border border-warm-200 shadow-card p-6 sm:p-10 text-center'>
+            <div className='text-3xl sm:text-4xl mb-3 sm:mb-4'>🌍</div>
+            <h2 className='text-base sm:text-lg font-semibold text-warm-900 mb-2'>
               Quelle langue veux-tu pratiquer ?
             </h2>
             <p className='text-warm-500 text-sm mb-6'>

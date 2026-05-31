@@ -255,11 +255,11 @@ export default function Landing() {
       {/* ── HERO ── */}
       <section className='bg-white relative'>
         <AnimatedBackground />{" "}
-        <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10 py-8 sm:py-12 text-center'>
+        <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10 py-5 sm:py-12 text-center'>
           {/* Badge */}
           <div
-            className='inline-flex items-center gap-2 px-4 py-1.5 rounded-full
-            bg-orange-50 border border-orange-200 text-orange-600 text-xs font-semibold mb-8'
+            className='inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full
+            bg-orange-50 border border-orange-200 text-orange-600 text-xs font-semibold mb-5 sm:mb-8'
           >
             <Sparkles size={13} />
             Plateforme IA d'apprentissage des langues
@@ -279,8 +279,8 @@ export default function Landing() {
           </p>
 
           <h1
-            className='text-3xl sm:text-5xl md:text-6xl font-bold text-warm-900
-            mb-6 leading-tight tracking-tight'
+            className='text-2xl sm:text-5xl md:text-6xl font-bold text-warm-900
+            mb-4 sm:mb-6 leading-tight tracking-tight'
           >
             Apprenez les langues
             <br />
@@ -295,16 +295,16 @@ export default function Landing() {
             </span>
           </h1>
 
-          <p className='text-base sm:text-lg text-warm-500 max-w-xl mx-auto mb-10 leading-relaxed'>
+          <p className='text-sm sm:text-lg text-warm-500 max-w-xl mx-auto mb-7 sm:mb-10 leading-relaxed'>
             Des conversations guidées dans des situations réelles, un suivi
             automatique de votre progression, et une MindMap visuelle de vos
             connaissances. Pour les niveaux A2 à B2.
           </p>
 
-          <div className='flex flex-col sm:flex-row gap-3 justify-center'>
+          <div className='flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center'>
             <button
               onClick={() => navigate("/signup")}
-              className='px-8 py-3.5 rounded-xl text-sm font-bold text-white
+              className='px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-sm font-bold text-white
                 hover:opacity-90 transition-opacity shadow-soft
                 flex items-center justify-center gap-2'
               style={{
@@ -316,7 +316,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => navigate("/login")}
-              className='px-8 py-3.5 rounded-xl text-sm font-semibold
+              className='px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-sm font-semibold
                 text-warm-700 border border-warm-200 bg-white
                 hover:border-orange-200 hover:text-orange-600 transition-colors'
             >
@@ -325,7 +325,7 @@ export default function Landing() {
           </div>
 
           {/* Langues disponibles */}
-          <div className='flex flex-wrap justify-center gap-2 mt-12'>
+          <div className='flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-8 sm:mt-12'>
             {LANGUAGES.map((l) => (
               <div
                 key={l.name}
@@ -342,9 +342,9 @@ export default function Landing() {
       </section>
 
       {/* ── BÉNÉFICES RAPIDES ── */}
-      <section className='py-10 bg-white'>
+      <section className='py-6 sm:py-10 bg-white'>
         <div className='max-w-6xl mx-auto px-4 sm:px-10'>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3'>
             {BENEFITS.map((b) => (
               <div
                 key={b}
@@ -372,13 +372,13 @@ export default function Landing() {
       </section>
 
       {/* ── FONCTIONNALITÉS ── */}
-      <section className='py-20 bg-white'>
+      <section className='py-10 sm:py-20 bg-white'>
         <div className='max-w-6xl mx-auto px-4 sm:px-10'>
-          <div className='text-center mb-14'>
-            <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-3'>
+          <div className='text-center mb-8 sm:mb-14'>
+            <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-2 sm:mb-3'>
               Fonctionnalités
             </p>
-            <h2 className='text-2xl sm:text-3xl font-bold text-warm-900'>
+            <h2 className='text-xl sm:text-3xl font-bold text-warm-900'>
               Tout ce qu'il faut pour progresser
             </h2>
             <p className='text-warm-500 mt-3 max-w-lg mx-auto text-sm leading-relaxed'>
@@ -387,11 +387,11 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5'>
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className='bg-white rounded-2xl p-6 border border-warm-200 shadow-soft
+                className='bg-white rounded-2xl p-4 sm:p-6 border border-warm-200 shadow-soft
                   hover:border-orange-200 hover:shadow-card transition-all'
               >
                 <div
@@ -413,14 +413,14 @@ export default function Landing() {
       </section>
 
       {/* ── COMMENT ÇA MARCHE ── */}
-      <section className='py-20 bg-white relative'>
+      <section className='py-10 sm:py-20 bg-white relative'>
         <AnimatedBackground />{" "}
         <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10'>
-          <div className='text-center mb-14'>
-            <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-3'>
+          <div className='text-center mb-8 sm:mb-14'>
+            <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-2 sm:mb-3'>
               Comment ça marche
             </p>
-            <h2 className='text-2xl sm:text-3xl font-bold text-warm-900'>
+            <h2 className='text-xl sm:text-3xl font-bold text-warm-900'>
               5 étapes pour progresser
             </h2>
           </div>
@@ -429,7 +429,7 @@ export default function Landing() {
             {STEPS.map((step) => (
               <div
                 key={step.num}
-                className='flex items-start gap-5 bg-white rounded-2xl p-5
+                className='flex items-start gap-3 sm:gap-5 bg-white rounded-2xl p-4 sm:p-5
                   border border-warm-200 shadow-soft hover:border-orange-200 transition-colors'
               >
                 <div
@@ -456,23 +456,23 @@ export default function Landing() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section className='py-20 bg-white'>
+      <section className='py-10 sm:py-20 bg-white'>
         <div className='max-w-2xl mx-auto px-4 sm:px-10 text-center'>
-          <div className='bg-orange-50 rounded-3xl border border-orange-100 p-10 sm:p-14'>
+          <div className='bg-orange-50 rounded-3xl border border-orange-100 p-6 sm:p-14'>
             <Globe
-              size={40}
-              className='text-orange-500 mx-auto mb-6'
+              size={32}
+              className='text-orange-500 mx-auto mb-4 sm:mb-6'
             />
-            <h2 className='text-2xl sm:text-3xl font-bold text-warm-900 mb-4'>
+            <h2 className='text-xl sm:text-3xl font-bold text-warm-900 mb-3 sm:mb-4'>
               Prêt à progresser ?
             </h2>
-            <p className='text-warm-500 text-sm leading-relaxed mb-8 max-w-md mx-auto'>
+            <p className='text-warm-500 text-sm leading-relaxed mb-6 sm:mb-8 max-w-md mx-auto'>
               Rejoignez LinguaPath et commencez votre première conversation
               guidée par l'IA dès aujourd'hui — gratuitement.
             </p>
             <button
               onClick={() => navigate("/signup")}
-              className='px-8 py-3.5 rounded-xl text-sm font-bold text-white
+              className='px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl text-sm font-bold text-white
                 hover:opacity-90 transition-opacity shadow-soft
                 flex items-center gap-2 mx-auto'
               style={{
@@ -487,7 +487,7 @@ export default function Landing() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className='py-10 bg-white'>
+      <footer className='py-6 sm:py-10 bg-white'>
         <div className='max-w-6xl mx-auto px-4 sm:px-10 text-center'>
           <div className='flex justify-center mb-4'>
             <Logo size='navbar' />
