@@ -1030,6 +1030,15 @@ function MindMapInner({
               )}
             </span>
           </div>
+          <button
+            onClick={() => navigate("/learning-log")}
+            className='w-full py-2.5 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-opacity'
+            style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+          >
+            <span className='flex items-center justify-center gap-1.5'>
+              Voir dans le Learning Log <ArrowRight size={13} />
+            </span>
+          </button>
         </div>
       )}
     </div>
@@ -1106,16 +1115,6 @@ export default function MindMap() {
               ))}
             </select>
           )}
-          <button
-            onClick={() => navigate("/learning-log")}
-            className='px-4 py-2 rounded-xl text-sm border border-warm-200 text-warm-600 hover:border-orange-300 hover:text-orange-500 transition-colors bg-white'
-          >
-            <BookOpen
-              size={15}
-              className='inline mr-1'
-            />{" "}
-            Learning Log
-          </button>
           <button
             onClick={() => exportFn && exportFn()()}
             disabled={!allEntries.length}
