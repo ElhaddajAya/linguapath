@@ -138,22 +138,24 @@ function AnimatedBackground() {
     let t = 0;
     let animId;
 
+    const isMobile = window.innerWidth < 640;
+
     const animate = () => {
       t += 0.008;
 
       if (blob1.current) {
-        const x = Math.sin(t) * 60;
-        const y = Math.cos(t * 0.8) * 40;
+        const x = Math.sin(t) * (isMobile ? 15 : 60);
+        const y = Math.cos(t * 0.8) * (isMobile ? 10 : 40);
         blob1.current.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.sin(t * 0.5) * 0.1})`;
       }
       if (blob2.current) {
-        const x = Math.cos(t * 0.9) * 50;
-        const y = Math.sin(t * 1.1) * 35;
+        const x = Math.cos(t * 0.9) * (isMobile ? 12 : 50);
+        const y = Math.sin(t * 1.1) * (isMobile ? 10 : 35);
         blob2.current.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.cos(t * 0.7) * 0.12})`;
       }
       if (blob3.current) {
-        const x = Math.sin(t * 1.2) * 40;
-        const y = Math.cos(t * 0.6) * 50;
+        const x = Math.sin(t * 1.2) * (isMobile ? 10 : 40);
+        const y = Math.cos(t * 0.6) * (isMobile ? 12 : 50);
         blob3.current.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.sin(t * 0.9) * 0.08})`;
       }
 
@@ -164,55 +166,57 @@ function AnimatedBackground() {
     return () => cancelAnimationFrame(animId);
   }, []);
 
+  const isMobile = window.innerWidth < 640;
+
   return (
     <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-      {/* Blob gauche — orange vif */}
+      {/* Blob gauche */}
       <div
         ref={blob1}
         style={{
           position: "absolute",
-          width: "550px",
-          height: "550px",
+          width: isMobile ? "160px" : "550px",
+          height: isMobile ? "160px" : "550px",
           borderRadius: "50%",
-          filter: "blur(80px)",
-          opacity: 0.55,
+          filter: isMobile ? "blur(40px)" : "blur(80px)",
+          opacity: isMobile ? 0.18 : 0.55,
           background:
             "radial-gradient(circle, #FDBA74, #F97316 50%, transparent 75%)",
-          top: "-150px",
-          left: "-150px",
+          top: isMobile ? "-50px" : "-150px",
+          left: isMobile ? "-50px" : "-150px",
         }}
       />
 
-      {/* Blob droite — ambre */}
+      {/* Blob droite */}
       <div
         ref={blob2}
         style={{
           position: "absolute",
-          width: "480px",
-          height: "480px",
+          width: isMobile ? "150px" : "480px",
+          height: isMobile ? "150px" : "480px",
           borderRadius: "50%",
-          filter: "blur(90px)",
-          opacity: 0.45,
+          filter: isMobile ? "blur(40px)" : "blur(90px)",
+          opacity: isMobile ? 0.15 : 0.45,
           background:
             "radial-gradient(circle, #FCD34D, #F59E0B 50%, transparent 75%)",
-          top: "-80px",
-          right: "-100px",
+          top: isMobile ? "-30px" : "-80px",
+          right: isMobile ? "-50px" : "-100px",
         }}
       />
 
-      {/* Blob bas centre — pêche */}
+      {/* Blob bas centre */}
       <div
         ref={blob3}
         style={{
           position: "absolute",
-          width: "400px",
-          height: "400px",
+          width: isMobile ? "130px" : "400px",
+          height: isMobile ? "130px" : "400px",
           borderRadius: "50%",
-          filter: "blur(100px)",
-          opacity: 0.35,
+          filter: isMobile ? "blur(40px)" : "blur(100px)",
+          opacity: isMobile ? 0.12 : 0.35,
           background:
             "radial-gradient(circle, #FED7AA, #EA580C 50%, transparent 75%)",
-          bottom: "-80px",
+          bottom: isMobile ? "-30px" : "-80px",
           left: "35%",
         }}
       />
@@ -233,7 +237,7 @@ export default function Landing() {
             <button
               onClick={() => navigate("/login")}
               className='px-3 sm:px-4 py-2 text-sm font-medium text-warm-600
-                hover:text-warm-900 transition-colors'
+                        hover:text-warm-900 transition-colors hidden sm:block'
             >
               Se connecter
             </button>
