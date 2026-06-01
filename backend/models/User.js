@@ -1,5 +1,7 @@
+// models/User.js — mis à jour avec vérification email + reset password + Google OAuth
+
 const mongoose = require('mongoose')
-const bcrypt = require('bcryptjs')
+const bcrypt   = require('bcryptjs')
 
 const UserSchema = new mongoose.Schema(
   {
@@ -18,12 +20,16 @@ const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Le mot de passe est requis'],
       minlength: [6, 'Minimum 6 caractères'],
+      // Pas required car Google OAuth n'a pas de mot de passe
     },
 
-    // Chaque langue pratiquée a son propre niveau
-    // Ex: [{ langue: "Coréen", niveau: "A2" }, { langue: "Espagnol", niveau: "B1" }]
+    // Google OAuth
+    googleId: {
+      type: String,
+      default: null,
+    },
+
     langues: {
       type: [
         {
@@ -43,29 +49,54 @@ const UserSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+
     avatar: {
       type: String,
       default: '',
     },
+
     isActive: {
-  type: Boolean,
-  default: true,
-},
+      type: Boolean,
+      default: true,
+    },
+
+    // ── Vérification email ──────────────────────────────────
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+    },
+
+    // ── Reset mot de passe ──────────────────────────────────
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 )
 
 // Hacher le mot de passe avant chaque sauvegarde
-UserSchema.pre('save', async function ()
-{
-  if (!this.isModified('password')) return
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password') || !this.password) return
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
 })
 
-// Méthode pour comparer les mots de passe lors du login
-UserSchema.methods.comparePassword = async function (candidatePassword)
-{
+// Comparer les mots de passe lors du login
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false
   return bcrypt.compare(candidatePassword, this.password)
 }
 
