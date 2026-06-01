@@ -1,4 +1,4 @@
-const User     = require('../models/User')
+const User = require('../models/User')
 const Scenario = require('../models/Scenario')
 
 // ─────────────────────────────────────────────────────────────
@@ -7,16 +7,19 @@ const Scenario = require('../models/Scenario')
 
 /**
  * GET /api/admin/users
- * Retourne tous les utilisateurs (sans leur mot de passe)
+ * Retourne tous les utilisateurs (sans leur mot de passe) - pas le user admin lui-meme
  */
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find({})
+const getAllUsers = async (req, res) =>
+{
+  try
+  {
+    const users = await User.find({ _id: { $ne: req.user._id } })
       .select('-password')
       .sort({ createdAt: -1 })
 
     res.json({ users })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('getAllUsers :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
@@ -27,16 +30,20 @@ const getAllUsers = async (req, res) => {
  * Active ou désactive un compte utilisateur.
  * Ajoute isActive: false au user si pas encore défini (valeur par défaut true).
  */
-const toggleUserStatus = async (req, res) => {
-  try {
+const toggleUserStatus = async (req, res) =>
+{
+  try
+  {
     const user = await User.findById(req.params.id).select('-password')
 
-    if (!user) {
+    if (!user)
+    {
       return res.status(404).json({ message: 'Utilisateur introuvable.' })
     }
 
     // Empêcher l'admin de se désactiver lui-même
-    if (user._id.toString() === req.user._id.toString()) {
+    if (user._id.toString() === req.user._id.toString())
+    {
       return res.status(400).json({ message: 'Vous ne pouvez pas désactiver votre propre compte.' })
     }
 
@@ -48,7 +55,8 @@ const toggleUserStatus = async (req, res) => {
       message: `Compte ${user.isActive ? 'activé' : 'désactivé'} avec succès.`,
       user,
     })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('toggleUserStatus :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
@@ -62,11 +70,14 @@ const toggleUserStatus = async (req, res) => {
  * GET /api/admin/scenarios
  * Retourne tous les scénarios sans filtre de niveau
  */
-const getAllScenariosAdmin = async (req, res) => {
-  try {
+const getAllScenariosAdmin = async (req, res) =>
+{
+  try
+  {
     const scenarios = await Scenario.find({}).sort({ createdAt: -1 })
     res.json({ scenarios })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('getAllScenariosAdmin :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
@@ -78,11 +89,14 @@ const getAllScenariosAdmin = async (req, res) => {
  * Body: { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt }
  * Note: le frontend envoie title/minLevel/maxLevel — on mappe vers les noms du modèle (titre/niveauMin/niveauMax)
  */
-const createScenario = async (req, res) => {
-  try {
+const createScenario = async (req, res) =>
+{
+  try
+  {
     const { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt } = req.body
 
-    if (!title || !theme || !description || !langue || !minLevel || !maxLevel || !systemPrompt) {
+    if (!title || !theme || !description || !langue || !minLevel || !maxLevel || !systemPrompt)
+    {
       return res.status(400).json({ message: 'Tous les champs obligatoires doivent être remplis.' })
     }
 
@@ -98,7 +112,8 @@ const createScenario = async (req, res) => {
     })
 
     res.status(201).json({ message: 'Scénario créé avec succès.', scenario })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('createScenario :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
@@ -109,8 +124,10 @@ const createScenario = async (req, res) => {
  * Modifie un scénario existant
  * Même mapping titre/niveauMin/niveauMax que pour la création
  */
-const updateScenario = async (req, res) => {
-  try {
+const updateScenario = async (req, res) =>
+{
+  try
+  {
     const { title, theme, description, langue, minLevel, maxLevel, emoji, systemPrompt } = req.body
 
     const update = { theme, description, langue, emoji }
@@ -125,12 +142,14 @@ const updateScenario = async (req, res) => {
       { new: true, runValidators: true }
     )
 
-    if (!scenario) {
+    if (!scenario)
+    {
       return res.status(404).json({ message: 'Scénario introuvable.' })
     }
 
     res.json({ message: 'Scénario modifié avec succès.', scenario })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('updateScenario :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
@@ -140,16 +159,20 @@ const updateScenario = async (req, res) => {
  * DELETE /api/admin/scenarios/:id
  * Supprime un scénario
  */
-const deleteScenario = async (req, res) => {
-  try {
+const deleteScenario = async (req, res) =>
+{
+  try
+  {
     const scenario = await Scenario.findByIdAndDelete(req.params.id)
 
-    if (!scenario) {
+    if (!scenario)
+    {
       return res.status(404).json({ message: 'Scénario introuvable.' })
     }
 
     res.json({ message: 'Scénario supprimé avec succès.' })
-  } catch (err) {
+  } catch (err)
+  {
     console.error('deleteScenario :', err.message)
     res.status(500).json({ message: 'Erreur serveur.' })
   }
