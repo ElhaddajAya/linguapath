@@ -62,7 +62,7 @@ const getConversations = async (req, res) =>
     try
     {
         const conversations = await Conversation.find({ userId: req.user._id })
-            .sort({ createdAt: -1 })   // Plus récentes en premier
+            .sort({ updatedAt: -1 })   // Plus récentes en premier
             .select('-messages')        // On n'envoie pas les messages dans la liste
         // pour alléger la réponse
 

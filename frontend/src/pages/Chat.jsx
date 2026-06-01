@@ -316,7 +316,10 @@ export default function Chat() {
         message: `Start the conversation now. Greet the user briefly in your role (2-3 sentences max), ask ONE simple opening question, and provide 3 suggestions of what the user could reply.`,
       });
 
-      const introMessage = { role: "assistant", contenu: extraireContenu(intro.data.reponse) };
+      const introMessage = {
+        role: "assistant",
+        contenu: extraireContenu(intro.data.reponse),
+      };
       setHistorique([introMessage]);
 
       if (intro.data.suggestions?.length) {
@@ -465,7 +468,7 @@ export default function Chat() {
       console.error("Erreur sauvegarde :", err.message);
     }
 
-    navigate("/history");
+    navigate("/historique");
   };
 
   const handleKeyDown = (e) => {
