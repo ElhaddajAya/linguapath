@@ -302,7 +302,7 @@ export default function Quiz() {
 
           {/* Bouton continuer */}
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
             className='w-full py-3.5 rounded-xl font-semibold text-white text-sm
                        hover:opacity-90 transition-opacity'
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
