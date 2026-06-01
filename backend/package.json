@@ -23,7 +23,8 @@
     "nodemailer": "^8.0.10",
     "openai": "^6.39.1",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "resend": "^6.12.4"
   },
   "devDependencies": {
     "jest": "^30.4.2",
