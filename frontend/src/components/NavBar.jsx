@@ -45,28 +45,50 @@ export default function Navbar() {
     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-warm-600 hover:bg-warm-50 hover:text-warm-900 transition-colors";
 
   // ── Rendu avatar (image ou initiale) ─────────────────────
-  const AvatarCircle = ({ size = 9 }) => {
-    const dim = `w-${size} h-${size}`;
-    if (user.avatar) {
-      return (
-        <img
-          src={user.avatar}
-          alt={user.nom}
-          className={`${dim} rounded-full object-cover`}
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
-      );
-    }
+const AvatarCircle = ({ size = 9 }) => {
+  const dim = `w-${size} h-${size}`;
+  const avatar = user.avatar;
+
+  // URL image (Google OAuth)
+  const isImage =
+    typeof avatar === "string" && /^(https?:\/\/|data:image\/)/.test(avatar);
+
+  if (isImage) {
+    return (
+      <img
+        src={avatar}
+        alt={user.nom}
+        className={`${dim} rounded-full object-cover`}
+        onError={(e) => {
+          e.target.style.display = "none";
+        }}
+      />
+    );
+  }
+
+  // Emoji avatar
+  if (avatar && avatar.length <= 4) {
     return (
       <div
-        className={`${dim} rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-sm font-semibold`}
+        className={`${dim} rounded-full bg-orange-50 border border-orange-200
+        flex items-center justify-center text-xl`}
       >
-        {user.nom?.charAt(0).toUpperCase()}
+        {avatar}
       </div>
     );
-  };
+  }
+
+  // Fallback : initiale du nom
+  return (
+    <div
+      className={`${dim} rounded-full flex items-center justify-center
+        text-white text-sm font-semibold`}
+      style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
+    >
+      {user.nom?.charAt(0).toUpperCase()}
+    </div>
+  );
+};
 
   return (
     <>
