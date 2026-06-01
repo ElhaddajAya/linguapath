@@ -6,7 +6,7 @@
 const express = require('express')
 const cors = require('cors')
 
-const { register, login } = require('./controllers/authController')
+const authRoutes = require('./routes/auth')
 const { getScenarios, getScenarioById } = require('./controllers/scenarioController')
 const { getQuestions, saveResult } = require('./controllers/quizController')
 const { protect, adminOnly } = require('./middleware/authMiddleware')
@@ -17,9 +17,12 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// ── Configuration de Passport.js pour l'authentification Google OAuth ──
+const passport = require('./config/passport')
+app.use(passport.initialize())
+
 // ── Routes Auth ──
-app.post('/api/auth/register', register)
-app.post('/api/auth/login', login)
+app.use('/api/auth', authRoutes)
 
 // ── Routes Scénarios (protégées) ──
 app.get('/api/scenarios', protect, getScenarios)
