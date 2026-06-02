@@ -1,8 +1,8 @@
-# LinguaPath
+# LinguaTalk
 
 ## Description
 
-LinguaPath est une application d'apprentissage de langues intelligente.
+LinguaTalk est une application d'apprentissage de langues intelligente.
 
 ## Démarrage
 

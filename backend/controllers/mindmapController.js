@@ -2,7 +2,7 @@
 // pour alimenter la MindMap React Flow côté frontend
 //
 // Structure de l'arbre :
-//   Root (LinguaPath)
+//   Root (LinguaTalk)
 //     └── Langue (ex: Espagnol 🇪🇸)
 //           └── Thème (ex: Restaurant)
 //                 └── Pattern (ex: Politesse)
@@ -98,7 +98,7 @@ const getMindMapData = async (req, res) =>
             nodes.push({
                 id: 'root',
                 type: 'rootNode',
-                data: { label: 'LinguaPath', count: toutesEntries.length },
+                data: { label: 'LinguaTalk', count: toutesEntries.length },
                 position: CENTRE,
             })
 
@@ -155,7 +155,7 @@ const getMindMapData = async (req, res) =>
             nodes.push({
                 id: 'root',
                 type: 'rootNode',
-                data: { label: 'LinguaPath', count: entriesLangue.length, mini: true },
+                data: { label: 'LinguaTalk', count: entriesLangue.length, mini: true },
                 position: { x: -500, y: 0 },
             })
 

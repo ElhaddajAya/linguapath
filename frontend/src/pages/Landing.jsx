@@ -1,4 +1,4 @@
-// Page d'accueil publique LinguaPath
+// Page d'accueil publique LinguaTalk
 // Responsive, couleurs soft blanc/orange, icônes lucide-react
 
 import { useNavigate } from "react-router-dom";
@@ -386,7 +386,7 @@ export default function Landing() {
               Tout ce qu'il faut pour progresser
             </h2>
             <p className='text-warm-500 mt-3 max-w-lg mx-auto text-sm leading-relaxed'>
-              LinguaPath combine la puissance de l'IA avec une structure
+              LinguaTalk combine la puissance de l'IA avec une structure
               pédagogique que les autres applications n'ont pas.
             </p>
           </div>
@@ -471,7 +471,7 @@ export default function Landing() {
               Prêt à progresser ?
             </h2>
             <p className='text-warm-500 text-sm leading-relaxed mb-6 sm:mb-8 max-w-md mx-auto'>
-              Rejoignez LinguaPath et commencez votre première conversation
+              Rejoignez LinguaTalk et commencez votre première conversation
               guidée par l'IA dès aujourd'hui — gratuitement.
             </p>
             <button

@@ -82,7 +82,7 @@ export default function Signup() {
             className='text-4xl font-bold mb-4'
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Rejoins LinguaPath.
+            Rejoins LinguaTalk.
           </p>
           <p className='text-orange-100 text-lg'>
             Choisis ta langue,
@@ -103,7 +103,7 @@ export default function Signup() {
             Crée ton compte
           </h2>
           <p className='text-sm text-warm-500 mb-7'>
-            Rejoins LinguaPath et commence à apprendre
+            Rejoins LinguaTalk et commence à apprendre
           </p>
 
           {/* Bouton Google */}

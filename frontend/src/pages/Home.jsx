@@ -34,7 +34,7 @@ function AdminHome({ user }) {
             Bonjour, {user.nom?.split(" ")[0]}
           </h1>
           <p className='text-warm-500 mt-1 text-xs sm:text-sm'>
-            Espace administrateur — gestion de la plateforme LinguaPath
+            Espace administrateur — gestion de la plateforme LinguaTalk
           </p>
         </div>
 

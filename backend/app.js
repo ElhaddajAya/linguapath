@@ -59,7 +59,7 @@ app.use('/api/admin', adminRoutes)
 // ── Route de santé ──
 app.get('/', (req, res) =>
 {
-  res.json({ message: 'LinguaPath Backend is running ✅' })
+  res.json({ message: 'LinguaTalk Backend is running ✅' })
 })
 
 module.exports = app

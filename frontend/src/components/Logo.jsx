@@ -26,7 +26,7 @@ export default function Logo({ size = "navbar" }) {
     </defs>
   );
 
-  // "LinguaPath" avec Path en dégradé
+  // "LinguaTalk" avec Talk en dégradé
   const Wordmark = ({ big }) => (
     <div
       style={{
@@ -45,7 +45,7 @@ export default function Logo({ size = "navbar" }) {
           WebkitTextFillColor: "transparent",
         }}
       >
-        Path
+        Talk
       </span>
     </div>
   );

@@ -23,7 +23,7 @@ const emailTemplate = (title, content, buttonText, buttonUrl) => `
         <tr>
           <td style="background:linear-gradient(135deg,#F59E0B,#EA580C);padding:32px 40px;text-align:center;">
             <h1 style="margin:0;color:#ffffff;font-size:28px;font-family:Georgia,serif;font-weight:700;">
-              Lingua<span style="color:#FEF3C7;">Path</span>
+              Lingua<span style="color:#FEF3C7;">Talk</span>
             </h1>
           </td>
         </tr>
@@ -45,7 +45,7 @@ const emailTemplate = (title, content, buttonText, buttonUrl) => `
         </tr>
         <tr>
           <td style="background:#F8FAFC;padding:20px 40px;border-top:1px solid #E2E8F0;text-align:center;">
-            <p style="margin:0;color:#94A3B8;font-size:12px;">© 2026 LinguaPath — EMSI Rabat</p>
+            <p style="margin:0;color:#94A3B8;font-size:12px;">© 2026 LinguaTalk — EMSI Rabat</p>
           </td>
         </tr>
       </table>
@@ -58,12 +58,12 @@ const sendVerificationEmail = async (email, nom, token) =>
 {
   const url = `${process.env.FRONTEND_URL}/verify-email?token=${token}`
   await transporter.sendMail({
-    from: `"LinguaPath" <${process.env.GMAIL_USER}>`,
+    from: `"LinguaTalk" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: '✉️ Confirmez votre adresse email — LinguaPath',
+    subject: '✉️ Confirmez votre adresse email — LinguaTalk',
     html: emailTemplate(
       `Bonjour ${nom}, confirmez votre email`,
-      `<p>Merci de vous être inscrit sur <strong>LinguaPath</strong> !</p>
+      `<p>Merci de vous être inscrit sur <strong>LinguaTalk</strong> !</p>
        <p>Cliquez ci-dessous pour confirmer votre email.</p>`,
       'Confirmer mon email', url
     ),
@@ -74,9 +74,9 @@ const sendResetPasswordEmail = async (email, nom, token) =>
 {
   const url = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
   await transporter.sendMail({
-    from: `"LinguaPath" <${process.env.GMAIL_USER}>`,
+    from: `"LinguaTalk" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: '🔐 Réinitialisation de votre mot de passe — LinguaPath',
+    subject: '🔐 Réinitialisation de votre mot de passe — LinguaTalk',
     html: emailTemplate(
       'Réinitialisation de mot de passe',
       `<p>Bonjour <strong>${nom}</strong>,</p>

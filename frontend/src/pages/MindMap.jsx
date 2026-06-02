@@ -119,7 +119,7 @@ function RootNode({ data }) {
       <span
         style={{ color: "white", fontWeight: 700, fontSize: 11, marginTop: 4 }}
       >
-        LinguaPath
+        LinguaTalk
       </span>
       <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 10 }}>
         {data.count} phrases
@@ -792,7 +792,7 @@ function MindMapInner({
   );
 
   const filAriane = useMemo(() => {
-    const p = [{ label: "LinguaPath" }];
+    const p = [{ label: "LinguaTalk" }];
     if (langue)
       p.push({ label: `${LANGUE_EMOJI[langue] || ""} ${langue}`.trim() });
     if (theme) p.push({ label: theme });
