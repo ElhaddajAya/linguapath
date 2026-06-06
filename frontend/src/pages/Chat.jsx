@@ -16,7 +16,7 @@ import api from "../services/api";
 function LinguaPathAvatar() {
   return (
     <div
-      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center border border-orange-200"
+      className='shrink-0 w-8 h-8 rounded-full flex items-center justify-center border border-orange-200'
       style={{
         background: "#FFFFFF",
         boxShadow: "0 2px 8px rgba(234,88,12,0.15)",
@@ -24,43 +24,55 @@ function LinguaPathAvatar() {
     >
       {/* Logo A語 — fond blanc, logo orange */}
       <svg
-        width="20"
-        height="20"
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        width='20'
+        height='20'
+        viewBox='0 0 32 32'
+        fill='none'
+        xmlns='http://www.w3.org/2000/svg'
       >
         {/* Bulle de chat orange */}
         <path
-          d="M4 6C4 4.34 5.34 3 7 3H25C26.66 3 28 4.34 28 6V20C28 21.66 26.66 23 25 23H10L5 28V23H7C5.34 23 4 21.66 4 20V6Z"
-          fill="url(#logoGrad)"
+          d='M4 6C4 4.34 5.34 3 7 3H25C26.66 3 28 4.34 28 6V20C28 21.66 26.66 23 25 23H10L5 28V23H7C5.34 23 4 21.66 4 20V6Z'
+          fill='url(#logoGrad)'
         />
         {/* Lettre A blanche */}
         <text
-          x="7"
-          y="18"
-          fontFamily="serif"
-          fontSize="11"
-          fontWeight="bold"
-          fill="white"
+          x='7'
+          y='18'
+          fontFamily='serif'
+          fontSize='11'
+          fontWeight='bold'
+          fill='white'
         >
           A
         </text>
         {/* Caractère 語 blanc */}
         <text
-          x="17"
-          y="18"
-          fontFamily="serif"
-          fontSize="10"
-          fontWeight="bold"
-          fill="white"
+          x='17'
+          y='18'
+          fontFamily='serif'
+          fontSize='10'
+          fontWeight='bold'
+          fill='white'
         >
           語
         </text>
         <defs>
-          <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#EA580C" />
+          <linearGradient
+            id='logoGrad'
+            x1='0'
+            y1='0'
+            x2='1'
+            y2='1'
+          >
+            <stop
+              offset='0%'
+              stopColor='#F59E0B'
+            />
+            <stop
+              offset='100%'
+              stopColor='#EA580C'
+            />
           </linearGradient>
         </defs>
       </svg>
@@ -89,11 +101,11 @@ function UserAvatar({ avatar, nom }) {
 
   if (src && !imgError) {
     return (
-      <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-orange-200">
+      <div className='shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 border-orange-200'>
         <img
           src={src}
-          alt="Mon avatar"
-          className="w-full h-full object-cover"
+          alt='Mon avatar'
+          className='w-full h-full object-cover'
           onError={() => setImgError(true)}
         />
       </div>
@@ -102,8 +114,8 @@ function UserAvatar({ avatar, nom }) {
 
   return (
     <div
-      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center
-                 text-white text-xs font-bold border-2 border-orange-200"
+      className='shrink-0 w-8 h-8 rounded-full flex items-center justify-center
+                 text-white text-xs font-bold border-2 border-orange-200'
       style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
     >
       {initiale}
@@ -156,58 +168,61 @@ function Message({ msg, langue, userAvatar, userNom }) {
   // ── Message utilisateur ──
   if (msg.role === "user") {
     return (
-      <div className="flex justify-end items-end gap-2">
+      <div className='flex justify-end items-end gap-2'>
         <div
-          className="max-w-[75%] px-4 py-3 rounded-2xl rounded-br-sm
-                     text-sm text-white leading-relaxed whitespace-pre-wrap"
+          className='max-w-[75%] px-4 py-3 rounded-2xl rounded-br-sm
+                     text-sm text-white leading-relaxed whitespace-pre-wrap'
           style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
         >
           {msg.contenu}
         </div>
-        <UserAvatar avatar={userAvatar} nom={userNom} />
+        <UserAvatar
+          avatar={userAvatar}
+          nom={userNom}
+        />
       </div>
     );
   }
 
   // ── Message IA ──
   return (
-    <div className="flex justify-start items-end gap-2">
+    <div className='flex justify-start items-end gap-2'>
       <LinguaPathAvatar />
 
-      <div className="max-w-[75%] flex flex-col gap-1">
+      <div className='max-w-[75%] flex flex-col gap-1'>
         <div
-          className="px-4 py-3 rounded-2xl rounded-bl-sm bg-white
+          className='px-4 py-3 rounded-2xl rounded-bl-sm bg-white
                       border border-warm-200 text-warm-800 text-sm
-                      leading-relaxed whitespace-pre-wrap"
+                      leading-relaxed whitespace-pre-wrap'
         >
           {msg.contenu}
         </div>
 
         {show && data && (
           <div
-            className="flex flex-col gap-1.5 px-4 py-3 rounded-xl
-                        bg-orange-50 border border-orange-100 text-xs"
+            className='flex flex-col gap-1.5 px-4 py-3 rounded-xl
+                        bg-orange-50 border border-orange-100 text-xs'
           >
             {needsRomanisation &&
               data.romanisation &&
               data.romanisation !== "—" && (
                 <>
-                  <div className="flex gap-2 items-start">
-                    <span className="text-orange-400 shrink-0 mt-0.5">
+                  <div className='flex gap-2 items-start'>
+                    <span className='text-orange-400 shrink-0 mt-0.5'>
                       <Languages size={12} />
                     </span>
-                    <span className="text-warm-600 font-mono leading-relaxed">
+                    <span className='text-warm-600 font-mono leading-relaxed'>
                       {data.romanisation}
                     </span>
                   </div>
-                  <div className="border-t border-orange-200" />
+                  <div className='border-t border-orange-200' />
                 </>
               )}
-            <div className="flex gap-2 items-start">
-              <span className="text-orange-400 shrink-0 mt-0.5">
+            <div className='flex gap-2 items-start'>
+              <span className='text-orange-400 shrink-0 mt-0.5'>
                 <Languages size={12} />
               </span>
-              <span className="text-warm-600 leading-relaxed italic">
+              <span className='text-warm-600 leading-relaxed italic'>
                 {data.traduction}
               </span>
             </div>
@@ -217,23 +232,27 @@ function Message({ msg, langue, userAvatar, userNom }) {
         <button
           onClick={afficher}
           disabled={loading}
-          className="self-start text-xs text-warm-400 hover:text-orange-500
-                     transition-colors px-1"
+          className='self-start text-xs text-warm-400 hover:text-orange-500
+                     transition-colors px-1'
         >
           {loading ? (
-            <span className="flex items-center gap-1">
-              <Loader2 size={12} className="animate-spin" /> Chargement...
+            <span className='flex items-center gap-1'>
+              <Loader2
+                size={12}
+                className='animate-spin'
+              />{" "}
+              Chargement...
             </span>
           ) : show ? (
-            <span className="flex items-center gap-1">
+            <span className='flex items-center gap-1'>
               <EyeOff size={12} /> Masquer
             </span>
           ) : needsRomanisation ? (
-            <span className="flex items-center gap-1">
+            <span className='flex items-center gap-1'>
               <Languages size={12} /> Romanisation & traduction
             </span>
           ) : (
-            <span className="flex items-center gap-1">
+            <span className='flex items-center gap-1'>
               <Languages size={12} /> Traduction
             </span>
           )}
@@ -501,7 +520,7 @@ export default function Chat() {
             langue: scenario?.langue,
             niveau:
               JSON.parse(localStorage.getItem("user") || "{}")?.langues?.find(
-                (l) => l.langue === scenario?.langue
+                (l) => l.langue === scenario?.langue,
               )?.niveau || "A1",
           })
           .catch((err) => console.warn("Extraction échouée :", err.message));
@@ -522,60 +541,62 @@ export default function Chat() {
 
   if (loadingScenario) {
     return (
-      <div className="min-h-screen bg-warm-50 flex flex-col items-center justify-center gap-4">
-        <div className="flex gap-2">
+      <div className='min-h-screen bg-warm-50 flex flex-col items-center justify-center gap-4'>
+        <div className='flex gap-2'>
           <div
-            className="w-3 h-3 rounded-full bg-orange-400 animate-bounce"
+            className='w-3 h-3 rounded-full bg-orange-400 animate-bounce'
             style={{ animationDelay: "0ms" }}
           />
           <div
-            className="w-3 h-3 rounded-full bg-orange-400 animate-bounce"
+            className='w-3 h-3 rounded-full bg-orange-400 animate-bounce'
             style={{ animationDelay: "150ms" }}
           />
           <div
-            className="w-3 h-3 rounded-full bg-orange-400 animate-bounce"
+            className='w-3 h-3 rounded-full bg-orange-400 animate-bounce'
             style={{ animationDelay: "300ms" }}
           />
         </div>
-        <p className="text-warm-400 text-sm">Préparation de la conversation...</p>
+        <p className='text-warm-400 text-sm'>
+          Préparation de la conversation...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-warm-50 flex flex-col overflow-hidden">
+    <div className='h-screen bg-warm-50 flex flex-col overflow-hidden'>
       {/* ── Header ── */}
       <div
-        className="bg-white border-b border-warm-200 shadow-soft px-6 py-4
-                   flex items-center justify-between shrink-0"
+        className='bg-white border-b border-warm-200 shadow-soft px-6 py-4
+                   flex items-center justify-between shrink-0'
       >
-        <div className="flex items-center gap-3">
+        <div className='flex items-center gap-3'>
           <button
             onClick={() => navigate("/scenarios")}
-            className="text-warm-400 hover:text-warm-700 transition-colors mr-1"
+            className='text-warm-400 hover:text-warm-700 transition-colors mr-1'
           >
             <ArrowLeft size={18} />
           </button>
-          <span className="text-2xl">{scenario?.emoji}</span>
+          <span className='text-2xl'>{scenario?.emoji}</span>
           <div>
-            <h1 className="font-semibold text-warm-900 text-sm">
+            <h1 className='font-semibold text-warm-900 text-sm'>
               {scenario?.titre}
             </h1>
-            <p className="text-xs text-warm-400">{scenario?.langue}</p>
+            <p className='text-xs text-warm-400'>{scenario?.langue}</p>
           </div>
         </div>
         <button
           onClick={terminerConversation}
-          className="px-4 py-1.5 rounded-xl text-xs font-semibold
-               text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors"
+          className='px-4 py-1.5 rounded-xl text-xs font-semibold
+               text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
         >
           Terminer
         </button>
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="max-w-3xl mx-auto flex flex-col gap-4">
+      <div className='flex-1 overflow-y-auto px-6 py-6'>
+        <div className='max-w-3xl mx-auto flex flex-col gap-4'>
           {historique.map((msg, i) => (
             <Message
               key={i}
@@ -587,20 +608,20 @@ export default function Chat() {
           ))}
 
           {loading && (
-            <div className="flex justify-start items-end gap-2">
+            <div className='flex justify-start items-end gap-2'>
               <LinguaPathAvatar />
-              <div className="bg-white border border-warm-200 rounded-2xl rounded-bl-sm px-4 py-3">
-                <div className="flex gap-1.5 items-center">
+              <div className='bg-white border border-warm-200 rounded-2xl rounded-bl-sm px-4 py-3'>
+                <div className='flex gap-1.5 items-center'>
                   <div
-                    className="w-2 h-2 rounded-full bg-warm-300 animate-bounce"
+                    className='w-2 h-2 rounded-full bg-warm-300 animate-bounce'
                     style={{ animationDelay: "0ms" }}
                   />
                   <div
-                    className="w-2 h-2 rounded-full bg-warm-300 animate-bounce"
+                    className='w-2 h-2 rounded-full bg-warm-300 animate-bounce'
                     style={{ animationDelay: "150ms" }}
                   />
                   <div
-                    className="w-2 h-2 rounded-full bg-warm-300 animate-bounce"
+                    className='w-2 h-2 rounded-full bg-warm-300 animate-bounce'
                     style={{ animationDelay: "300ms" }}
                   />
                 </div>
@@ -613,20 +634,20 @@ export default function Chat() {
       </div>
 
       {/* ── Zone de saisie + suggestions ── */}
-      <div className="bg-white border-t border-warm-200 px-6 py-4 shrink-0">
-        <div className="max-w-3xl mx-auto flex flex-col gap-3">
+      <div className='bg-white border-t border-warm-200 px-6 py-4 shrink-0'>
+        <div className='max-w-3xl mx-auto flex flex-col gap-3'>
           {/* Skeleton suggestions */}
           {loadingSuggestions && !loading && (
-            <div className="flex gap-2 flex-wrap">
+            <div className='flex gap-2 flex-wrap'>
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="flex flex-col gap-1.5 px-3 py-2 rounded-xl
-                    bg-warm-100 border border-warm-200 min-w-30 max-w-45"
+                  className='flex flex-col gap-1.5 px-3 py-2 rounded-xl
+                    bg-warm-100 border border-warm-200 min-w-30 max-w-45'
                 >
-                  <div className="h-3 bg-warm-200 rounded animate-pulse w-full" />
-                  <div className="h-2 bg-warm-200 rounded animate-pulse w-3/4" />
-                  <div className="h-2 bg-orange-100 rounded animate-pulse w-1/2" />
+                  <div className='h-3 bg-warm-200 rounded animate-pulse w-full' />
+                  <div className='h-2 bg-warm-200 rounded animate-pulse w-3/4' />
+                  <div className='h-2 bg-orange-100 rounded animate-pulse w-1/2' />
                 </div>
               ))}
             </div>
@@ -634,24 +655,25 @@ export default function Chat() {
 
           {/* Cartes de suggestions */}
           {suggestionsData.length > 0 && !loading && !loadingSuggestions && (
-            <div className="flex gap-2 flex-wrap">
+            <div className='flex gap-2 flex-wrap'>
               {suggestionsData.map((s, i) => (
                 <button
                   key={i}
                   onClick={() => envoyerMessage(s.texte)}
-                  className="flex flex-col items-start px-3 py-2 rounded-xl text-xs
+                  className='flex flex-col items-start px-3 py-2 rounded-xl text-xs
                    bg-warm-100 border border-warm-200 text-left
                    hover:bg-orange-50 hover:border-orange-300
-                   transition-all max-w-45"
+                   transition-all max-w-45'
                 >
-                  <span className="font-medium text-warm-800">{s.texte}</span>
-                  {s.roman && LANGUES_NON_LATINES.includes(scenario?.langue) && (
-                    <span className="text-warm-400 font-mono text-[10px] mt-0.5">
-                      {s.roman}
-                    </span>
-                  )}
+                  <span className='font-medium text-warm-800'>{s.texte}</span>
+                  {s.roman &&
+                    LANGUES_NON_LATINES.includes(scenario?.langue) && (
+                      <span className='text-warm-400 font-mono text-[10px] mt-0.5'>
+                        {s.roman}
+                      </span>
+                    )}
                   {s.trad && (
-                    <span className="text-orange-500 italic text-[10px]">
+                    <span className='text-orange-500 italic text-[10px]'>
                       {s.trad}
                     </span>
                   )}
@@ -661,17 +683,17 @@ export default function Chat() {
           )}
 
           {/* Textarea + micro + envoyer */}
-          <div className="flex gap-3">
+          <div className='flex gap-3'>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Écris ton message... (Entrée pour envoyer)"
+              placeholder='Écris ton message...'
               rows={1}
-              className="flex-1 px-4 py-3 rounded-xl border border-warm-200
+              className='flex-1 px-4 py-3 rounded-xl border border-warm-200
                          bg-warm-50 text-warm-900 text-sm resize-none
                          focus:outline-none focus:border-orange-500
-                         focus:ring-2 focus:ring-orange-500/10 transition-all"
+                         focus:ring-2 focus:ring-orange-500/10 transition-all'
             />
 
             {(window.SpeechRecognition || window.webkitSpeechRecognition) && (
@@ -684,12 +706,12 @@ export default function Chat() {
                               microState === "listening"
                                 ? "bg-red-50 border-red-300 text-red-500 animate-pulse"
                                 : microState === "error"
-                                ? "bg-red-50 border-red-200 text-red-400"
-                                : "bg-warm-50 border-warm-200 text-warm-500 hover:border-orange-300 hover:text-orange-500"
+                                  ? "bg-red-50 border-red-200 text-red-400"
+                                  : "bg-warm-50 border-warm-200 text-warm-500 hover:border-orange-300 hover:text-orange-500"
                             }`}
               >
                 {microState === "listening" ? (
-                  <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse block" />
+                  <span className='w-3 h-3 rounded-full bg-red-500 animate-pulse block' />
                 ) : (
                   <Mic size={18} />
                 )}
@@ -699,8 +721,8 @@ export default function Chat() {
             <button
               onClick={() => envoyerMessage()}
               disabled={!message.trim() || loading}
-              className="px-5 py-3 rounded-xl font-semibold text-white text-sm
-                         transition-opacity disabled:opacity-40 hover:opacity-90"
+              className='px-5 py-3 rounded-xl font-semibold text-white text-sm
+                         transition-opacity disabled:opacity-40 hover:opacity-90'
               style={{
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
@@ -710,12 +732,12 @@ export default function Chat() {
           </div>
 
           {microState === "listening" && (
-            <p className="text-xs text-red-400 text-center animate-pulse flex items-center justify-center gap-1">
+            <p className='text-xs text-red-400 text-center animate-pulse flex items-center justify-center gap-1'>
               <Mic size={12} /> Écoute en cours... Parle maintenant
             </p>
           )}
           {microState === "error" && (
-            <p className="text-xs text-red-400 text-center">
+            <p className='text-xs text-red-400 text-center'>
               Micro non disponible — vérifie les permissions du navigateur
             </p>
           )}
