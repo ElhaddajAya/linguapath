@@ -12,6 +12,9 @@ const { protect, adminOnly } = require('./middleware/authMiddleware')
 
 const app = express()
 
+// ── Fix Render proxy — obligatoire pour express-rate-limit ──
+app.set('trust proxy', 1) // fait confiance au premier proxy (Render)
+
 // ── Middlewares globaux ──────────────────────────────────────────
 app.use(cors())
 app.use(express.json())

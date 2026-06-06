@@ -813,7 +813,7 @@ function MindMapInner({
     <div className='flex flex-col md:flex-row flex-1 px-3 md:px-10 pb-4 md:pb-8 gap-3 md:gap-4'>
       <div
         className='flex-1 bg-white rounded-2xl border border-warm-200 shadow-soft overflow-hidden'
-        style={{ minHeight: 400 }}
+        style={{ minHeight: 400, height: "calc(100vh - 220px)" }}
       >
         {loading ? (
           <div className='flex items-center justify-center h-full'>
@@ -1085,7 +1085,10 @@ export default function MindMap() {
       <div className='px-4 md:px-10 py-4 md:py-6 flex items-center justify-between flex-wrap gap-3'>
         <div>
           <h1 className='text-xl md:text-2xl font-semibold text-warm-900 flex items-center gap-2'>
-            <Map size={20} className='text-orange-500' />
+            <Map
+              size={20}
+              className='text-orange-500'
+            />
             MindMap
           </h1>
           <p className='text-warm-500 text-xs sm:text-sm mt-1'>
