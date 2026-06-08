@@ -96,7 +96,7 @@ const AvatarCircle = ({ size = 9 }) => {
       <nav className='sticky top-0 z-40 bg-white border-b border-warm-200 shadow-soft'>
         <div className='max-w-7xl mx-auto px-4 sm:px-10 h-16 flex items-center justify-between'>
           <Link
-            to='/'
+            to='/home'
             className='hover:opacity-80 transition-opacity'
           >
             <Logo size='navbar' />
@@ -252,7 +252,7 @@ const AvatarCircle = ({ size = 9 }) => {
 
         <nav className='flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto'>
           <Link
-            to='/'
+            to='/home'
             onClick={close}
             className={navLink}
           >

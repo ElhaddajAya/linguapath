@@ -134,6 +134,10 @@ For each extracted phrase :
 
 ` : ''}
 PATTERN RULES :
+- Write the pattern in THE SAME LANGUAGE as the phrase — NEVER in French
+- If the phrase is in English → pattern in English : "I have...", "Can I...?"
+- If the phrase is in Spanish → pattern in Spanish : "Tengo...", "¿Puede...?"
+- If the phrase is in Korean → pattern in Korean : "...주세요", "...있나요?"
 - Use "..." where the variable part goes
 - Short : 2 to 5 words maximum including "..."
 - Broad enough that 3+ different phrases could fit it
