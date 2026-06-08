@@ -44,7 +44,14 @@ const extrairePhrasesApprises = async (req, res) =>
 
 WHAT TO EXTRACT :
 Your goal is to find phrases the learner can REUSE in a real-life situation similar to this scenario.
-Source doesn't matter — extract from LEARNER or AI CHARACTER lines, whichever are more useful.
+Source matters — follow this priority:
+1. LEARNER phrases FIRST — always prefer phrases said by the learner.
+2. AI CHARACTER phrases ONLY if they are useful for the learner's role — for example a doctor's question that a learner might need to understand or reuse.
+3. NEVER extract phrases that only make sense for the AI's role — for example a shop assistant saying "Would you like to try it on?" is NOT useful for someone who plays the customer.
+
+Ask yourself: "Would the LEARNER say or need this phrase in a similar real situation?"
+→ YES → extract it.
+→ NO, only the AI character would say it → skip it.
 
 A phrase is worth extracting if ALL of these are true :
   ✅ Useful in real life — someone would actually say this in a similar real situation
