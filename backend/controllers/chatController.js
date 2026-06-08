@@ -120,7 +120,12 @@ Exemples pour l'Anglais :
   ❌ "beleive" → ✅ "believe" — 'ie' not 'ei'.
   ❌ "I have went" → ✅ "I have gone" — past participle of "go".
   ❌ "She don't know" → ✅ "She doesn't know" — 3rd person singular.
-  ❌ "I am agree" → ✅ "I agree" — "agree" is a verb, not an adjective.`,
+  ❌ "I am agree" → ✅ "I agree" — "agree" is a verb, not an adjective.
+  ❌ "nedd" → ✅ "need" — typo, missing letter.
+  ❌ "bit" (meaning "but") → ✅ "but" — typo, wrong letter.
+  ❌ "thier" → ✅ "their" — spelling error.
+  ❌ "i nedd" → ✅ "I need" — "i" must be capitalised + spelling error.
+  NOTE: keyboard typos (wrong/missing letter) are ALWAYS spelling errors — correct them even in informal messages.`,
 
     'Français': `
 Exemples pour le Français :
@@ -224,6 +229,8 @@ EXEMPLES CONCRETS :
   ❌ "my friend just give birth" → ✅ "gave" — past tense of "give". CORRIGER.
   ❌ "yesterday I go to the store" → ✅ "went" — past tense required. CORRIGER.
   ❌ "she don't like it" → ✅ "doesn't" — 3rd person singular. CORRIGER.
+  ❌ "i nedd your help" → ✅ "I need" — 'i' must be 'I' + 'nedd' is a typo. CORRIGER.
+  ❌ "i'd like to buy her a gift bit i'm not sure" → ✅ "but" — 'bit' is a typo for 'but'. CORRIGER.
   ✅ "yeah I wanna get something nice" → correct informal English. NE PAS CORRIGER.
   ✅ "kinda looking for baby stuff" → correct informal English. NE PAS CORRIGER.
   ✅ "I have trouble finding the right size" → grammatically correct. NE PAS CORRIGER.
@@ -256,7 +263,13 @@ La SEULE chose qui doit apparaître avant ta réplique c'est "💡 Correction : 
 - Reste dans ton rôle. Vocabulaire naturel de ton métier.
 - UNE SEULE question à la fois.
 - Ne reviens pas sur un sujet déjà abordé dans l'historique.
-- LIS TOUT L'HISTORIQUE avant de répondre. Ta réplique doit être cohérente avec TOUT ce qui a été dit.
+- MÉMOIRE OBLIGATOIRE : relis TOUT l'historique depuis le début avant chaque réponse.
+- Mémorise les faits importants dits par l'utilisateur : âge, taille, couleur, destination, contexte (cadeau, allergie, bébé...).
+- Ces faits restent vrais pour TOUTE la conversation — ne les oublie jamais.
+- AVANT de proposer quelque chose, vérifie : est-ce logique avec TOUS les faits connus ?
+- ❌ INTERDIT : proposer un cabine d'essayage si le produit est pour un bébé.
+- ❌ INTERDIT : proposer une taille adulte si l'utilisateur a dit "c'est pour un enfant de 5 ans".
+- ❌ INTERDIT : oublier une information donnée plus tôt dans la conversation.
 - CONTEXTE OBLIGATOIRE : si l'utilisateur a donné des informations importantes (ex: "c'est pour un bébé", "je suis allergique", "c'est un cadeau"), tu DOIS en tenir compte dans TOUTES tes réponses suivantes.
 - EXEMPLE D'ERREUR INTERDITE : l'utilisateur dit "c'est pour le bébé de mon amie" → tu NE DOIS PAS dire "voulez-vous l'essayer en cabine". Le contexte rend cette phrase absurde.
 - Si tu proposes quelque chose, vérifie d'abord que c'est logique par rapport au contexte entier de la conversation.
@@ -344,7 +357,7 @@ Réponds UNIQUEMENT avec ce JSON. Zéro texte en dehors.
             }
             const languePrompt = langueEnAnglais[scenario.langue] || scenario.langue
 
-            const historiqueRecent = (historique || []).slice(-6)
+            const historiqueRecent = (historique || [])
             const contextConversation = historiqueRecent
                 .map(m => `${m.role === 'user' ? 'LEARNER' : 'AI CHARACTER'}: ${m.contenu}`)
                 .join('\n')
