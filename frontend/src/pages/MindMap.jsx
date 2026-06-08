@@ -382,9 +382,9 @@ function construireArbreComplet(entries) {
   const CX = 0,
     CY = 0;
   const RAYON_LANGUE = 400;
-  const RAYON_THEME = 240;
-  const RAYON_PATTERN = 190;
-  const RAYON_PHRASE = 150;
+  const RAYON_THEME = 280;
+  const RAYON_PATTERN = 240;
+  const RAYON_PHRASE = 180;
 
   nodes.push({
     id: "root",
@@ -612,11 +612,8 @@ function appliquerFiltre(
       } else if (vue === "theme") {
         dimmed = !(d.langueKey === langSel && d.themeKey === themeSel);
       } else if (vue === "pattern") {
-        dimmed = !(
-          d.langueKey === langSel &&
-          d.themeKey === themeSel &&
-          d.patternKey === patSel
-        );
+        // Griser toutes les phrases SAUF celles du pattern sélectionné
+        dimmed = d.patternKey !== patSel;
       }
     }
 
