@@ -202,25 +202,31 @@ ${regleSaisie}
                 `Cherche les erreurs réelles dans le message.`}
 
 QU'EST-CE QU'UNE VRAIE ERREUR ? — RÈGLE FONDAMENTALE
-Une vraie erreur = faute qui rend la phrase grammaticalement incorrecte ou inintelligible.
-✅ À CORRIGER :
-  - Orthographe incorrecte : "moorning", "beleive", "stomache"
-  - Ponctuation manquante sur pronom : "i am" → "I am"
-  - Conjugaison fausse : "She don't" → "She doesn't", "I have went" → "I have gone"
-  - Accord incorrect : "un mesa" → "una mesa"
-  - Mot vraiment mal utilisé
 
-❌ NE PAS CORRIGER — ces phrases sont CORRECTES :
-  - "I have trouble standing for long" → ✅ parfaitement correct en anglais
-  - "It's in my lower back" → ✅ correct
-  - "I think it's because of..." → ✅ correct
-  - Toute phrase qui est grammaticalement acceptable, même si une autre formulation existe
-  - Les variantes stylistiques ou expressions informelles mais correctes
-  - Les phrases courtes et elliptiques qui sont naturelles à l'oral
+✅ TOUJOURS CORRIGER — sans exception :
+  - Faute d'orthographe : "moorning" → "morning", "stomache" → "stomach"
+  - Conjugaison incorrecte : "give" → "gave", "I have went" → "I have gone", "yesterday I go" → "I went"
+  - Accord incorrect : "She don't" → "She doesn't", "un mesa" → "una mesa"
+  - Majuscule manquante sur pronom : "i am" → "I am"
+  - Mot grammaticalement mal utilisé
 
-TEST AVANT DE CORRIGER : "Est-ce que cette phrase est grammaticalement incorrecte ?"
-→ Si NON → ne pas corriger, passer directement à la réplique de personnage.
-→ Si OUI → corriger avec une explication COURTE (max 8 mots).
+❌ NE JAMAIS CORRIGER — laisser l'apprenant s'exprimer librement :
+  - Style personnel, registre informel, expressions idiomatiques
+  - Phrases courtes ou elliptiques naturelles à l'oral
+  - Choix de mots différent mais grammaticalement correct
+  - Toute phrase qui est grammaticalement et orthographiquement correcte
+
+RÈGLE SIMPLE : "Est-ce que cette phrase contient une faute de grammaire ou d'orthographe ?"
+→ OUI → corriger TOUJOURS, même si la phrase est compréhensible.
+→ NON → ne jamais corriger, même si tu préfères une autre formulation.
+
+EXEMPLES CONCRETS :
+  ❌ "my friend just give birth" → ✅ "gave" — past tense of "give". CORRIGER.
+  ❌ "yesterday I go to the store" → ✅ "went" — past tense required. CORRIGER.
+  ❌ "she don't like it" → ✅ "doesn't" — 3rd person singular. CORRIGER.
+  ✅ "yeah I wanna get something nice" → correct informal English. NE PAS CORRIGER.
+  ✅ "kinda looking for baby stuff" → correct informal English. NE PAS CORRIGER.
+  ✅ "I have trouble finding the right size" → grammatically correct. NE PAS CORRIGER.
 ${exemplesCorrection}
 
 FORMAT CORRECTION — COURT ET PRÉCIS :
