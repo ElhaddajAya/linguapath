@@ -780,7 +780,9 @@ function MindMapInner({
     );
     setNodes(n);
     setEdges(e);
-    setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 60);
+    if (vue !== "pattern") {
+      setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 60);
+    }
   }, [nodesBase, edgesBase, vue, langue, theme, pattern]);
 
   const onNodeClick = useCallback(
@@ -856,6 +858,7 @@ function MindMapInner({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
+            onPaneClick={() => { if (vue === "pattern") retour(); }}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.15 }}
