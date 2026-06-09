@@ -382,9 +382,9 @@ function construireArbreComplet(entries) {
   const CX = 0,
     CY = 0;
   const RAYON_LANGUE = 400;
-  const RAYON_THEME = 280;
-  const RAYON_PATTERN = 240;
-  const RAYON_PHRASE = 180;
+  const RAYON_THEME = 300;
+  const RAYON_PATTERN = 320;
+  const RAYON_PHRASE = 200;
 
   nodes.push({
     id: "root",
@@ -587,9 +587,12 @@ function appliquerFiltre(
 
     if (node.type === "patternNode") {
       if (vue === "root") {
-        // visible, pas cliquable
+        onClick = () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey);
       } else if (vue === "langue") {
         dimmed = d.langueKey !== langSel;
+        onClick = !dimmed
+          ? () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey)
+          : undefined;
       } else if (vue === "theme") {
         dimmed = !(d.langueKey === langSel && d.themeKey === themeSel);
         onClick = !dimmed
@@ -601,6 +604,7 @@ function appliquerFiltre(
           d.themeKey === themeSel &&
           d.patternKey === patSel;
         dimmed = !selected;
+        onClick = () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey);
       }
     }
 
@@ -799,11 +803,11 @@ function MindMapInner({
 
   const hintTexte =
     vue === "root"
-      ? "— clique sur une langue pour zoomer"
+      ? "— clique sur une langue ou un pattern pour zoomer"
       : vue === "langue"
-        ? "— clique sur un thème pour voir les patterns"
+        ? "— clique sur un thème ou un pattern pour voir les phrases"
         : vue === "theme"
-          ? "— clique sur un pattern pour voir les phrases"
+          ? "— clique sur un pattern pour voir ses phrases"
           : null;
 
   return (
@@ -936,7 +940,7 @@ function MindMapInner({
                       { color: "#F59E0B", label: "Racine" },
                       { color: "#FCD34D", label: "Langue (cliquable)" },
                       { color: "#FED7AA", label: "Thème (cliquable)" },
-                      { color: "#C4B5FD", label: "Pattern (cliquable)" },
+                      { color: "#C4B5FD", label: "Pattern (cliquable partout)" },
                       { color: "#E7E5E4", label: "Phrase" },
                     ].map(({ color, label }) => (
                       <div
