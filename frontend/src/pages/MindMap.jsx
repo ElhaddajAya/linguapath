@@ -648,6 +648,7 @@ function MindMapInner({
   selectedPhrase,
   setSelectedPhrase,
   onExportReady,
+  filterKey,
 }) {
   const navigate = useNavigate();
   const { fitView, getNodes } = useReactFlow();
@@ -699,6 +700,15 @@ function MindMapInner({
   const [theme, setTheme] = useState(null);
   const [pattern, setPattern] = useState(null);
   const [showLegend, setShowLegend] = useState(true);
+  const skipFitRef = useRef(false);
+
+  useEffect(() => {
+    setVue("root");
+    setLangue(null);
+    setTheme(null);
+    setPattern(null);
+    setSelectedPhrase(null);
+  }, [filterKey]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -780,9 +790,10 @@ function MindMapInner({
     );
     setNodes(n);
     setEdges(e);
-    if (vue !== "pattern") {
+    if (vue !== "pattern" && !skipFitRef.current) {
       setTimeout(() => fitView({ padding: 0.15, duration: 600 }), 60);
     }
+    skipFitRef.current = false;
   }, [nodesBase, edgesBase, vue, langue, theme, pattern]);
 
   const onNodeClick = useCallback(
@@ -858,7 +869,16 @@ function MindMapInner({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
-            onPaneClick={() => { if (vue === "pattern") retour(); }}
+            onPaneClick={() => {
+              if (vue !== "root") {
+                skipFitRef.current = true;
+                setPattern(null);
+                setTheme(null);
+                setLangue(null);
+                setVue("root");
+                setSelectedPhrase(null);
+              }
+            }}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.15 }}
@@ -1140,6 +1160,7 @@ export default function MindMap() {
           selectedPhrase={selectedPhrase}
           setSelectedPhrase={setSelectedPhrase}
           onExportReady={(fn) => setExportFn(fn)}
+          filterKey={filtreLangue}
         />
       </ReactFlowProvider>
     </div>
