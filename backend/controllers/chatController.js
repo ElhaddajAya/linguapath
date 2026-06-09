@@ -71,14 +71,21 @@ const niveauInstructions = {
 
 const reglesSaisie = {
     'Coréen': `
-  CORÉEN — CAS CONCRETS :
-  ❌ INTERDIT : "annyeonghaseyo" → "안녕하세요"  (romanisation correcte — ne pas toucher)
-  ❌ INTERDIT : "gamsahamnida" → "감사합니다"    (romanisation correcte — ne pas toucher)
-  ❌ INTERDIT : "yag-eul juseyo" → "약을 주세요" (romanisation correcte — ne pas toucher)
-  ❌ INTERDIT : "baega appayo" → "배가 아파요"   (romanisation correcte — ne pas toucher)
-  ✅ VALIDE   : "gamsahamnidda" → "gamsahamnida" — 'd' double incorrect (vraie faute phonétique)
-  ✅ VALIDE   : "annyeonghaseiyo" → "annyeonghaseyo" — 'ei' incorrect (vraie faute phonétique)
-  ✅ VALIDE   : "mogo sipeo" → "meokgo sipeo" — phonème 'o' au lieu de 'eo' (vraie faute phonétique)`,
+  CORÉEN — RÈGLE ABSOLUE : si l'apprenant écrit en lettres latines (romanisation), NE JAMAIS corriger vers le Hangul.
+  Peu importe que le mot existe en Hangul — si c'est écrit en latin, c'est INTENTIONNEL. La seule correction permise est une faute PHONÉTIQUE (mauvaise lettre).
+
+  CAS CONCRETS INTERDITS :
+  ❌ INTERDIT : "gyeongbokgung-e" → "경복궁에"   (romanisation correcte — NE PAS TOUCHER)
+  ❌ INTERDIT : "annyeonghaseyo" → "안녕하세요"  (romanisation correcte — NE PAS TOUCHER)
+  ❌ INTERDIT : "gamsahamnida" → "감사합니다"    (romanisation correcte — NE PAS TOUCHER)
+  ❌ INTERDIT : "yag-eul juseyo" → "약을 주세요" (romanisation correcte — NE PAS TOUCHER)
+  ❌ INTERDIT : "baega appayo" → "배가 아파요"   (romanisation correcte — NE PAS TOUCHER)
+  ❌ INTERDIT : "hanguk-e gago sipeoyo" → "한국에 가고 싶어요" (romanisation correcte — NE PAS TOUCHER)
+
+  CAS VALIDES (fautes phonétiques uniquement) :
+  ✅ VALIDE   : "gamsahamnidda" → "gamsahamnida" — 'd' double incorrect
+  ✅ VALIDE   : "annyeonghaseiyo" → "annyeonghaseyo" — 'ei' incorrect
+  ✅ VALIDE   : "mogo sipeo" → "meokgo sipeo" — phonème 'o' au lieu de 'eo'`,
 
     'Japonais': `
   JAPONAIS — CAS CONCRETS :
@@ -199,11 +206,15 @@ RÔLE 2 — PERSONNAGE : Continue la scène après la correction.
 ════════════════════════════════════════════════════════
 
 ${estLangueNonLatine ? `Le message est en romanisation (lettres a-z) ou en alphabet natif ?
-→ ROMANISATION : cherche uniquement les erreurs phonétiques (mauvaise consonne/voyelle).
-   ❌ JAMAIS convertir la romanisation en alphabet natif.
-   ❌ JAMAIS répéter le message de l'user en alphabet natif dans ta réponse.
+
+→ ROMANISATION DÉTECTÉE (lettres latines) :
+   ✅ Seule correction permise : une lettre/phonème incorrect (ex: "gamsahamnidda" → "gamsahamnida").
+   ❌ ABSOLUMENT INTERDIT : convertir vers l'alphabet natif (Hangul/Hiragana/Kanji/Arabe).
+   ❌ ABSOLUMENT INTERDIT : suggérer à l'apprenant "d'écrire en [alphabet natif]".
+   ❌ ABSOLUMENT INTERDIT : écrire "한글로 써야 해요" ou toute phrase équivalente.
+   Si la romanisation est phonétiquement correcte → AUCUNE CORRECTION. Silence total.
 ${regleSaisie}
-→ ALPHABET NATIF : cherche toutes les erreurs orthographiques et grammaticales.` :
+→ ALPHABET NATIF DÉTECTÉ : cherche toutes les erreurs orthographiques et grammaticales.` :
                 `Cherche les erreurs réelles dans le message.`}
 
 QU'EST-CE QU'UNE VRAIE ERREUR ? — RÈGLE FONDAMENTALE

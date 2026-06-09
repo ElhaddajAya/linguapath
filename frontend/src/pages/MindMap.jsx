@@ -100,28 +100,28 @@ function RootNode({ data }) {
       style={{
         background: "linear-gradient(135deg, #F59E0B, #EA580C)",
         borderRadius: "50%",
-        width: 110,
-        height: 110,
+        width: 150,
+        height: 150,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 8px 32px rgba(245,158,11,0.4)",
-        border: "3px solid rgba(255,255,255,0.3)",
+        boxShadow: "0 12px 40px rgba(245,158,11,0.5)",
+        border: "4px solid rgba(255,255,255,0.35)",
         position: "relative",
       }}
     >
       <Handles />
       <Globe
-        size={26}
+        size={36}
         color='white'
       />
       <span
-        style={{ color: "white", fontWeight: 700, fontSize: 11, marginTop: 4 }}
+        style={{ color: "white", fontWeight: 700, fontSize: 13, marginTop: 6 }}
       >
         LinguaTalk
       </span>
-      <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 10 }}>
+      <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 11 }}>
         {data.count} phrases
       </span>
     </div>
