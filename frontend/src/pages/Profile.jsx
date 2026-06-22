@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar.jsx";
+import { useLangue } from "../contexts/LangueContext";
 import {
   ArrowLeft,
   Settings,
@@ -52,6 +53,8 @@ const AVATARS = [
 
 export default function Profile() {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user") || "{}"),
   );
@@ -98,23 +101,20 @@ export default function Profile() {
 
   const sauvegarder = async () => {
     if (!nomEdit.trim()) {
-      showToast("Le nom ne peut pas être vide.", "error");
+      showToast(t("profile.errorEmpty"), "error");
       return;
     }
     if (changePwd) {
       if (!currentPwd) {
-        showToast("Entrez votre mot de passe actuel.", "error");
+        showToast(t("profile.errorPwd"), "error");
         return;
       }
       if (newPwd.length < 6) {
-        showToast(
-          "Le nouveau mot de passe doit contenir au moins 6 caractères.",
-          "error",
-        );
+        showToast(t("profile.errorPwdLength"), "error");
         return;
       }
       if (newPwd !== confirmPwd) {
-        showToast("Les mots de passe ne correspondent pas.", "error");
+        showToast(t("profile.errorPwdMatch"), "error");
         return;
       }
     }
@@ -141,12 +141,10 @@ export default function Profile() {
       setCurrentPwd("");
       setNewPwd("");
       setConfirmPwd("");
-      showToast("Profil mis à jour avec succès.");
+      showToast(t("profile.successToast"));
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Erreur lors de la sauvegarde.",
-        "error",
-      );
+      // Le message backend reste prioritaire s'il existe, sinon clé générique
+      showToast(err.response?.data?.message || t("common.error"), "error");
     } finally {
       setSaving(false);
     }
@@ -213,7 +211,7 @@ export default function Profile() {
 
       <div className='max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10'>
         <h1 className='text-2xl font-semibold text-warm-900 mb-8'>
-          Mon profil
+          {t("profile.title")}
         </h1>
 
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
@@ -251,7 +249,7 @@ export default function Profile() {
               {editing && (
                 <div className='py-4 border-b border-warm-200'>
                   <p className='text-xs font-semibold text-warm-400 uppercase tracking-widest mb-3'>
-                    Choisir un avatar
+                    {t("profile.chooseAvatar")}
                   </p>
                   <div className='grid grid-cols-6 gap-2'>
                     <button
@@ -292,14 +290,14 @@ export default function Profile() {
                       }}
                     >
                       <Check size={15} />
-                      {saving ? "Sauvegarde..." : "Sauvegarder"}
+                      {saving ? t("profile.saving") : t("profile.save")}
                     </button>
                     <button
                       onClick={annuler}
                       className='w-full py-2.5 rounded-xl text-sm font-medium text-warm-600
                         border border-warm-200 hover:bg-warm-100 transition-colors flex items-center justify-center gap-2'
                     >
-                      <X size={14} /> Annuler
+                      <X size={14} /> {t("profile.cancel")}
                     </button>
                   </>
                 ) : (
@@ -312,14 +310,14 @@ export default function Profile() {
                         background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                       }}
                     >
-                      <Pencil size={14} /> Modifier le profil
+                      <Pencil size={14} /> {t("profile.edit")}
                     </button>
                     <button
                       onClick={() => navigate("/")}
                       className='w-full py-2.5 rounded-xl text-sm font-medium text-warm-600
                         border border-warm-200 hover:bg-warm-100 transition-colors flex items-center justify-center gap-1.5'
                     >
-                      <ArrowLeft size={14} /> Retour à l'accueil
+                      <ArrowLeft size={14} /> {t("profile.back")}
                     </button>
                   </>
                 )}
@@ -331,7 +329,7 @@ export default function Profile() {
               <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-6'>
                 <div className='flex items-center justify-between mb-4'>
                   <p className='text-xs font-semibold text-warm-400 uppercase tracking-widest'>
-                    Mot de passe
+                    {t("profile.password")}
                   </p>
                   <button
                     onClick={() => {
@@ -342,7 +340,9 @@ export default function Profile() {
                     }}
                     className='text-xs text-orange-500 hover:text-orange-700 font-medium transition-colors'
                   >
-                    {changePwd ? "Annuler" : "Changer"}
+                    {changePwd
+                      ? t("profile.cancelChange")
+                      : t("profile.changePassword")}
                   </button>
                 </div>
 
@@ -351,7 +351,7 @@ export default function Profile() {
                     {/* Mot de passe actuel */}
                     <div>
                       <label className='text-xs font-medium text-warm-600 mb-1 block'>
-                        Mot de passe actuel
+                        {t("profile.currentPwd")}
                       </label>
                       <div className='relative'>
                         <input
@@ -377,7 +377,7 @@ export default function Profile() {
                     {/* Nouveau mot de passe */}
                     <div>
                       <label className='text-xs font-medium text-warm-600 mb-1 block'>
-                        Nouveau mot de passe
+                        {t("profile.newPwd")}
                       </label>
                       <div className='relative'>
                         <input
@@ -399,7 +399,7 @@ export default function Profile() {
                     {/* Confirmer */}
                     <div>
                       <label className='text-xs font-medium text-warm-600 mb-1 block'>
-                        Confirmer le mot de passe
+                        {t("profile.confirmPwd")}
                       </label>
                       <div className='relative'>
                         <input
@@ -427,8 +427,8 @@ export default function Profile() {
                           className={`text-xs mt-1 ${newPwd === confirmPwd ? "text-green-600" : "text-red-500"}`}
                         >
                           {newPwd === confirmPwd
-                            ? "✓ Les mots de passe correspondent"
-                            : "✕ Ne correspondent pas"}
+                            ? t("profile.pwdMatch")
+                            : t("profile.pwdNoMatch")}
                         </p>
                       )}
                     </div>
@@ -452,12 +452,12 @@ export default function Profile() {
                       }}
                     >
                       <Check size={14} />
-                      {saving ? "Sauvegarde..." : "Changer le mot de passe"}
+                      {saving ? t("profile.saving") : t("profile.changePwdBtn")}
                     </button>
                   </div>
                 ) : (
                   <p className='text-sm text-warm-400 italic'>
-                    Cliquez sur "Changer" pour modifier votre mot de passe.
+                    {t("profile.noPwdChange")}
                   </p>
                 )}
               </div>
@@ -476,11 +476,10 @@ export default function Profile() {
                     />
                   </div>
                   <p className='font-semibold text-warm-900 mb-2'>
-                    Espace administrateur
+                    {t("profile.adminSpace")}
                   </p>
                   <p className='text-warm-500 text-sm mb-6'>
-                    Gérez les utilisateurs et les scénarios depuis le panneau
-                    admin.
+                    {t("profile.adminSub")}
                   </p>
                   <div className='flex flex-col sm:flex-row gap-3 justify-center'>
                     <button
@@ -490,20 +489,20 @@ export default function Profile() {
                         background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                       }}
                     >
-                      Gérer les utilisateurs
+                      {t("profile.manageUsers")}
                     </button>
                     <button
                       onClick={() => navigate("/admin/scenarios")}
                       className='px-6 py-2.5 rounded-xl text-sm font-semibold text-warm-700 border border-warm-200 hover:bg-warm-50 transition-colors'
                     >
-                      Gérer les scénarios
+                      {t("profile.manageScenarios")}
                     </button>
                   </div>
                 </div>
               ) : (
                 <>
                   <p className='text-xs font-semibold text-warm-400 uppercase tracking-widest mb-5'>
-                    Langues en apprentissage
+                    {t("profile.languages")}
                   </p>
                   {user.langues?.length > 0 ? (
                     <div className='flex flex-col gap-3'>
@@ -536,7 +535,7 @@ export default function Profile() {
                                   "linear-gradient(135deg, #F59E0B, #EA580C)",
                               }}
                             >
-                              Pratiquer →
+                              {t("profile.practice")}
                             </button>
                           </div>
                         </div>
@@ -547,15 +546,15 @@ export default function Profile() {
                           text-warm-500 text-sm font-medium hover:border-orange-300 hover:text-orange-500
                           transition-colors flex items-center justify-center gap-2 mt-2'
                       >
-                        <span className='text-lg'>+</span> Ajouter une nouvelle
-                        langue
+                        <span className='text-lg'>+</span>{" "}
+                        {t("profile.addLanguage")}
                       </button>
                     </div>
                   ) : (
                     <div className='text-center py-12'>
                       <p className='text-5xl mb-4'>🌍</p>
                       <p className='text-warm-500 text-sm mb-5'>
-                        Aucune langue en apprentissage pour l'instant.
+                        {t("profile.noLanguage")}
                       </p>
                       <button
                         onClick={() => navigate("/quiz")}
@@ -565,7 +564,7 @@ export default function Profile() {
                             "linear-gradient(135deg, #F59E0B, #EA580C)",
                         }}
                       >
-                        Choisir une langue
+                        {t("profile.chooseLanguage")}
                       </button>
                     </div>
                   )}

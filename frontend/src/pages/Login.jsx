@@ -2,17 +2,18 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { login } from "../services/api";
 import Logo from "../components/Logo";
+import { useLangue } from "../contexts/LangueContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState(
-    searchParams.get("error") === "google_failed"
-      ? "La connexion avec Google a échoué. Réessayez."
-      : "",
+    searchParams.get("error") === "google_failed" ? t("auth.googleFailed") : "",
   );
   const [loading, setLoading] = useState(false);
   const [showResend, setShowResend] = useState(false);
@@ -31,7 +32,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/home");
     } catch (err) {
-      const msg = err.response?.data?.message || "Erreur de connexion";
+      const msg = err.response?.data?.message || t("auth.genericError");
       setError(msg);
       if (err.response?.data?.emailNotVerified) setShowResend(true);
     } finally {
@@ -50,10 +51,10 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email }),
       });
-      setError("Email de vérification renvoyé ! Vérifiez votre boîte mail.");
+      setError(t("auth.verificationResent"));
       setShowResend(false);
     } catch {
-      setError("Erreur lors de l'envoi.");
+      setError(t("auth.resendError"));
     }
   };
 
@@ -69,13 +70,9 @@ export default function Login() {
             className='text-4xl font-bold mb-4'
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Apprends en parlant.
+            {t("auth.loginTagline")}
           </p>
-          <p className='text-orange-100 text-lg'>
-            Des conversations réelles,
-            <br />
-            un niveau qui progresse.
-          </p>
+          <p className='text-orange-100 text-lg'>{t("auth.loginTaglineSub")}</p>
         </div>
       </div>
 
@@ -87,11 +84,9 @@ export default function Login() {
           </div>
 
           <h2 className='text-2xl font-semibold text-warm-900 mb-1'>
-            Bon retour 👋
+            {t("auth.welcome")}
           </h2>
-          <p className='text-sm text-warm-500 mb-7'>
-            Connecte-toi pour continuer ta progression
-          </p>
+          <p className='text-sm text-warm-500 mb-7'>{t("auth.welcomeSub")}</p>
 
           {/* Bouton Google */}
           <button
@@ -123,13 +118,15 @@ export default function Login() {
                 d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'
               />
             </svg>
-            Continuer avec Google
+            {t("auth.google")}
           </button>
 
           {/* Séparateur */}
           <div className='flex items-center gap-3 mb-5'>
             <div className='flex-1 h-px bg-warm-200' />
-            <span className='text-xs text-warm-400 font-medium'>ou</span>
+            <span className='text-xs text-warm-400 font-medium'>
+              {t("auth.or")}
+            </span>
             <div className='flex-1 h-px bg-warm-200' />
           </div>
 
@@ -141,7 +138,7 @@ export default function Login() {
                   onClick={handleResend}
                   className='block mt-2 text-orange-600 underline text-xs font-medium'
                 >
-                  Renvoyer l'email de vérification
+                  {t("auth.resendVerification")}
                 </button>
               )}
             </div>
@@ -152,7 +149,9 @@ export default function Login() {
             className='flex flex-col gap-4'
           >
             <div className='flex flex-col gap-1.5'>
-              <label className='text-sm font-medium text-warm-700'>Email</label>
+              <label className='text-sm font-medium text-warm-700'>
+                {t("auth.email")}
+              </label>
               <input
                 type='email'
                 name='email'
@@ -169,13 +168,13 @@ export default function Login() {
             <div className='flex flex-col gap-1.5'>
               <div className='flex items-center justify-between'>
                 <label className='text-sm font-medium text-warm-700'>
-                  Mot de passe
+                  {t("auth.password")}
                 </label>
                 <Link
                   to='/forgot-password'
                   className='text-xs text-orange-500 hover:text-orange-700 font-medium transition-colors'
                 >
-                  Mot de passe oublié ?
+                  {t("auth.forgot")}
                 </Link>
               </div>
               <input
@@ -200,17 +199,17 @@ export default function Login() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              {loading ? "Connexion..." : "Se connecter"}
+              {loading ? t("auth.connecting") : t("auth.login")}
             </button>
           </form>
 
           <p className='text-center mt-6 text-sm text-warm-500'>
-            Pas encore de compte ?{" "}
+            {t("auth.noAccount")}{" "}
             <Link
               to='/signup'
               className='font-semibold text-orange-600 hover:text-orange-700 transition-colors'
             >
-              Créer un compte
+              {t("auth.signup")}
             </Link>
           </p>
         </div>

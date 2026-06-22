@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import { BookOpen, Plus, X, Bot, PenLine, Trash2 } from "lucide-react";
 import api from "../services/api";
+import { useLangue } from "../contexts/LangueContext";
 
 // ── Constantes ──────────────────────────────────────────────
 
@@ -24,8 +25,8 @@ const LANGUE_EMOJI = {
 const NIVEAUX = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 // ── Carte d'une phrase ───────────────────────────────────────
-
-function PhraseCard({ entry, onDelete }) {
+// t() passé en prop car ce composant est défini hors du composant principal
+function PhraseCard({ entry, onDelete, t }) {
   return (
     <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-5 flex flex-col gap-3 hover:border-orange-200 transition-colors'>
       {/* Badge langue + thème */}
@@ -56,11 +57,11 @@ function PhraseCard({ entry, onDelete }) {
         >
           {entry.source === "auto" ? (
             <span className='inline-flex items-center gap-1'>
-              <Bot size={12} /> Auto
+              <Bot size={12} /> {t("learningLog.auto")}
             </span>
           ) : (
             <span className='inline-flex items-center gap-1'>
-              <PenLine size={12} /> Manuel
+              <PenLine size={12} /> {t("learningLog.manual")}
             </span>
           )}
         </span>
@@ -68,7 +69,7 @@ function PhraseCard({ entry, onDelete }) {
           onClick={() => onDelete(entry._id)}
           className='text-xs text-warm-400 hover:text-red-500 transition-colors flex items-center gap-1'
         >
-          <Trash2 size={13} /> Supprimer
+          <Trash2 size={13} /> {t("learningLog.delete")}
         </button>
       </div>
     </div>
@@ -79,6 +80,8 @@ function PhraseCard({ entry, onDelete }) {
 
 export default function LearningLog() {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   // ─ State : données
   const [entries, setEntries] = useState([]); // phrases chargées
@@ -137,7 +140,7 @@ export default function LearningLog() {
   // ── Suppression ───────────────────────────────────────────
 
   const supprimerPhrase = async (id) => {
-    if (!window.confirm("Supprimer cette phrase ?")) return;
+    if (!window.confirm(t("learningLog.confirm"))) return;
     try {
       await api.delete(`/learning-log/${id}`);
       // Mise à jour locale sans recharger
@@ -197,10 +200,13 @@ export default function LearningLog() {
                 size={20}
                 className='text-orange-500'
               />{" "}
-              Learning Log
+              {t("learningLog.title")}
             </h1>
             <p className='text-warm-500 text-xs sm:text-sm mt-1'>
-              {entries.length} phrase{entries.length !== 1 ? "s" : ""} apprises
+              {entries.length}{" "}
+              {entries.length !== 1
+                ? t("learningLog.phrases")
+                : t("learningLog.phrase")}
             </p>
           </div>
 
@@ -212,8 +218,10 @@ export default function LearningLog() {
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
             <Plus size={15} />
-            <span className='hidden sm:inline'>Ajouter une phrase</span>
-            <span className='sm:hidden'>Ajouter</span>
+            <span className='hidden sm:inline'>
+              {t("learningLog.addPhrase")}
+            </span>
+            <span className='sm:hidden'>{t("learningLog.add")}</span>
           </button>
         </div>
 
@@ -226,7 +234,7 @@ export default function LearningLog() {
             {/* Filtre langue */}
             <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
               <label className='text-xs font-medium text-warm-600'>
-                Langue
+                {t("learningLog.language")}
               </label>
               <select
                 value={filtreLangue}
@@ -235,7 +243,7 @@ export default function LearningLog() {
                                            text-sm text-warm-700 bg-warm-50
                                            focus:outline-none focus:border-orange-300'
               >
-                <option value=''>Toutes</option>
+                <option value=''>{t("learningLog.all")}</option>
                 {languesUser.map((l) => (
                   <option
                     key={l}
@@ -249,7 +257,9 @@ export default function LearningLog() {
 
             {/* Filtre thème */}
             <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
-              <label className='text-xs font-medium text-warm-600'>Thème</label>
+              <label className='text-xs font-medium text-warm-600'>
+                {t("learningLog.theme")}
+              </label>
               <select
                 value={filtreTheme}
                 onChange={(e) => setFiltreTheme(e.target.value)}
@@ -257,13 +267,14 @@ export default function LearningLog() {
                                            text-sm text-warm-700 bg-warm-50
                                            focus:outline-none focus:border-orange-300'
               >
-                <option value=''>Tous</option>
-                {themes.map((t) => (
+                <option value=''>{t("learningLog.allThemes")}</option>
+                {/* Renommé "theme" au lieu de "t" pour ne pas masquer le t() de traduction */}
+                {themes.map((theme) => (
                   <option
-                    key={t}
-                    value={t}
+                    key={theme}
+                    value={theme}
                   >
-                    {t}
+                    {theme}
                   </option>
                 ))}
               </select>
@@ -272,7 +283,7 @@ export default function LearningLog() {
             {/* Filtre niveau */}
             <div className='flex flex-col gap-1.5 flex-1 min-w-25'>
               <label className='text-xs font-medium text-warm-600'>
-                Niveau
+                {t("learningLog.level")}
               </label>
               <select
                 value={filtreNiveau}
@@ -281,7 +292,7 @@ export default function LearningLog() {
                                            text-sm text-warm-700 bg-warm-50
                                            focus:outline-none focus:border-orange-300'
               >
-                <option value=''>Tous</option>
+                <option value=''>{t("learningLog.allLevels")}</option>
                 {NIVEAUX.map((n) => (
                   <option
                     key={n}
@@ -305,7 +316,7 @@ export default function LearningLog() {
                   size={13}
                   className='inline mr-1'
                 />{" "}
-                Effacer les filtres
+                {t("learningLog.reset")}
               </button>
             )}
           </div>
@@ -313,19 +324,21 @@ export default function LearningLog() {
 
         {/* ── Contenu principal ── */}
         {loading ? (
-          <div className='text-center py-20 text-warm-400'>Chargement...</div>
+          <div className='text-center py-20 text-warm-400'>
+            {t("common.loading")}
+          </div>
         ) : entries.length === 0 ? (
           <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center'>
             <p className='text-4xl mb-4'>📝</p>
             <p className='text-warm-600 font-medium mb-2'>
               {filtresActifs
-                ? "Aucune phrase pour ces filtres"
-                : "Aucune phrase apprise pour l'instant"}
+                ? t("learningLog.empty")
+                : t("learningLog.emptyNoFilter")}
             </p>
             <p className='text-warm-400 text-sm mb-6'>
               {filtresActifs
-                ? "Essaie de modifier tes filtres"
-                : "Lance une conversation pour commencer à apprendre !"}
+                ? t("learningLog.emptyFilters")
+                : t("learningLog.emptySub")}
             </p>
             {!filtresActifs && (
               <button
@@ -335,7 +348,7 @@ export default function LearningLog() {
                   background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                 }}
               >
-                Choisir un scénario
+                {t("learningLog.goScenario")}
               </button>
             )}
           </div>
@@ -346,6 +359,7 @@ export default function LearningLog() {
                 key={entry._id}
                 entry={entry}
                 onDelete={supprimerPhrase}
+                t={t}
               />
             ))}
           </div>
@@ -373,7 +387,7 @@ export default function LearningLog() {
                   size={18}
                   className='text-orange-500'
                 />{" "}
-                Ajouter une phrase
+                {t("learningLog.addPhrase")}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -386,7 +400,7 @@ export default function LearningLog() {
             {/* Champ : phrase dans la langue cible */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-xs font-medium text-warm-600'>
-                Phrase (dans la langue cible) *
+                {t("learningLog.phraseLabel")}
               </label>
               <input
                 type='text'
@@ -405,7 +419,7 @@ export default function LearningLog() {
             {/* Champ : traduction */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-xs font-medium text-warm-600'>
-                Traduction en français *
+                {t("learningLog.translationLabel")}
               </label>
               <input
                 type='text'
@@ -424,7 +438,7 @@ export default function LearningLog() {
             {/* Champ : langue */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-xs font-medium text-warm-600'>
-                Langue *
+                {t("learningLog.languageLabel")}
               </label>
               <select
                 value={form.langue}
@@ -435,7 +449,7 @@ export default function LearningLog() {
                                            text-sm text-warm-700 bg-warm-50
                                            focus:outline-none focus:border-orange-300'
               >
-                <option value=''>Choisir une langue</option>
+                <option value=''>{t("learningLog.chooseLanguage")}</option>
                 {languesUser.map((l) => (
                   <option
                     key={l}
@@ -450,7 +464,7 @@ export default function LearningLog() {
             {/* Champ : thème (optionnel) */}
             <div className='flex flex-col gap-1.5'>
               <label className='text-xs font-medium text-warm-600'>
-                Thème (optionnel)
+                {t("learningLog.themeLabel")}
               </label>
               <input
                 type='text'
@@ -458,7 +472,7 @@ export default function LearningLog() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, theme: e.target.value }))
                 }
-                placeholder='Ex: Restaurant, Voyage, Travail...'
+                placeholder={t("learningLog.themePlaceholder")}
                 className='px-4 py-2.5 rounded-xl border border-warm-200
                                            text-sm text-warm-900 bg-warm-50
                                            focus:outline-none focus:border-orange-300
@@ -474,7 +488,7 @@ export default function LearningLog() {
                                            border border-warm-200 text-warm-600
                                            hover:border-warm-300 transition-colors'
               >
-                Annuler
+                {t("learningLog.cancel")}
               </button>
               <button
                 onClick={ajouterPhrase}
@@ -492,7 +506,9 @@ export default function LearningLog() {
                   background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                 }}
               >
-                {ajoutLoading ? "Ajout..." : "Ajouter"}
+                {ajoutLoading
+                  ? t("learningLog.adding")
+                  : t("learningLog.savePhrase")}
               </button>
             </div>
           </div>

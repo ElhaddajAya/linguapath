@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import { Clock, ChevronUp, ChevronDown, ArrowRight } from "lucide-react";
 import api from "../services/api";
+import { useLangue } from "../contexts/LangueContext";
 
 // Emoji par langue
 const LANGUE_EMOJI = {
@@ -18,7 +19,7 @@ const LANGUE_EMOJI = {
   Arabe: "🇸🇦",
 };
 
-// Formater la durée en mm:ss
+// Formater la durée en mm:ss — "min"/"s" restent identiques en FR/EN, pas besoin de t()
 const formatDuree = (secondes) => {
   if (!secondes) return "—";
   const m = Math.floor(secondes / 60);
@@ -27,18 +28,30 @@ const formatDuree = (secondes) => {
 };
 
 // Formater la date en "il y a X jours" ou date courte
-const formatDate = (date) => {
+// t = fonction de traduction, langue = 'fr' ou 'en' (pour le format de date locale)
+const formatDate = (date, t, langue) => {
   const d = new Date(date);
   const now = new Date();
   const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return "Aujourd'hui";
-  if (diff === 1) return "Hier";
-  if (diff < 7) return `Il y a ${diff} jours`;
-  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  if (diff === 0) return t("history.today");
+  if (diff === 1) return t("history.yesterday");
+  if (diff < 7) {
+    // FR : "Il y a 3 jours" — EN : "3 days ago" (ordre des mots différent,
+    // donc on compose la phrase entière au lieu de concaténer deux bouts)
+    return langue === "fr"
+      ? `${t("history.daysAgo")} ${diff} ${t("history.days")}`
+      : `${diff} ${t("history.days")}`;
+  }
+  return d.toLocaleDateString(langue === "fr" ? "fr-FR" : "en-US", {
+    day: "numeric",
+    month: "short",
+  });
 };
 
 export default function Historique() {
   const navigate = useNavigate();
+  // t() = fonction de traduction ; langue = 'fr' ou 'en' du contexte LangueContext
+  const { t, langue } = useLangue();
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected] = useState(null); // conversation ouverte
   const [loading, setLoading] = useState(true);
@@ -80,16 +93,20 @@ export default function Historique() {
         {/* Header */}
         <div className='mb-8'>
           <h1 className='text-2xl font-semibold text-warm-900'>
-            Historique des conversations
+            {t("history.title")}
           </h1>
           <p className='text-warm-500 text-sm mt-1'>
-            {conversations.length} conversation
-            {conversations.length !== 1 ? "s" : ""} au total
+            {conversations.length}{" "}
+            {conversations.length !== 1
+              ? t("history.totals")
+              : t("history.total")}
           </p>
         </div>
 
         {loading ? (
-          <div className='text-center py-20 text-warm-400'>Chargement...</div>
+          <div className='text-center py-20 text-warm-400'>
+            {t("history.loading")}
+          </div>
         ) : conversations.length === 0 ? (
           // Aucune conversation
           <div
@@ -98,10 +115,10 @@ export default function Historique() {
           >
             <p className='text-4xl mb-4'>💬</p>
             <p className='text-warm-600 font-medium mb-2'>
-              Aucune conversation pour l'instant
+              {t("history.empty")}
             </p>
             <p className='text-warm-400 text-sm mb-6'>
-              Lance ton premier scénario pour commencer !
+              {t("history.emptySub")}
             </p>
             <button
               onClick={() => navigate("/scenarios")}
@@ -111,7 +128,7 @@ export default function Historique() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              Choisir un scénario
+              {t("history.goScenario")}
             </button>
           </div>
         ) : (
@@ -136,8 +153,8 @@ export default function Historique() {
                           {conv.scenarioTitre}
                         </p>
                         <p className='text-xs text-warm-500 mt-0.5'>
-                          {LANGUE_EMOJI[conv.langue]} {conv.langue} · Niveau{" "}
-                          {conv.niveau}
+                          {LANGUE_EMOJI[conv.langue]} {conv.langue} ·{" "}
+                          {t("history.level")} {conv.niveau}
                         </p>
                       </div>
                     </div>
@@ -145,7 +162,7 @@ export default function Historique() {
                     {/* Date + durée */}
                     <div className='text-right shrink-0'>
                       <p className='text-xs font-medium text-warm-600'>
-                        {formatDate(conv.createdAt)}
+                        {formatDate(conv.createdAt, t, langue)}
                       </p>
                       <p className='text-xs text-warm-400 mt-0.5 flex items-center gap-1'>
                         <Clock size={11} /> {formatDuree(conv.duree)}
@@ -159,9 +176,15 @@ export default function Historique() {
                       className='text-xs text-orange-500 cursor-pointer'
                       onClick={() => togglePreview(conv)}
                     >
-                      {selected?._id === conv._id
-                        ? <span className="flex items-center gap-1"><ChevronUp size={13} /> Masquer l'aperçu</span>
-                        : <span className="flex items-center gap-1"><ChevronDown size={13} /> Aperçu</span>}
+                      {selected?._id === conv._id ? (
+                        <span className='flex items-center gap-1'>
+                          <ChevronUp size={13} /> {t("history.hidePreview")}
+                        </span>
+                      ) : (
+                        <span className='flex items-center gap-1'>
+                          <ChevronDown size={13} /> {t("history.preview")}
+                        </span>
+                      )}
                     </p>
                     <button
                       onClick={() =>
@@ -173,7 +196,7 @@ export default function Historique() {
                         background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                       }}
                     >
-                      Ouvrir <ArrowRight size={13} />
+                      {t("history.open")} <ArrowRight size={13} />
                     </button>
                   </div>
                 </div>

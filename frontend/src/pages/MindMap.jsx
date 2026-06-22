@@ -39,6 +39,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import Navbar from "../components/NavBar";
 import api from "../services/api";
+import { useLangue } from "../contexts/LangueContext";
 
 // ── Constantes ────────────────────────────────────────────────────────────
 const LANGUE_EMOJI = {
@@ -94,6 +95,9 @@ const Handles = () => (
 );
 
 // ── Nœud Racine ──────────────────────────────────────────────────────────
+// Note : le libellé "phrase(s)" est calculé en amont (phraseLabelFn) et passé
+// dans data, car les nodeTypes ReactFlow sont rendus hors de notre contexte
+// React habituel — on ne peut pas y appeler useLangue() directement.
 function RootNode({ data }) {
   return (
     <div
@@ -122,7 +126,7 @@ function RootNode({ data }) {
         LinguaTalk
       </span>
       <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 11 }}>
-        {data.count} phrases
+        {data.count} {data.phraseLabel}
       </span>
     </div>
   );
@@ -176,7 +180,7 @@ function LangueNode({ data }) {
           {data.label}
         </div>
         <div style={{ fontSize: 10, color: "#78716C" }}>
-          {data.count} phrase{data.count > 1 ? "s" : ""}
+          {data.count} {data.phraseLabel}
         </div>
       </div>
     </div>
@@ -228,7 +232,7 @@ function ThemeNode({ data }) {
         <div
           style={{ fontSize: 10, color: data.dimmed ? "#C4B5AC" : "#9A3412" }}
         >
-          {data.count} phrase{data.count > 1 ? "s" : ""}
+          {data.count} {data.phraseLabel}
         </div>
       </div>
     </div>
@@ -282,7 +286,7 @@ function PatternNode({ data }) {
         <div
           style={{ fontSize: 9, color: data.dimmed ? "#C4B5AC" : "#6D28D9" }}
         >
-          {data.count} phrase{data.count > 1 ? "s" : ""}
+          {data.count} {data.phraseLabel}
         </div>
       </div>
     </div>
@@ -375,8 +379,10 @@ const nodeTypes = {
 
 // ════════════════════════════════════════════════════════════════════════════
 // Construction de l'arbre COMPLET (4 niveaux : langue → thème → pattern → phrase)
+// phraseLabelFn : fonction (count) => "phrase"/"phrases" déjà traduite,
+// passée depuis le composant principal car ces fonctions sont hors du contexte React
 // ════════════════════════════════════════════════════════════════════════════
-function construireArbreComplet(entries) {
+function construireArbreComplet(entries, phraseLabelFn) {
   const nodes = [],
     edges = [];
   const CX = 0,
@@ -389,7 +395,7 @@ function construireArbreComplet(entries) {
   nodes.push({
     id: "root",
     type: "rootNode",
-    data: { count: entries.length },
+    data: { count: entries.length, phraseLabel: phraseLabelFn(entries.length) },
     position: { x: CX, y: CY },
   });
 
@@ -418,7 +424,12 @@ function construireArbreComplet(entries) {
     nodes.push({
       id: langueId,
       type: "langueNode",
-      data: { label: lang, count: totalLang, langueKey: lang },
+      data: {
+        label: lang,
+        count: totalLang,
+        langueKey: lang,
+        phraseLabel: phraseLabelFn(totalLang),
+      },
       position: posLang,
     });
     edges.push({
@@ -451,6 +462,7 @@ function construireArbreComplet(entries) {
           count: totalTheme,
           langueKey: lang,
           themeKey: theme,
+          phraseLabel: phraseLabelFn(totalTheme),
         },
         position: posTheme,
       });
@@ -485,6 +497,7 @@ function construireArbreComplet(entries) {
             langueKey: lang,
             themeKey: theme,
             patternKey: pat,
+            phraseLabel: phraseLabelFn(phrases.length),
           },
           position: posPattern,
         });
@@ -652,6 +665,14 @@ function MindMapInner({
 }) {
   const navigate = useNavigate();
   const { fitView, getNodes } = useReactFlow();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
+
+  // Libellé "phrase"/"phrases" déjà traduit, réutilisé partout dans l'arbre
+  const phraseLabelFn = useCallback(
+    (count) => t("mindmap.phrase") + (count > 1 ? "s" : ""),
+    [t],
+  );
 
   const exportPNG = useCallback(() => {
     const allNodes = getNodes();
@@ -716,9 +737,9 @@ function MindMapInner({
   const { nodes: nodesBase, edges: edgesBase } = useMemo(
     () =>
       allEntries.length
-        ? construireArbreComplet(allEntries)
+        ? construireArbreComplet(allEntries, phraseLabelFn)
         : { nodes: [], edges: [] },
-    [allEntries],
+    [allEntries, phraseLabelFn],
   );
 
   const onSelectLangue = useCallback(
@@ -816,11 +837,11 @@ function MindMapInner({
 
   const hintTexte =
     vue === "root"
-      ? "— clique sur une langue ou un pattern pour zoomer"
+      ? t("mindmap.hint1")
       : vue === "langue"
-        ? "— clique sur un thème ou un pattern pour voir les phrases"
+        ? t("mindmap.hint2")
         : vue === "theme"
-          ? "— clique sur un pattern pour voir ses phrases"
+          ? t("mindmap.hint3")
           : null;
 
   return (
@@ -833,9 +854,7 @@ function MindMapInner({
           <div className='flex items-center justify-center h-full'>
             <div className='text-center'>
               <div className='w-10 h-10 border-2 border-orange-300 border-t-orange-500 rounded-full animate-spin mx-auto mb-4' />
-              <p className='text-warm-400 text-sm'>
-                Construction de la MindMap...
-              </p>
+              <p className='text-warm-400 text-sm'>{t("mindmap.building")}</p>
             </div>
           </div>
         ) : !allEntries.length ? (
@@ -846,10 +865,10 @@ function MindMapInner({
                 className='text-warm-300 mx-auto mb-4'
               />
               <p className='text-warm-600 font-medium mb-2'>
-                Aucune phrase à visualiser
+                {t("mindmap.empty")}
               </p>
               <p className='text-warm-400 text-sm mb-6'>
-                Lance une conversation pour commencer à apprendre !
+                {t("mindmap.emptySub")}
               </p>
               <button
                 onClick={() => navigate("/scenarios")}
@@ -858,7 +877,7 @@ function MindMapInner({
                   background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                 }}
               >
-                Choisir un scénario
+                {t("mindmap.goScenario")}
               </button>
             </div>
           </div>
@@ -909,7 +928,7 @@ function MindMapInner({
                     onClick={retour}
                     className='flex items-center gap-1 text-xs text-orange-500 font-semibold hover:text-orange-700 transition-colors mr-2'
                   >
-                    <ArrowLeft size={13} /> Retour
+                    <ArrowLeft size={13} /> {t("mindmap.back")}
                   </button>
                 )}
                 {filAriane.map((part, i) => (
@@ -942,7 +961,7 @@ function MindMapInner({
                   className='w-full flex items-center justify-between px-3 py-2.5
                     text-warm-800 font-semibold hover:bg-warm-50 transition-colors'
                 >
-                  <span>Légende</span>
+                  <span>{t("mindmap.legend")}</span>
                   {showLegend ? (
                     <ChevronUp
                       size={14}
@@ -960,11 +979,11 @@ function MindMapInner({
                 {showLegend && (
                   <div className='px-3 pb-3 flex flex-col gap-2 border-t border-warm-100'>
                     {[
-                      { color: "#F59E0B", label: "Racine" },
-                      { color: "#FCD34D", label: "Langue (cliquable)" },
-                      { color: "#FED7AA", label: "Thème (cliquable)" },
-                      { color: "#C4B5FD", label: "Pattern (cliquable partout)" },
-                      { color: "#E7E5E4", label: "Phrase" },
+                      { color: "#F59E0B", label: t("mindmap.root") },
+                      { color: "#FCD34D", label: t("mindmap.language") },
+                      { color: "#FED7AA", label: t("mindmap.theme") },
+                      { color: "#C4B5FD", label: t("mindmap.pattern") },
+                      { color: "#E7E5E4", label: t("mindmap.phrase") },
                     ].map(({ color, label }) => (
                       <div
                         key={label}
@@ -983,7 +1002,7 @@ function MindMapInner({
                       </div>
                     ))}
                     <div className='border-t border-warm-100 pt-2 text-warm-400'>
-                      Clique sur une phrase pour les détails
+                      {t("mindmap.clickPhrase")}
                     </div>
                   </div>
                 )}
@@ -998,7 +1017,7 @@ function MindMapInner({
         <div className='w-full md:w-72 bg-white rounded-2xl border border-warm-200 shadow-soft p-4 md:p-5 flex flex-col gap-3 md:gap-4 self-start'>
           <div className='flex items-start justify-between'>
             <h3 className='font-semibold text-warm-900 text-sm flex items-center gap-1.5'>
-              <Pin size={13} /> Phrase sélectionnée
+              <Pin size={13} /> {t("mindmap.selected")}
             </h3>
             <button
               onClick={() => setSelectedPhrase(null)}
@@ -1013,7 +1032,9 @@ function MindMapInner({
             </p>
           </div>
           <div>
-            <p className='text-xs font-medium text-warm-500 mb-1'>Traduction</p>
+            <p className='text-xs font-medium text-warm-500 mb-1'>
+              {t("mindmap.translation")}
+            </p>
             <p className='text-warm-700 italic text-sm'>
               {selectedPhrase.traduction}
             </p>
@@ -1022,7 +1043,7 @@ function MindMapInner({
             selectedPhrase.patternKey !== "Général" && (
               <div>
                 <p className='text-xs font-medium text-warm-500 mb-1'>
-                  Pattern
+                  {t("mindmap.pattern2")}
                 </p>
                 <p className='text-sm font-mono text-purple-600 bg-purple-50 px-2 py-1 rounded-lg inline-block'>
                   {selectedPhrase.patternKey}
@@ -1038,18 +1059,18 @@ function MindMapInner({
               }}
               className='text-xs px-2.5 py-1 rounded-full font-semibold'
             >
-              Niveau {selectedPhrase.niveau}
+              {t("mindmap.level")} {selectedPhrase.niveau}
             </span>
             <span
               className={`text-xs px-2.5 py-1 rounded-full ${selectedPhrase.source === "auto" ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"}`}
             >
               {selectedPhrase.source === "auto" ? (
                 <span className='flex items-center gap-1'>
-                  <Bot size={11} /> Extrait auto
+                  <Bot size={11} /> {t("mindmap.autoExtracted")}
                 </span>
               ) : (
                 <span className='flex items-center gap-1'>
-                  <PenLine size={11} /> Ajout manuel
+                  <PenLine size={11} /> {t("mindmap.manualAdd")}
                 </span>
               )}
             </span>
@@ -1060,7 +1081,7 @@ function MindMapInner({
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
             <span className='flex items-center justify-center gap-1.5'>
-              Voir dans le Learning Log <ArrowRight size={13} />
+              {t("mindmap.seeInLog")} <ArrowRight size={13} />
             </span>
           </button>
         </div>
@@ -1074,6 +1095,8 @@ function MindMapInner({
 // ════════════════════════════════════════════════════════════════════════════
 export default function MindMap() {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   const [allEntries, setAllEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1113,12 +1136,10 @@ export default function MindMap() {
               size={20}
               className='text-orange-500'
             />
-            MindMap
+            {t("mindmap.title")}
           </h1>
           <p className='text-warm-500 text-xs sm:text-sm mt-1'>
-            {allEntries.length} phrase{allEntries.length !== 1 ? "s" : ""}{" "}
-            organisée{allEntries.length !== 1 ? "s" : ""} par langue → thème →
-            pattern
+            {allEntries.length} {t("mindmap.phrases")}
           </p>
         </div>
         <div className='flex items-center gap-3'>
@@ -1128,7 +1149,7 @@ export default function MindMap() {
               onChange={(e) => setFiltreLangue(e.target.value)}
               className='px-3 py-2 rounded-xl border border-warm-200 text-sm text-warm-700 bg-white focus:outline-none focus:border-orange-300'
             >
-              <option value=''>Toutes les langues</option>
+              <option value=''>{t("mindmap.allLanguages")}</option>
               {languesUser.map((l) => (
                 <option
                   key={l}
@@ -1148,7 +1169,7 @@ export default function MindMap() {
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
             <Download size={15} />
-            <span className='hidden sm:inline'>Exporter PNG</span>
+            <span className='hidden sm:inline'>{t("mindmap.export")}</span>
           </button>
         </div>
       </div>

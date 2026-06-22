@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
+import { useLangue } from "../contexts/LangueContext";
 import {
   Check,
   X,
@@ -30,6 +31,8 @@ const NIVEAU_COLORS = {
 };
 
 export default function AdminUsers() {
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -46,7 +49,7 @@ export default function AdminUsers() {
       const res = await api.get("/admin/users");
       setUsers(res.data.users);
     } catch {
-      showToast("Erreur lors du chargement des utilisateurs.", "error");
+      showToast(t("admin.errorLoadUsers"), "error");
     } finally {
       setLoading(false);
     }
@@ -63,10 +66,7 @@ export default function AdminUsers() {
       );
       showToast(res.data.message, "success");
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Erreur lors de la modification.",
-        "error",
-      );
+      showToast(err.response?.data?.message || t("admin.errorToggle"), "error");
     } finally {
       setToggling(null);
     }
@@ -120,7 +120,7 @@ export default function AdminUsers() {
                 size={13}
                 className='group-hover:-translate-x-0.5 transition-transform'
               />
-              <span>Scénarios</span>
+              <span>{t("admin.backToScenarios")}</span>
               <Clapperboard
                 size={11}
                 className='ml-0.5'
@@ -132,15 +132,20 @@ export default function AdminUsers() {
                 size={20}
                 className='text-orange-500'
               />
-              Gestion des utilisateurs
+              {/* clé home.manageUsers déjà existante, même texte FR — réutilisée ici */}
+              {t("home.manageUsers")}
             </h1>
             <p className='text-warm-500 text-xs sm:text-sm mt-1'>
               <span className='text-green-600 font-medium'>
-                {totalActifs} actif{totalActifs !== 1 ? "s" : ""}
+                {totalActifs}{" "}
+                {totalActifs !== 1 ? t("admin.actives") : t("admin.active")}
               </span>
               {" · "}
               <span className='text-warm-400'>
-                {totalInactifs} désactivé{totalInactifs !== 1 ? "s" : ""}
+                {totalInactifs}{" "}
+                {totalInactifs !== 1
+                  ? t("admin.inactives")
+                  : t("admin.inactive")}
               </span>
             </p>
           </div>
@@ -155,7 +160,7 @@ export default function AdminUsers() {
               type='text'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder='Rechercher un utilisateur...'
+              placeholder={t("admin.searchPlaceholder")}
               className='pl-9 pr-4 py-2.5 rounded-xl border border-warm-200 text-sm
                 text-warm-900 bg-white focus:outline-none focus:border-orange-300
                 w-full placeholder:text-warm-300'
@@ -170,7 +175,7 @@ export default function AdminUsers() {
               size={20}
               className='animate-spin'
             />
-            <span className='text-sm'>Chargement...</span>
+            <span className='text-sm'>{t("admin.loading")}</span>
           </div>
         ) : filtered.length === 0 ? (
           <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-10 sm:p-12 text-center'>
@@ -179,11 +184,11 @@ export default function AdminUsers() {
               className='text-warm-300 mx-auto mb-4'
             />
             <p className='text-warm-600 font-medium'>
-              Aucun utilisateur trouvé
+              {t("admin.noUserFound")}
             </p>
             {search && (
               <p className='text-warm-400 text-sm mt-1'>
-                Essaie avec un autre nom ou email.
+                {t("admin.tryOtherName")}
               </p>
             )}
           </div>
@@ -196,9 +201,9 @@ export default function AdminUsers() {
                 bg-warm-50 border-b border-warm-100
                 text-xs font-semibold text-warm-500 uppercase tracking-wide'
               >
-                <span>Utilisateur</span>
-                <span>Langues pratiquées</span>
-                <span>Action</span>
+                <span>{t("admin.columnUser")}</span>
+                <span>{t("admin.columnLanguages")}</span>
+                <span>{t("admin.columnAction")}</span>
               </div>
 
               {filtered.map((user) => {
@@ -246,7 +251,7 @@ export default function AdminUsers() {
                         ))
                       ) : (
                         <span className='text-xs text-warm-300 italic'>
-                          Aucune
+                          {t("admin.none")}
                         </span>
                       )}
                     </div>
@@ -269,11 +274,11 @@ export default function AdminUsers() {
                         />
                       ) : actif ? (
                         <>
-                          <UserX size={12} /> Désactiver
+                          <UserX size={12} /> {t("admin.deactivate")}
                         </>
                       ) : (
                         <>
-                          <UserCheck size={12} /> Réactiver
+                          <UserCheck size={12} /> {t("admin.reactivate")}
                         </>
                       )}
                     </button>
@@ -318,10 +323,10 @@ export default function AdminUsers() {
                       >
                         {user.role === "admin" ? (
                           <>
-                            <Settings size={11} /> Admin
+                            <Settings size={11} /> {t("nav.admin")}
                           </>
                         ) : (
-                          "User"
+                          t("admin.user")
                         )}
                       </span>
                     </div>
@@ -341,7 +346,7 @@ export default function AdminUsers() {
                         ))
                       ) : (
                         <span className='text-xs text-warm-300 italic'>
-                          Aucune langue
+                          {t("admin.noLanguage")}
                         </span>
                       )}
                     </div>
@@ -366,11 +371,11 @@ export default function AdminUsers() {
                         />
                       ) : actif ? (
                         <>
-                          <UserX size={14} /> Désactiver le compte
+                          <UserX size={14} /> {t("admin.deactivateAccount")}
                         </>
                       ) : (
                         <>
-                          <UserCheck size={14} /> Réactiver le compte
+                          <UserCheck size={14} /> {t("admin.reactivateAccount")}
                         </>
                       )}
                     </button>

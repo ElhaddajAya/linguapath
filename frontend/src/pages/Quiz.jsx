@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Logo from "../components/Logo";
+import { useLangue } from "../contexts/LangueContext";
 
 const LANGUES = [
   "Anglais",
@@ -32,6 +33,8 @@ const LANGUE_EMOJI = {
 
 export default function Quiz() {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   const [etape, setEtape] = useState("langue");
   const [langue, setLangue] = useState("");
@@ -56,10 +59,9 @@ export default function Quiz() {
       setLangue(langueChoisie);
       setEtape("questions");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Erreur lors du chargement des questions",
-      );
+      // Le message d'erreur du backend (err.response) reste tel quel s'il existe,
+      // sinon on retombe sur la clé de traduction générique quiz.error
+      setError(err.response?.data?.message || t("quiz.error"));
     } finally {
       setLoading(false);
     }
@@ -98,19 +100,20 @@ export default function Quiz() {
       setResultat(res.data);
       setEtape("resultat");
     } catch (err) {
-      setError("Erreur lors de la soumission");
+      setError(t("quiz.errorSubmit"));
     } finally {
       setLoading(false);
     }
   };
 
+  // Descriptions par niveau CECRL — clés ajoutées dans translations.js sous quiz.levelDesc.*
   const descriptionNiveau = {
-    A1: "Débutant — Tu connais les bases essentielles.",
-    A2: "Élémentaire — Tu peux gérer des situations simples.",
-    B1: "Intermédiaire — Tu t'exprimes sur des sujets familiers.",
-    B2: "Intermédiaire avancé — Tu communiques avec aisance.",
-    C1: "Avancé — Tu maîtrises la langue couramment.",
-    C2: "Maîtrise — Niveau quasi-natif. Bravo !",
+    A1: t("quiz.levelDesc.A1"),
+    A2: t("quiz.levelDesc.A2"),
+    B1: t("quiz.levelDesc.B1"),
+    B2: t("quiz.levelDesc.B2"),
+    C1: t("quiz.levelDesc.C1"),
+    C2: t("quiz.levelDesc.C2"),
   };
 
   // ════════════════════════════════
@@ -124,10 +127,10 @@ export default function Quiz() {
         </div>
         <div className='w-full max-w-lg'>
           <h1 className='text-2xl font-semibold text-warm-900 text-center mb-2'>
-            Quelle langue veux-tu pratiquer ?
+            {t("quiz.title")}
           </h1>
           <p className='text-warm-500 text-sm text-center mb-8'>
-            On va évaluer ton niveau en quelques questions rapides.
+            {t("quiz.subtitle")}
           </p>
           {error && (
             <div className='bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-5 text-center'>
@@ -166,7 +169,7 @@ export default function Quiz() {
           <div className='flex items-center justify-between mb-8'>
             <Logo size='navbar' />
             <span className='text-sm text-warm-500'>
-              {indexCourant + 1} / {questions.length}
+              {t("quiz.question")} {indexCourant + 1} / {questions.length}
             </span>
           </div>
 
@@ -232,7 +235,7 @@ export default function Quiz() {
                 >
                   ?
                 </span>
-                Je ne sais pas
+                {t("quiz.dontKnow")}
               </button>
             </div>
           </div>
@@ -245,10 +248,10 @@ export default function Quiz() {
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
             {loading
-              ? "Calcul en cours..."
+              ? t("quiz.calculating")
               : indexCourant === questions.length - 1
-                ? "Voir mon résultat"
-                : "Question suivante →"}
+                ? t("quiz.seeResult")
+                : t("quiz.validate")}
           </button>
         </div>
       </div>
@@ -274,7 +277,7 @@ export default function Quiz() {
           </div>
 
           <h1 className='text-2xl font-semibold text-warm-900 mb-2'>
-            Ton niveau en {langue}
+            {t("quiz.yourLevel")} {langue}
           </h1>
           <p className='text-warm-500 text-sm mb-8'>
             {descriptionNiveau[resultat.niveau]}
@@ -285,7 +288,7 @@ export default function Quiz() {
             className='w-full py-3.5 rounded-xl font-semibold text-white text-sm hover:opacity-90 transition-opacity'
             style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
           >
-            Commencer à pratiquer →
+            {t("quiz.practice")}
           </button>
 
           <button
@@ -297,7 +300,7 @@ export default function Quiz() {
             }}
             className='w-full mt-3 py-3 rounded-xl text-sm font-medium text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
           >
-            Tester une autre langue
+            {t("quiz.testAnother")}
           </button>
         </div>
       </div>

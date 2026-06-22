@@ -1,3 +1,4 @@
+import { useLangue } from "../contexts/LangueContext";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -12,6 +13,8 @@ import {
   Settings,
   X,
   Menu,
+  Globe,
+  ChevronDown,
 } from "lucide-react";
 import Logo from "./Logo";
 
@@ -23,6 +26,9 @@ export default function Navbar() {
   const [user, setUser] = useState(getUser);
   const isAdmin = user.role === "admin";
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [langueDropdown, setLangueDropdown] = useState(false);
+  // t() = fonction de traduction ; langue = 'fr' ou 'en' ; toggleLangue = switch
+  const { t, langue, toggleLangue } = useLangue();
 
   // ── Sync avatar/nom quand le profil est modifié ────────────
   // Profile.jsx dispatch un event "userUpdated" après la sauvegarde
@@ -45,50 +51,50 @@ export default function Navbar() {
     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-warm-600 hover:bg-warm-50 hover:text-warm-900 transition-colors";
 
   // ── Rendu avatar (image ou initiale) ─────────────────────
-const AvatarCircle = ({ size = 9 }) => {
-  const dim = `w-${size} h-${size}`;
-  const avatar = user.avatar;
+  const AvatarCircle = ({ size = 9 }) => {
+    const dim = `w-${size} h-${size}`;
+    const avatar = user.avatar;
 
-  // URL image (Google OAuth)
-  const isImage =
-    typeof avatar === "string" && /^(https?:\/\/|data:image\/)/.test(avatar);
+    // URL image (Google OAuth)
+    const isImage =
+      typeof avatar === "string" && /^(https?:\/\/|data:image\/)/.test(avatar);
 
-  if (isImage) {
-    return (
-      <img
-        src={avatar}
-        alt={user.nom}
-        className={`${dim} rounded-full object-cover`}
-        onError={(e) => {
-          e.target.style.display = "none";
-        }}
-      />
-    );
-  }
+    if (isImage) {
+      return (
+        <img
+          src={avatar}
+          alt={user.nom}
+          className={`${dim} rounded-full object-cover`}
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+        />
+      );
+    }
 
-  // Emoji avatar
-  if (avatar && avatar.length <= 4) {
+    // Emoji avatar
+    if (avatar && avatar.length <= 4) {
+      return (
+        <div
+          className={`${dim} rounded-full bg-orange-50 border border-orange-200
+        flex items-center justify-center text-xl`}
+        >
+          {avatar}
+        </div>
+      );
+    }
+
+    // Fallback : initiale du nom
     return (
       <div
-        className={`${dim} rounded-full bg-orange-50 border border-orange-200
-        flex items-center justify-center text-xl`}
+        className={`${dim} rounded-full flex items-center justify-center
+        text-white text-sm font-semibold`}
+        style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
       >
-        {avatar}
+        {user.nom?.charAt(0).toUpperCase()}
       </div>
     );
-  }
-
-  // Fallback : initiale du nom
-  return (
-    <div
-      className={`${dim} rounded-full flex items-center justify-center
-        text-white text-sm font-semibold`}
-      style={{ background: "linear-gradient(135deg, #F59E0B, #EA580C)" }}
-    >
-      {user.nom?.charAt(0).toUpperCase()}
-    </div>
-  );
-};
+  };
 
   return (
     <>
@@ -124,19 +130,19 @@ const AvatarCircle = ({ size = 9 }) => {
                   to='/historique'
                   className='text-sm text-warm-500 hover:text-warm-700 transition-colors'
                 >
-                  Historique
+                  {t("nav.history")}
                 </Link>
                 <Link
                   to='/learning-log'
                   className='text-sm text-warm-500 hover:text-warm-700 transition-colors'
                 >
-                  Learning Log
+                  {t("nav.learning")}
                 </Link>
                 <Link
                   to='/mindmap'
                   className='text-sm text-warm-500 hover:text-warm-700 transition-colors'
                 >
-                  MindMap
+                  {t("nav.mindmap")}
                 </Link>
               </>
             )}
@@ -147,20 +153,20 @@ const AvatarCircle = ({ size = 9 }) => {
                   to='/admin/users'
                   className='text-sm text-warm-500 hover:text-warm-700 transition-colors'
                 >
-                  Utilisateurs
+                  {t("home.manageUsers")}
                 </Link>
                 <Link
                   to='/admin/scenarios'
                   className='text-sm text-warm-500 hover:text-warm-700 transition-colors'
                 >
-                  Scénarios
+                  {t("nav.scenarios")}
                 </Link>
                 <div className='w-px h-5 bg-warm-200' />
                 <span
                   className='inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full
                   bg-purple-50 text-purple-600 border border-purple-100'
                 >
-                  <Settings size={12} /> Admin
+                  <Settings size={12} /> {t("nav.admin")}
                 </span>
               </>
             )}
@@ -172,11 +178,61 @@ const AvatarCircle = ({ size = 9 }) => {
               <AvatarCircle size={9} />
             </Link>
 
+            {/* Dropdown langue */}
+            <div className='relative'>
+              <button
+                onClick={() => setLangueDropdown((v) => !v)}
+                className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold
+                  border border-warm-200 text-warm-600 hover:border-orange-300
+                  hover:text-orange-500 transition-colors'
+              >
+                <Globe size={13} />
+                {langue === "fr" ? "Français" : "English"}
+                <ChevronDown size={11} />
+              </button>
+              {langueDropdown && (
+                <>
+                  {/* Overlay pour fermer */}
+                  <div
+                    className='fixed inset-0 z-40'
+                    onClick={() => setLangueDropdown(false)}
+                  />
+                  <div
+                    className='absolute right-0 top-full mt-1.5 bg-white border border-warm-200
+                    rounded-xl shadow-lg z-50 overflow-hidden min-w-32'
+                  >
+                    <button
+                      onClick={() => {
+                        if (langue !== "fr") toggleLangue();
+                        setLangueDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium
+                        hover:bg-warm-50 transition-colors text-left
+                        ${langue === "fr" ? "text-orange-500 bg-orange-50" : "text-warm-700"}`}
+                    >
+                      🇫🇷 Français
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (langue !== "en") toggleLangue();
+                        setLangueDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium
+                        hover:bg-warm-50 transition-colors text-left
+                        ${langue === "en" ? "text-orange-500 bg-orange-50" : "text-warm-700"}`}
+                    >
+                      🇬🇧 English
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               onClick={handleLogout}
               className='text-sm text-warm-400 hover:text-warm-700 transition-colors font-medium'
             >
-              Déconnexion
+              {t("nav.logout")}
             </button>
           </div>
 
@@ -234,7 +290,7 @@ const AvatarCircle = ({ size = 9 }) => {
                   className='inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2 py-0.5
                   rounded-full bg-purple-50 text-purple-600'
                 >
-                  <Settings size={11} /> Admin
+                  <Settings size={11} /> {t("nav.admin")}
                 </span>
               )}
               {!isAdmin && user.langues?.length > 0 && (
@@ -256,7 +312,7 @@ const AvatarCircle = ({ size = 9 }) => {
             onClick={close}
             className={navLink}
           >
-            <Home size={16} /> <span>Accueil</span>
+            <Home size={16} /> <span>{t("nav.home")}</span>
           </Link>
           {!isAdmin && (
             <>
@@ -265,21 +321,21 @@ const AvatarCircle = ({ size = 9 }) => {
                 onClick={close}
                 className={navLink}
               >
-                <ClipboardList size={16} /> <span>Historique</span>
+                <ClipboardList size={16} /> <span>{t("nav.history")}</span>
               </Link>
               <Link
                 to='/learning-log'
                 onClick={close}
                 className={navLink}
               >
-                <BookOpen size={16} /> <span>Learning Log</span>
+                <BookOpen size={16} /> <span>{t("nav.learning")}</span>
               </Link>
               <Link
                 to='/mindmap'
                 onClick={close}
                 className={navLink}
               >
-                <Map size={16} /> <span>MindMap</span>
+                <Map size={16} /> <span>{t("nav.mindmap")}</span>
               </Link>
             </>
           )}
@@ -290,14 +346,14 @@ const AvatarCircle = ({ size = 9 }) => {
                 onClick={close}
                 className={navLink}
               >
-                <Users size={16} /> <span>Utilisateurs</span>
+                <Users size={16} /> <span>{t("home.manageUsers")}</span>
               </Link>
               <Link
                 to='/admin/scenarios'
                 onClick={close}
                 className={navLink}
               >
-                <Clapperboard size={16} /> <span>Scénarios</span>
+                <Clapperboard size={16} /> <span>{t("nav.scenarios")}</span>
               </Link>
             </>
           )}
@@ -306,17 +362,51 @@ const AvatarCircle = ({ size = 9 }) => {
             onClick={close}
             className={navLink}
           >
-            <User size={16} /> <span>Mon profil</span>
+            <User size={16} /> <span>{t("profile.title")}</span>
           </Link>
         </nav>
 
-        <div className='px-3 py-4 border-t border-warm-200'>
+        <div className='px-3 py-3 border-t border-warm-200'>
+          {/* Sélecteur langue mobile */}
+          <div className='flex gap-2 mb-2'>
+            <button
+              onClick={() => {
+                if (langue !== "fr") toggleLangue();
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl
+                text-xs font-medium border transition-colors
+                ${
+                  langue === "fr"
+                    ? "bg-orange-50 border-orange-300 text-orange-500"
+                    : "border-warm-200 text-warm-500 hover:border-orange-200"
+                }`}
+            >
+              🇫🇷 Français
+            </button>
+            <button
+              onClick={() => {
+                if (langue !== "en") toggleLangue();
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl
+                text-xs font-medium border transition-colors
+                ${
+                  langue === "en"
+                    ? "bg-orange-50 border-orange-300 text-orange-500"
+                    : "border-warm-200 text-warm-500 hover:border-orange-200"
+                }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+        </div>
+
+        <div className='px-3 pb-4 border-t border-warm-200'>
           <button
             onClick={handleLogout}
             className='w-full flex items-center gap-3 px-4 py-3 rounded-xl
-              text-sm font-medium text-red-500 hover:bg-red-50 transition-colors'
+              text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-2'
           >
-            <LogOut size={16} /> <span>Déconnexion</span>
+            <LogOut size={16} /> <span>{t("nav.logout")}</span>
           </button>
         </div>
       </div>

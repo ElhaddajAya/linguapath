@@ -4,6 +4,7 @@
 
 import Navbar from "../components/NavBar.jsx";
 import { useNavigate } from "react-router-dom";
+import { useLangue } from "../contexts/LangueContext";
 import { Users, Clapperboard, ArrowRight, Plus } from "lucide-react";
 
 const LANGUE_EMOJI = {
@@ -20,6 +21,8 @@ const LANGUE_EMOJI = {
 // ── Dashboard Admin ───────────────────────────────────────────
 function AdminHome({ user }) {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   return (
     <div className='min-h-screen bg-warm-50'>
@@ -28,13 +31,13 @@ function AdminHome({ user }) {
         {/* Header */}
         <div className='mb-6 sm:mb-10'>
           <p className='text-xs font-semibold tracking-widest text-orange-500 uppercase mb-2'>
-            Tableau de bord
+            {t("home.dashboard")}
           </p>
           <h1 className='text-xl sm:text-2xl font-semibold text-warm-900'>
-            Bonjour, {user.nom?.split(" ")[0]}
+            {t("home.greeting")}, {user.nom?.split(" ")[0]}
           </h1>
           <p className='text-warm-500 mt-1 text-xs sm:text-sm'>
-            Espace administrateur — gestion de la plateforme LinguaTalk
+            {t("home.adminSubtitle")}
           </p>
         </div>
 
@@ -50,9 +53,14 @@ function AdminHome({ user }) {
             <div className='flex items-start justify-between mb-4 sm:mb-6'>
               <div
                 className='w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center'
-                style={{ background: "linear-gradient(135deg, #EDE9FE, #DDD6FE)" }}
+                style={{
+                  background: "linear-gradient(135deg, #EDE9FE, #DDD6FE)",
+                }}
               >
-                <Users size={24} className="text-purple-500" />
+                <Users
+                  size={24}
+                  className='text-purple-500'
+                />
               </div>
               <span
                 className='text-xs font-semibold px-2.5 py-1 rounded-full
@@ -62,17 +70,16 @@ function AdminHome({ user }) {
               </span>
             </div>
             <h2 className='text-base sm:text-lg font-semibold text-warm-900 mb-2'>
-              Gestion des utilisateurs
+              {t("home.manageUsers")}
             </h2>
             <p className='text-sm text-warm-500 mb-4 sm:mb-6 leading-relaxed'>
-              Consulter la liste des apprenants inscrits, voir leurs langues et
-              niveaux, activer ou désactiver un compte.
+              {t("home.manageUsersSub")}
             </p>
             <div
               className='flex items-center gap-2 text-sm font-semibold text-purple-600
                 group-hover:gap-3 transition-all'
             >
-              Voir les utilisateurs
+              {t("home.seeUsers")}
               <ArrowRight size={15} />
             </div>
           </div>
@@ -87,9 +94,14 @@ function AdminHome({ user }) {
             <div className='flex items-start justify-between mb-4 sm:mb-6'>
               <div
                 className='w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center'
-                style={{ background: "linear-gradient(135deg, #FEF3C7, #FDE68A)" }}
+                style={{
+                  background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+                }}
               >
-                <Clapperboard size={24} className="text-orange-500" />
+                <Clapperboard
+                  size={24}
+                  className='text-orange-500'
+                />
               </div>
               <span
                 className='text-xs font-semibold px-2.5 py-1 rounded-full
@@ -99,17 +111,16 @@ function AdminHome({ user }) {
               </span>
             </div>
             <h2 className='text-base sm:text-lg font-semibold text-warm-900 mb-2'>
-              Gestion des scénarios
+              {t("home.manageScenarios")}
             </h2>
             <p className='text-sm text-warm-500 mb-4 sm:mb-6 leading-relaxed'>
-              Créer, modifier et supprimer les scénarios de conversation
-              disponibles sur la plateforme.
+              {t("home.manageScenariosSub")}
             </p>
             <div
               className='flex items-center gap-2 text-sm font-semibold text-orange-600
                 group-hover:gap-3 transition-all'
             >
-              Gérer les scénarios
+              {t("home.seeScenarios")}
               <ArrowRight size={15} />
             </div>
           </div>
@@ -122,6 +133,7 @@ function AdminHome({ user }) {
 // ── Page utilisateur normal ───────────────────────────────────
 function UserHome({ user }) {
   const navigate = useNavigate();
+  const { t } = useLangue();
 
   return (
     <div className='min-h-screen bg-warm-50'>
@@ -129,11 +141,9 @@ function UserHome({ user }) {
       <div className='max-w-7xl mx-auto px-4 sm:px-10 py-8 sm:py-10'>
         <div className='mb-6 sm:mb-8'>
           <h1 className='text-2xl font-semibold text-warm-900'>
-            Bonjour, {user.nom?.split(" ")[0]} 👋
+            {t("home.greeting")}, {user.nom?.split(" ")[0]} 👋
           </h1>
-          <p className='text-warm-500 mt-1 text-sm'>
-            Prête à pratiquer aujourd'hui ?
-          </p>
+          <p className='text-warm-500 mt-1 text-sm'>{t("home.subtitle")}</p>
         </div>
 
         {user.langues?.length > 0 ? (
@@ -152,7 +162,7 @@ function UserHome({ user }) {
                   <div>
                     <p className='font-semibold text-warm-900'>{l.langue}</p>
                     <p className='text-sm text-warm-500 mt-0.5'>
-                      Niveau {l.niveau}
+                      {t("home.level")} {l.niveau}
                     </p>
                   </div>
                 </div>
@@ -164,7 +174,7 @@ function UserHome({ user }) {
                     background: "linear-gradient(135deg, #F59E0B, #EA580C)",
                   }}
                 >
-                  Pratiquer →
+                  {t("home.practice")}
                 </button>
               </div>
             ))}
@@ -177,17 +187,17 @@ function UserHome({ user }) {
                 justify-center gap-2'
             >
               <Plus size={18} />
-              Ajouter une nouvelle langue
+              {t("home.addLanguage")}
             </button>
           </div>
         ) : (
           <div className='bg-white rounded-2xl border border-warm-200 shadow-card p-6 sm:p-10 text-center'>
             <div className='text-3xl sm:text-4xl mb-3 sm:mb-4'>🌍</div>
             <h2 className='text-base sm:text-lg font-semibold text-warm-900 mb-2'>
-              Quelle langue veux-tu pratiquer ?
+              {t("home.noLanguage")}
             </h2>
             <p className='text-warm-500 text-sm mb-6'>
-              Choisis une langue et on évalue ton niveau en 2 minutes.
+              {t("home.noLanguageSub")}
             </p>
             <button
               onClick={() => navigate("/quiz")}
@@ -197,7 +207,7 @@ function UserHome({ user }) {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              Commencer
+              {t("home.start")}
             </button>
           </div>
         )}

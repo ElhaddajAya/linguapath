@@ -2,8 +2,9 @@
 // Responsive, couleurs soft blanc/orange, icônes lucide-react
 
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Logo from "../components/Logo";
+import { useLangue } from "../contexts/LangueContext";
 import {
   MessageCircle,
   BarChart2,
@@ -12,73 +13,11 @@ import {
   Mic,
   Pencil,
   ChevronRight,
+  ChevronDown,
   Check,
   Globe,
   Sparkles,
 } from "lucide-react";
-
-const FEATURES = [
-  {
-    icon: (
-      <MessageCircle
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "Scénarios réels",
-    desc: "L'IA joue un rôle précis — serveur, recruteur, médecin — et vous plonge dans une situation du quotidien.",
-  },
-  {
-    icon: (
-      <BarChart2
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "Évaluation de niveau",
-    desc: "Un test initial place l'utilisateur de A1 à C2. Les scénarios sont filtrés automatiquement selon le niveau.",
-  },
-  {
-    icon: (
-      <BookOpen
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "Learning Log",
-    desc: "Les phrases et expressions clés sont extraites automatiquement après chaque session et sauvegardées.",
-  },
-  {
-    icon: (
-      <Brain
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "MindMap visuelle",
-    desc: "Un arbre interactif de connaissances qui grandit à chaque session. Exportable en image PNG.",
-  },
-  {
-    icon: (
-      <Mic
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "Mode voix",
-    desc: "Dictez votre réponse avec le micro — Web Speech API convertit votre voix en texte instantanément.",
-  },
-  {
-    icon: (
-      <Pencil
-        size={24}
-        className='text-orange-500'
-      />
-    ),
-    title: "Corrections discrètes",
-    desc: "L'IA corrige les erreurs de grammaire et de vocabulaire de manière naturelle à chaque échange.",
-  },
-];
 
 const LANGUAGES = [
   { flag: "🇬🇧", name: "Anglais" },
@@ -89,43 +28,6 @@ const LANGUAGES = [
   { flag: "🇯🇵", name: "Japonais" },
   { flag: "🇨🇳", name: "Chinois" },
   { flag: "🇸🇦", name: "Arabe" },
-];
-
-const STEPS = [
-  {
-    num: "01",
-    title: "Inscris-toi",
-    desc: "Crée ton compte en 30 secondes avec ton email.",
-  },
-  {
-    num: "02",
-    title: "Évalue ton niveau",
-    desc: "Un QCM rapide détermine ton niveau A1 → C2 dans la langue choisie.",
-  },
-  {
-    num: "03",
-    title: "Choisis un scénario",
-    desc: "Restaurant, voyage, entretien d'embauche... adapté à ton niveau.",
-  },
-  {
-    num: "04",
-    title: "Parle avec l'IA",
-    desc: "L'IA joue un rôle précis. Tu pratiques, elle corrige discrètement.",
-  },
-  {
-    num: "05",
-    title: "Suis ta progression",
-    desc: "Learning Log + MindMap mis à jour automatiquement après chaque session.",
-  },
-];
-
-const BENEFITS = [
-  "Conversations guidées par IA dans des scénarios réels",
-  "Évaluation de niveau CECRL (A1 à C2)",
-  "Learning Log automatique après chaque session",
-  "MindMap interactive et exportable en PNG",
-  "Support de 8 langues dont coréen, japonais et arabe",
-  "Mode voix, romanisation et cartes de phrases",
 ];
 
 // Composant fond animé — lignes ondulantes SVG
@@ -226,6 +128,91 @@ function AnimatedBackground() {
 
 export default function Landing() {
   const navigate = useNavigate();
+  // t() = fonction de traduction ; langue = 'fr'/'en' ; toggleLangue = switch
+  const { t, langue, toggleLangue } = useLangue();
+  const [langueDropdown, setLangueDropdown] = useState(false);
+
+  // Listes de contenu construites avec t() — recalculées à chaque rendu
+  // pour suivre la langue active (pas de useMemo nécessaire, contenu léger)
+  const FEATURES = [
+    {
+      icon: (
+        <MessageCircle
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature1Title"),
+      desc: t("landing.feature1Desc"),
+    },
+    {
+      icon: (
+        <BarChart2
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature2Title"),
+      desc: t("landing.feature2Desc"),
+    },
+    {
+      icon: (
+        <BookOpen
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature3Title"),
+      desc: t("landing.feature3Desc"),
+    },
+    {
+      icon: (
+        <Brain
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature4Title"),
+      desc: t("landing.feature4Desc"),
+    },
+    {
+      icon: (
+        <Mic
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature5Title"),
+      desc: t("landing.feature5Desc"),
+    },
+    {
+      icon: (
+        <Pencil
+          size={24}
+          className='text-orange-500'
+        />
+      ),
+      title: t("landing.feature6Title"),
+      desc: t("landing.feature6Desc"),
+    },
+  ];
+
+  const STEPS = [
+    { num: "01", title: t("landing.step1Title"), desc: t("landing.step1Desc") },
+    { num: "02", title: t("landing.step2Title"), desc: t("landing.step2Desc") },
+    { num: "03", title: t("landing.step3Title"), desc: t("landing.step3Desc") },
+    { num: "04", title: t("landing.step4Title"), desc: t("landing.step4Desc") },
+    { num: "05", title: t("landing.step5Title"), desc: t("landing.step5Desc") },
+  ];
+
+  const BENEFITS = [
+    t("landing.benefit1"),
+    t("landing.benefit2"),
+    t("landing.benefit3"),
+    t("landing.benefit4"),
+    t("landing.benefit5"),
+    t("landing.benefit6"),
+  ];
 
   return (
     <div className='min-h-screen bg-white text-warm-900'>
@@ -234,12 +221,64 @@ export default function Landing() {
         <div className='max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between'>
           <Logo size='navbar' />
           <div className='flex items-center gap-2 sm:gap-4'>
+            {/* Sélecteur de langue — même pattern que NavBar.jsx, version compacte */}
+            <div className='relative'>
+              <button
+                onClick={() => setLangueDropdown((v) => !v)}
+                className='flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold
+                  border border-warm-200 text-warm-600 hover:border-orange-300
+                  hover:text-orange-500 transition-colors'
+              >
+                <Globe size={13} />
+                <span className='hidden sm:inline'>
+                  {langue === "fr" ? "Français" : "English"}
+                </span>
+                <ChevronDown size={11} />
+              </button>
+              {langueDropdown && (
+                <>
+                  {/* Overlay pour fermer au clic extérieur */}
+                  <div
+                    className='fixed inset-0 z-40'
+                    onClick={() => setLangueDropdown(false)}
+                  />
+                  <div
+                    className='absolute right-0 top-full mt-1.5 bg-white border border-warm-200
+                    rounded-xl shadow-lg z-50 overflow-hidden min-w-32'
+                  >
+                    <button
+                      onClick={() => {
+                        if (langue !== "fr") toggleLangue();
+                        setLangueDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium
+                        hover:bg-warm-50 transition-colors text-left
+                        ${langue === "fr" ? "text-orange-500 bg-orange-50" : "text-warm-700"}`}
+                    >
+                      🇫🇷 Français
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (langue !== "en") toggleLangue();
+                        setLangueDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium
+                        hover:bg-warm-50 transition-colors text-left
+                        ${langue === "en" ? "text-orange-500 bg-orange-50" : "text-warm-700"}`}
+                    >
+                      🇬🇧 English
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               onClick={() => navigate("/login")}
               className='px-3 sm:px-4 py-2 text-sm font-medium text-warm-600
                         hover:text-warm-900 transition-colors hidden sm:block'
             >
-              Se connecter
+              {t("landing.login")}
             </button>
             <button
               onClick={() => navigate("/signup")}
@@ -249,8 +288,8 @@ export default function Landing() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              <span className='hidden sm:inline'>Commencer gratuitement</span>
-              <span className='sm:hidden'>S'inscrire</span>
+              <span className='hidden sm:inline'>{t("landing.startFree")}</span>
+              <span className='sm:hidden'>{t("landing.signupShort")}</span>
             </button>
           </div>
         </div>
@@ -266,7 +305,7 @@ export default function Landing() {
             bg-orange-50 border border-orange-200 text-orange-600 text-xs font-semibold mb-5 sm:mb-8'
           >
             <Sparkles size={13} />
-            Plateforme IA d'apprentissage des langues
+            {t("landing.badge")}
           </div>
 
           <p
@@ -279,14 +318,14 @@ export default function Landing() {
               margin: "0 0 16px 0",
             }}
           >
-            LEARN · SPEAK · GROW
+            {t("landing.tagline")}
           </p>
 
           <h1
             className='text-2xl sm:text-5xl md:text-6xl font-bold text-warm-900
             mb-4 sm:mb-6 leading-tight tracking-tight'
           >
-            Apprenez les langues
+            {t("landing.heroTitle")}
             <br />
             <span
               style={{
@@ -295,14 +334,12 @@ export default function Landing() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              en conversant avec l'IA
+              {t("landing.heroTitleHighlight")}
             </span>
           </h1>
 
           <p className='text-sm sm:text-lg text-warm-500 max-w-xl mx-auto mb-7 sm:mb-10 leading-relaxed'>
-            Des conversations guidées dans des situations réelles, un suivi
-            automatique de votre progression, et une MindMap visuelle de vos
-            connaissances. Pour les niveaux A2 à B2.
+            {t("landing.heroSub")}
           </p>
 
           <div className='flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center'>
@@ -315,7 +352,7 @@ export default function Landing() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              Commencer gratuitement
+              {t("landing.startFree")}
               <ChevronRight size={16} />
             </button>
             <button
@@ -324,7 +361,7 @@ export default function Landing() {
                 text-warm-700 border border-warm-200 bg-white
                 hover:border-orange-200 hover:text-orange-600 transition-colors'
             >
-              J'ai déjà un compte
+              {t("landing.haveAccount")}
             </button>
           </div>
 
@@ -380,14 +417,13 @@ export default function Landing() {
         <div className='max-w-6xl mx-auto px-4 sm:px-10'>
           <div className='text-center mb-8 sm:mb-14'>
             <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-2 sm:mb-3'>
-              Fonctionnalités
+              {t("landing.featuresLabel")}
             </p>
             <h2 className='text-xl sm:text-3xl font-bold text-warm-900'>
-              Tout ce qu'il faut pour progresser
+              {t("landing.featuresTitle")}
             </h2>
             <p className='text-warm-500 mt-3 max-w-lg mx-auto text-sm leading-relaxed'>
-              LinguaTalk combine la puissance de l'IA avec une structure
-              pédagogique que les autres applications n'ont pas.
+              {t("landing.featuresSub")}
             </p>
           </div>
 
@@ -422,10 +458,10 @@ export default function Landing() {
         <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-10'>
           <div className='text-center mb-8 sm:mb-14'>
             <p className='text-xs font-bold tracking-widest text-orange-500 uppercase mb-2 sm:mb-3'>
-              Comment ça marche
+              {t("landing.howItWorksLabel")}
             </p>
             <h2 className='text-xl sm:text-3xl font-bold text-warm-900'>
-              5 étapes pour progresser
+              {t("landing.howItWorksTitle")}
             </h2>
           </div>
 
@@ -468,11 +504,10 @@ export default function Landing() {
               className='text-orange-500 mx-auto mb-4 sm:mb-6'
             />
             <h2 className='text-xl sm:text-3xl font-bold text-warm-900 mb-3 sm:mb-4'>
-              Prêt à progresser ?
+              {t("landing.ctaTitle")}
             </h2>
             <p className='text-warm-500 text-sm leading-relaxed mb-6 sm:mb-8 max-w-md mx-auto'>
-              Rejoignez LinguaTalk et commencez votre première conversation
-              guidée par l'IA dès aujourd'hui — gratuitement.
+              {t("landing.ctaSub")}
             </p>
             <button
               onClick={() => navigate("/signup")}
@@ -483,7 +518,7 @@ export default function Landing() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              Créer mon compte gratuitement
+              {t("landing.ctaButton")}
               <ChevronRight size={16} />
             </button>
           </div>
@@ -497,23 +532,21 @@ export default function Landing() {
             <Logo size='navbar' />
           </div>
           <p className='text-warm-500 text-sm mb-1'>
-            Plateforme d'apprentissage des langues par IA — EMSI Rabat 2025/2026
+            {t("landing.footerTagline")}
           </p>
-          <p className='text-warm-400 text-xs'>
-            Aya El Haddaj &amp; Malak Fadil · Encadrante : Mme Hasnaa Chaabi
-          </p>
+          <p className='text-warm-400 text-xs'>{t("landing.footerCredits")}</p>
           <div className='flex justify-center gap-6 mt-6 text-xs text-warm-400'>
             <button
               onClick={() => navigate("/login")}
               className='hover:text-orange-500 transition-colors'
             >
-              Se connecter
+              {t("landing.login")}
             </button>
             <button
               onClick={() => navigate("/signup")}
               className='hover:text-orange-500 transition-colors'
             >
-              S'inscrire
+              {t("landing.signupShort")}
             </button>
           </div>
         </div>

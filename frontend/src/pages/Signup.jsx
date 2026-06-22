@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register } from "../services/api";
 import Logo from "../components/Logo";
+import { useLangue } from "../contexts/LangueContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function Signup() {
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
   const [form, setForm] = useState({ nom: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,7 @@ export default function Signup() {
       // Nouveau comportement : afficher confirmation email au lieu de rediriger
       setEmailSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors de l'inscription");
+      setError(err.response?.data?.message || t("auth.signupError"));
     } finally {
       setLoading(false);
     }
@@ -47,23 +50,23 @@ export default function Signup() {
           </div>
           <div className='text-5xl mb-4'>📬</div>
           <h2 className='text-2xl font-bold text-warm-900 mb-3'>
-            Vérifiez votre email !
+            {t("auth.checkEmail")}
           </h2>
           <p className='text-warm-500 text-sm leading-relaxed mb-2'>
-            Un email de confirmation a été envoyé à{" "}
+            {t("auth.checkEmailSent")}{" "}
             <span className='font-semibold text-warm-700'>{form.email}</span>.
           </p>
           <p className='text-warm-500 text-sm mb-8'>
-            Cliquez sur le lien dans l'email pour activer votre compte.
+            {t("auth.checkEmailClick")}
           </p>
           <p className='text-warm-400 text-xs mb-6'>
-            Vous n'avez pas reçu l'email ? Vérifiez votre dossier spam.
+            {t("auth.checkEmailSpam")}
           </p>
           <Link
             to='/login'
             className='text-orange-500 hover:text-orange-700 font-medium text-sm'
           >
-            Retour à la connexion
+            {t("auth.backToLogin")}
           </Link>
         </div>
       </div>
@@ -82,12 +85,10 @@ export default function Signup() {
             className='text-4xl font-bold mb-4'
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Rejoins LinguaTalk.
+            {t("auth.signupTagline")}
           </p>
           <p className='text-orange-100 text-lg'>
-            Choisis ta langue,
-            <br />
-            découvre ton niveau.
+            {t("auth.signupTaglineSub")}
           </p>
         </div>
       </div>
@@ -100,11 +101,9 @@ export default function Signup() {
           </div>
 
           <h2 className='text-2xl font-semibold text-warm-900 mb-1'>
-            Crée ton compte
+            {t("auth.joinTitle")}
           </h2>
-          <p className='text-sm text-warm-500 mb-7'>
-            Rejoins LinguaTalk et commence à apprendre
-          </p>
+          <p className='text-sm text-warm-500 mb-7'>{t("auth.joinSub")}</p>
 
           {/* Bouton Google */}
           <button
@@ -136,13 +135,15 @@ export default function Signup() {
                 d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'
               />
             </svg>
-            Continuer avec Google
+            {t("auth.google")}
           </button>
 
           {/* Séparateur */}
           <div className='flex items-center gap-3 mb-5'>
             <div className='flex-1 h-px bg-warm-200' />
-            <span className='text-xs text-warm-400 font-medium'>ou</span>
+            <span className='text-xs text-warm-400 font-medium'>
+              {t("auth.or")}
+            </span>
             <div className='flex-1 h-px bg-warm-200' />
           </div>
 
@@ -158,7 +159,7 @@ export default function Signup() {
           >
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>
-                Nom complet
+                {t("auth.fullName")}
               </label>
               <input
                 type='text'
@@ -174,7 +175,9 @@ export default function Signup() {
             </div>
 
             <div className='flex flex-col gap-1.5'>
-              <label className='text-sm font-medium text-warm-700'>Email</label>
+              <label className='text-sm font-medium text-warm-700'>
+                {t("auth.email")}
+              </label>
               <input
                 type='email'
                 name='email'
@@ -190,7 +193,7 @@ export default function Signup() {
 
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-warm-700'>
-                Mot de passe
+                {t("auth.password")}
               </label>
               <input
                 type='password'
@@ -214,17 +217,17 @@ export default function Signup() {
                 background: "linear-gradient(135deg, #F59E0B, #EA580C)",
               }}
             >
-              {loading ? "Création..." : "Créer mon compte"}
+              {loading ? t("auth.creating") : t("auth.createMyAccount")}
             </button>
           </form>
 
           <p className='text-center mt-6 text-sm text-warm-500'>
-            Déjà un compte ?{" "}
+            {t("auth.hasAccount")}{" "}
             <Link
               to='/login'
               className='font-semibold text-orange-600 hover:text-orange-700 transition-colors'
             >
-              Se connecter
+              {t("auth.login")}
             </Link>
           </p>
         </div>

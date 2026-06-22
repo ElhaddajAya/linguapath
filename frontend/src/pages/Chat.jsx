@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import api from "../services/api";
+import { useLangue } from "../contexts/LangueContext";
 
 // ──────────────────────────────────────
 // Logo LinguaPath — avatar de l'IA
@@ -144,6 +145,14 @@ function Message({ msg, langue, userAvatar, userNom }) {
 
   const needsRomanisation = LANGUES_NON_LATINES.includes(langue);
 
+  // t() = fonction de traduction ; langue interface ('fr' ou 'en') du contexte LangueContext
+  const { t, langue: langueInterface } = useLangue();
+
+  // Ne pas afficher le bouton traduction si la langue pratiquée
+  // est la même que la langue de l'interface
+  const langueInterfaceNom = langueInterface === "fr" ? "Français" : "Anglais";
+  const afficherBoutonTraduction = langue !== langueInterfaceNom;
+
   const afficher = async () => {
     if (data) {
       setShow(!show);
@@ -158,7 +167,7 @@ function Message({ msg, langue, userAvatar, userNom }) {
       });
       setShow(true);
     } catch {
-      setData({ romanisation: "—", traduction: "Indisponible." });
+      setData({ romanisation: "—", traduction: t("chat.unavailable") });
       setShow(true);
     } finally {
       setLoading(false);
@@ -229,34 +238,36 @@ function Message({ msg, langue, userAvatar, userNom }) {
           </div>
         )}
 
-        <button
-          onClick={afficher}
-          disabled={loading}
-          className='self-start text-xs text-warm-400 hover:text-orange-500
+        {afficherBoutonTraduction && (
+          <button
+            onClick={afficher}
+            disabled={loading}
+            className='self-start text-xs text-warm-400 hover:text-orange-500
                      transition-colors px-1'
-        >
-          {loading ? (
-            <span className='flex items-center gap-1'>
-              <Loader2
-                size={12}
-                className='animate-spin'
-              />{" "}
-              Chargement...
-            </span>
-          ) : show ? (
-            <span className='flex items-center gap-1'>
-              <EyeOff size={12} /> Masquer
-            </span>
-          ) : needsRomanisation ? (
-            <span className='flex items-center gap-1'>
-              <Languages size={12} /> Romanisation & traduction
-            </span>
-          ) : (
-            <span className='flex items-center gap-1'>
-              <Languages size={12} /> Traduction
-            </span>
-          )}
-        </button>
+          >
+            {loading ? (
+              <span className='flex items-center gap-1'>
+                <Loader2
+                  size={12}
+                  className='animate-spin'
+                />{" "}
+                {t("common.loading")}
+              </span>
+            ) : show ? (
+              <span className='flex items-center gap-1'>
+                <EyeOff size={12} /> {t("chat.hide")}
+              </span>
+            ) : needsRomanisation ? (
+              <span className='flex items-center gap-1'>
+                <Languages size={12} /> {t("chat.romanisation")}
+              </span>
+            ) : (
+              <span className='flex items-center gap-1'>
+                <Languages size={12} /> {t("chat.translation")}
+              </span>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -268,6 +279,8 @@ function Message({ msg, langue, userAvatar, userNom }) {
 export default function Chat() {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   // ── Infos utilisateur depuis localStorage ──
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -347,7 +360,7 @@ export default function Chat() {
         setHistorique([
           {
             role: "assistant",
-            contenu: "👋 Bonjour ! Je suis prêt(e) pour notre conversation.",
+            contenu: t("chat.welcomeFallback"),
           },
         ]);
       } finally {
@@ -442,7 +455,7 @@ export default function Chat() {
         ...prev,
         {
           role: "assistant",
-          contenu: "❌ Erreur de connexion. Réessaie.",
+          contenu: t("chat.error"),
         },
       ]);
     } finally {
@@ -556,9 +569,7 @@ export default function Chat() {
             style={{ animationDelay: "300ms" }}
           />
         </div>
-        <p className='text-warm-400 text-sm'>
-          Préparation de la conversation...
-        </p>
+        <p className='text-warm-400 text-sm'>{t("chat.loading")}</p>
       </div>
     );
   }
@@ -590,7 +601,7 @@ export default function Chat() {
           className='px-4 py-1.5 rounded-xl text-xs font-semibold
                text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
         >
-          Terminer
+          {t("chat.end")}
         </button>
       </div>
 
@@ -688,7 +699,7 @@ export default function Chat() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder='Écris ton message...'
+              placeholder={t("chat.placeholder")}
               rows={1}
               className='flex-1 px-4 py-3 rounded-xl border border-warm-200
                          bg-warm-50 text-warm-900 text-sm resize-none
@@ -699,7 +710,11 @@ export default function Chat() {
             {(window.SpeechRecognition || window.webkitSpeechRecognition) && (
               <button
                 onClick={toggleMicro}
-                title={microState === "listening" ? "Arrêter" : "Parler"}
+                title={
+                  microState === "listening"
+                    ? t("chat.micStop")
+                    : t("chat.micStart")
+                }
                 className={`px-4 py-3 rounded-xl font-semibold text-sm
                             transition-all border
                             ${
@@ -733,12 +748,12 @@ export default function Chat() {
 
           {microState === "listening" && (
             <p className='text-xs text-red-400 text-center animate-pulse flex items-center justify-center gap-1'>
-              <Mic size={12} /> Écoute en cours... Parle maintenant
+              <Mic size={12} /> {t("chat.micListening")}
             </p>
           )}
           {microState === "error" && (
             <p className='text-xs text-red-400 text-center'>
-              Micro non disponible — vérifie les permissions du navigateur
+              {t("chat.micError")}
             </p>
           )}
         </div>

@@ -6,11 +6,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import api from "../services/api";
+import { useLangue } from "../contexts/LangueContext";
 
 export default function Scenarios() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   // Emoji par langue
   const LANGUE_EMOJI = {
@@ -52,7 +55,8 @@ export default function Scenarios() {
       });
       setScenarios(res.data.scenarios);
     } catch (err) {
-      setError("Impossible de charger les scénarios");
+      // clé scenarios.error déjà présente dans translations.js
+      setError(t("scenarios.error"));
     } finally {
       setLoading(false);
     }
@@ -66,10 +70,10 @@ export default function Scenarios() {
         {/* Header */}
         <div className='mb-5 sm:mb-8'>
           <h1 className='text-xl sm:text-2xl font-semibold text-warm-900'>
-            Choisir un scénario
+            {t("scenarios.title")}
           </h1>
           <p className='text-warm-500 text-sm mt-1'>
-            Niveau actuel en {langueActive} :{" "}
+            {t("scenarios.level")} {langueActive} :{" "}
             <span className='font-semibold text-orange-600'>
               {niveauActuel}
             </span>
@@ -117,7 +121,7 @@ export default function Scenarios() {
         {/* Contenu */}
         {loading ? (
           <div className='text-center py-20 text-warm-400'>
-            Chargement des scénarios...
+            {t("common.loading")}
           </div>
         ) : error ? (
           <div className='text-center py-20 text-red-500'>{error}</div>
@@ -125,11 +129,9 @@ export default function Scenarios() {
           <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-8 sm:p-12 text-center'>
             <p className='text-3xl sm:text-4xl mb-3 sm:mb-4'>🔍</p>
             <p className='text-warm-600 font-medium mb-2'>
-              Aucun scénario disponible pour ce niveau
+              {t("scenarios.empty")}
             </p>
-            <p className='text-warm-400 text-sm'>
-              De nouveaux scénarios seront ajoutés bientôt.
-            </p>
+            <p className='text-warm-400 text-sm'>{t("scenarios.emptySub")}</p>
           </div>
         ) : (
           // Grille des scénarios
@@ -170,10 +172,11 @@ export default function Scenarios() {
                                 border-t border-warm-100'
                 >
                   <span className='text-xs text-warm-400'>
-                    Niveaux {scenario.niveauMin} → {scenario.niveauMax}
+                    {t("scenarios.levels")} {scenario.niveauMin} →{" "}
+                    {scenario.niveauMax}
                   </span>
                   <span className='text-sm font-semibold text-orange-600'>
-                    Pratiquer →
+                    {t("scenarios.practice")}
                   </span>
                 </div>
               </div>
@@ -187,7 +190,7 @@ export default function Scenarios() {
             onClick={() => navigate("/quiz")}
             className='text-sm text-warm-400 hover:text-orange-500 transition-colors'
           >
-            + Pratiquer une autre langue
+            {t("scenarios.addLang")}
           </button>
         </div>
       </div>

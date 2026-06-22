@@ -4,10 +4,13 @@
 
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLangue } from "../contexts/LangueContext";
 
 export default function GoogleSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  // t() = fonction de traduction du contexte LangueContext
+  const { t } = useLangue();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -19,7 +22,9 @@ export default function GoogleSuccess() {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         // Si pas encore de langue → quiz, sinon → home
-        navigate(user.langues?.length > 0 ? "/home" : "/quiz", { replace: true });
+        navigate(user.langues?.length > 0 ? "/home" : "/quiz", {
+          replace: true,
+        });
       } catch {
         navigate("/login?error=google_failed", { replace: true });
       }
@@ -29,11 +34,15 @@ export default function GoogleSuccess() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-warm-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-12 h-12 rounded-full border-4 border-orange-200
-          border-t-orange-500 animate-spin mx-auto mb-4" />
-        <p className="text-warm-600 font-medium text-sm">Connexion Google en cours...</p>
+    <div className='min-h-screen bg-warm-50 flex items-center justify-center'>
+      <div className='text-center'>
+        <div
+          className='w-12 h-12 rounded-full border-4 border-orange-200
+          border-t-orange-500 animate-spin mx-auto mb-4'
+        />
+        <p className='text-warm-600 font-medium text-sm'>
+          {t("auth.googleLoading")}
+        </p>
       </div>
     </div>
   );
