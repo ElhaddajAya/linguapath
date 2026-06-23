@@ -304,6 +304,8 @@ export default function Chat() {
   const recognitionRef = useRef(null);
   const bottomRef = useRef(null);
 
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -545,6 +547,27 @@ export default function Chat() {
     navigate("/historique");
   };
 
+  // Gère le clic sur la flèche de retour — si la conversation contient
+  // au moins un message de l'utilisateur et n'a pas encore été sauvegardée
+  // (ou modifiée depuis sa reprise), on demande confirmation avant de quitter.
+  const handleRetour = () => {
+    const messagesUser = historique.filter((m) => m.role === "user");
+
+    // Rien à perdre → on quitte directement, pas besoin d'embêter l'utilisateur
+    if (messagesUser.length === 0) {
+      navigate("/scenarios");
+      return;
+    }
+
+    // Reprise d'une conversation déjà sauvegardée, sans nouveau message → rien à perdre non plus
+    if (resumeId && historique.length <= originalMessageCount) {
+      navigate("/scenarios");
+      return;
+    }
+
+    setShowConfirmModal(true);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -583,7 +606,7 @@ export default function Chat() {
       >
         <div className='flex items-center gap-3'>
           <button
-            onClick={() => navigate("/scenarios")}
+            onClick={handleRetour}
             className='text-warm-400 hover:text-warm-700 transition-colors mr-1'
           >
             <ArrowLeft size={18} />
@@ -758,6 +781,49 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      {/* ── Modal de confirmation avant de quitter sans enregistrer ── */}
+      {showConfirmModal && (
+        <div className='fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4'>
+          <div className='bg-white rounded-2xl shadow-xl max-w-sm w-full p-6'>
+            <h3 className='font-semibold text-warm-900 text-lg mb-2'>
+              {t("chat.confirmTitle")}
+            </h3>
+            <p className='text-warm-500 text-sm mb-6'>
+              {t("chat.confirmBody")}
+            </p>
+            <div className='flex flex-col gap-2'>
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  terminerConversation();
+                }}
+                className='w-full py-2.5 rounded-xl font-semibold text-white text-sm hover:opacity-90 transition-opacity'
+                style={{
+                  background: "linear-gradient(135deg, #F59E0B, #EA580C)",
+                }}
+              >
+                {t("chat.confirmSave")}
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  navigate("/scenarios");
+                }}
+                className='w-full py-2.5 rounded-xl text-sm font-medium text-warm-600 border border-warm-200 hover:bg-warm-100 transition-colors'
+              >
+                {t("chat.confirmDiscard")}
+              </button>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className='w-full py-2 rounded-xl text-xs text-warm-400 hover:text-warm-600 transition-colors'
+              >
+                {t("chat.confirmCancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

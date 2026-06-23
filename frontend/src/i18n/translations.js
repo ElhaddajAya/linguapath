@@ -63,6 +63,11 @@ const translations = {
         welcomeFallback: { fr: '👋 Bonjour ! Je suis prêt(e) pour notre conversation.', en: '👋 Hello! I\'m ready for our conversation.' },
         micStop: { fr: 'Arrêter', en: 'Stop' },
         micStart: { fr: 'Parler', en: 'Speak' },
+        confirmTitle: { fr: 'Quitter la conversation ?', en: 'Leave the conversation?' },
+        confirmBody: { fr: 'Tu n\'as pas encore terminé cette session. Veux-tu enregistrer la conversation avant de quitter ?', en: 'You haven\'t ended this session yet. Do you want to save the conversation before leaving?' },
+        confirmSave: { fr: 'Enregistrer et quitter', en: 'Save and leave' },
+        confirmDiscard: { fr: 'Quitter sans enregistrer', en: 'Leave without saving' },
+        confirmCancel: { fr: 'Annuler', en: 'Cancel' },
     },
 
     // ── LEARNING LOG ──────────────────────────────────────────────
@@ -404,6 +409,7 @@ const translations = {
         phrase: { fr: 'Phrase', en: 'Phrase' },
         phrases: { fr: 'phrases', en: 'phrases' },
     },
+
 }
 
 export default translations
