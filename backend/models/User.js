@@ -1,7 +1,7 @@
 // models/User.js — mis à jour avec vérification email + reset password + Google OAuth
 
 const mongoose = require('mongoose')
-const bcrypt   = require('bcryptjs')
+const bcrypt = require('bcryptjs')
 
 const UserSchema = new mongoose.Schema(
   {
@@ -38,6 +38,23 @@ const UserSchema = new mongoose.Schema(
             type: String,
             enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
             default: 'A1',
+          },
+          // Historique des niveaux précédents pour cette langue.
+          // Alimenté dans quizController.js : avant d'écraser "niveau" avec le
+          // nouveau résultat, on y archive l'ancienne valeur + la date du changement.
+          // Champ purement additif — ne change rien au fonctionnement existant,
+          // puisque tout le reste du code continue de lire/écrire "niveau" comme avant.
+          historique: {
+            type: [
+              {
+                niveau: {
+                  type: String,
+                  enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+                },
+                date: { type: Date, default: Date.now },
+              }
+            ],
+            default: [],
           },
         }
       ],
@@ -88,14 +105,16 @@ const UserSchema = new mongoose.Schema(
 )
 
 // Hacher le mot de passe avant chaque sauvegarde
-UserSchema.pre('save', async function () {
+UserSchema.pre('save', async function ()
+{
   if (!this.isModified('password') || !this.password) return
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
 })
 
 // Comparer les mots de passe lors du login
-UserSchema.methods.comparePassword = async function (candidatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword)
+{
   if (!this.password) return false
   return bcrypt.compare(candidatePassword, this.password)
 }

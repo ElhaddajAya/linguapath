@@ -4,6 +4,13 @@
 //   - 4 questions par niveau = 24 questions au total (même précision qu'avant)
 //   - Pool de 6 questions par niveau → C(6,4) = 15 combinaisons possibles
 //   - Seuil à 60% (était 50%) → niveau plus précis et crédible
+//
+// Important : pour que le niveau soit réellement mesurable dans le temps, on garde historique 
+// des niveaux précédents dans le profil utilisateur. 
+// Cela permet de savoir si l'utilisateur a progressé ou régressé, et à quelle date.
+//   - Quand l'utilisateur repasse le quiz, on archive l'ancien niveau dans
+//     langueExistante.historique AVANT de l'écraser, pour garder une trace
+//     de sa progression réelle dans le temps (cf. champ ajouté dans User.js).
 
 const Quiz = require('../models/Quiz')
 const User = require('../models/User')
@@ -117,7 +124,17 @@ const saveResult = async (req, res) =>
 
         if (langueExistante)
         {
-            langueExistante.niveau = niveauFinal  // mise à jour
+            // ── Archivage avant écrasement ──────────────────────────
+            // On garde une trace de l'ancien niveau + la date du passage précédent,
+            // pour que la progression (ex: A2 → B1) soit réellement mesurable en base,
+            // pas seulement remplacée silencieusement.
+            langueExistante.historique = langueExistante.historique || []
+            langueExistante.historique.push({
+                niveau: langueExistante.niveau,
+                date: new Date(),
+            })
+
+            langueExistante.niveau = niveauFinal  // mise à jour du niveau actuel
         } else
         {
             user.langues.push({ langue, niveau: niveauFinal })  // nouvelle langue
