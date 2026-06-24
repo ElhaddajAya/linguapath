@@ -132,6 +132,8 @@ Exemples pour l'Anglais :
   ❌ "bit" (meaning "but") → ✅ "but" — typo, wrong letter.
   ❌ "thier" → ✅ "their" — spelling error.
   ❌ "i nedd" → ✅ "I need" — "i" must be capitalised + spelling error.
+  ❌ "I have headache" → ✅ "I have a headache" — missing article "a".
+  ❌ "She is doctor" → ✅ "She is a doctor" — missing article "a".
   NOTE: keyboard typos (wrong/missing letter) are ALWAYS spelling errors — correct them even in informal messages.`,
 
     'Français': `
