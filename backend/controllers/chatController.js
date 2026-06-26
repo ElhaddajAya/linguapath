@@ -215,6 +215,7 @@ ${estLangueNonLatine ? `Le message est en romanisation (lettres a-z) ou en alpha
    ❌ ABSOLUMENT INTERDIT : suggérer à l'apprenant "d'écrire en [alphabet natif]".
    ❌ ABSOLUMENT INTERDIT : écrire "한글로 써야 해요" ou toute phrase équivalente.
    Si la romanisation est phonétiquement correcte → AUCUNE CORRECTION. Silence total.
+   
 ${regleSaisie}
 → ALPHABET NATIF DÉTECTÉ : cherche toutes les erreurs orthographiques et grammaticales.` :
                 `Cherche les erreurs réelles dans le message.`}
@@ -317,6 +318,8 @@ VOCABULAIRE ADAPTÉ AU NIVEAU — exemples concrets :
 ✅ "really painful", "help with the pain", "check if something is wrong" → naturel pour B2
 ❌ "I'd like to examine further to rule out any underlying conditions" → trop formel, trop long
 ✅ "Let me take a closer look. Where exactly does it hurt?" → naturel, court, efficace
+
+À APPLIQUER POUR TOUTES LES LANGUES — même si le vocabulaire est différent, la longueur et la complexité doivent correspondre au niveau ${niveauUser}.
 
 ════════════════════════════════════════════════════════
 RÈGLE LANGUE
