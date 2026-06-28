@@ -1,10 +1,18 @@
 // Page affichant toutes les phrases apprises par l'utilisateur.
 // Fonctionnalités : filtres, ajout manuel, suppression.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/NavBar";
-import { BookOpen, Plus, X, Bot, PenLine, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Plus,
+  X,
+  Bot,
+  PenLine,
+  Trash2,
+  ChevronDown,
+} from "lucide-react";
 import api from "../services/api";
 import { useLangue } from "../contexts/LangueContext";
 
@@ -105,6 +113,28 @@ export default function LearningLog() {
     theme: "",
     pattern: "",
   });
+
+  // ─ State : menu déroulant du champ pattern (ouvert ou fermé)
+  const [patternMenuOuvert, setPatternMenuOuvert] = useState(false);
+  // ─ Ref : pointe vers le bloc du champ pattern, pour détecter les clics en dehors
+  const patternMenuRef = useRef(null);
+
+  // ── Fermeture automatique du menu pattern ──────────────────
+  // Si l'utilisateur clique n'importe où en dehors du champ pattern,
+  // on ferme le menu déroulant (comportement classique d'un vrai select).
+  useEffect(() => {
+    const fermerSiClicDehors = (e) => {
+      if (
+        patternMenuRef.current &&
+        !patternMenuRef.current.contains(e.target)
+      ) {
+        setPatternMenuOuvert(false);
+      }
+    };
+    document.addEventListener("mousedown", fermerSiClicDehors);
+    // Nettoyage : on retire l'écouteur quand le composant est démonté
+    return () => document.removeEventListener("mousedown", fermerSiClicDehors);
+  }, []);
 
   // ─ State : langues de l'utilisateur
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -482,33 +512,79 @@ export default function LearningLog() {
               </select>
             </div>
 
-            {/* Champ : pattern grammatical (optionnel) — propose les patterns déjà utilisés */}
-            <div className='flex flex-col gap-1.5'>
+            {/* Champ : pattern grammatical (optionnel) */}
+            {/* Menu déroulant "maison" — différent d'un <datalist> :
+                - on contrôle nous-mêmes l'ouverture/fermeture (state patternMenuOuvert)
+                - clic sur la flèche ou sur le champ → ouvre la liste des patterns déjà utilisés
+                - clic sur un pattern de la liste → le sélectionne et ferme le menu
+                - l'utilisateur peut aussi juste taper du texte pour créer un nouveau pattern
+                - clic en dehors du champ → ferme le menu (géré par le useEffect plus haut) */}
+            <div
+              className='flex flex-col gap-1.5 relative'
+              ref={patternMenuRef}
+            >
               <label className='text-xs font-medium text-warm-600'>
                 {t("learningLog.patternLabel")}
               </label>
-              <input
-                type='text'
-                list='patterns-existants'
-                value={form.pattern}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, pattern: e.target.value }))
-                }
-                placeholder={t("learningLog.patternPlaceholder")}
-                className='px-4 py-2.5 rounded-xl border border-warm-200
-                               text-sm text-warm-900 bg-warm-50
-                               focus:outline-none focus:border-orange-300
-                               placeholder:text-warm-300'
-              />
-              {/* Suggestions natives du navigateur — l'utilisateur peut choisir un pattern existant OU taper un nouveau */}
-              <datalist id='patterns-existants'>
-                {patternsPourLangue.map((p) => (
-                  <option
-                    key={p}
-                    value={p}
+
+              {/* Champ texte + bouton flèche, dans un conteneur relatif pour positionner la flèche dedans */}
+              <div className='relative'>
+                <input
+                  type='text'
+                  value={form.pattern}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, pattern: e.target.value }))
+                  }
+                  onFocus={() => setPatternMenuOuvert(true)}
+                  placeholder={t("learningLog.patternPlaceholder")}
+                  className='w-full px-4 py-2.5 pr-10 rounded-xl border border-warm-200
+                                 text-sm text-warm-900 bg-warm-50
+                                 focus:outline-none focus:border-orange-300
+                                 placeholder:text-warm-300'
+                />
+                {/* Flèche cliquable — ouvre/ferme le menu, comme un vrai select */}
+                <button
+                  type='button'
+                  onClick={() => setPatternMenuOuvert((o) => !o)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-warm-400 hover:text-warm-600'
+                >
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${patternMenuOuvert ? "rotate-180" : ""}`}
                   />
-                ))}
-              </datalist>
+                </button>
+              </div>
+
+              {/* Liste déroulante — affichée seulement si patternMenuOuvert est vrai */}
+              {patternMenuOuvert && (
+                <div
+                  className='absolute z-20 top-full mt-1 w-full max-h-48 overflow-y-auto
+                                 bg-white border border-warm-200 rounded-xl shadow-soft py-1'
+                >
+                  {patternsPourLangue.length > 0 ? (
+                    // Un bouton par pattern existant — clic = sélection directe
+                    patternsPourLangue.map((p) => (
+                      <button
+                        type='button'
+                        key={p}
+                        onClick={() => {
+                          setForm((f) => ({ ...f, pattern: p }));
+                          setPatternMenuOuvert(false);
+                        }}
+                        className='w-full text-left px-4 py-2 text-sm text-warm-700
+                                       hover:bg-orange-50 hover:text-orange-600 transition-colors'
+                      >
+                        {p}
+                      </button>
+                    ))
+                  ) : (
+                    // Aucun pattern existant pour cette langue → message d'aide
+                    <p className='px-4 py-2 text-sm text-warm-400 italic'>
+                      {t("learningLog.noPatternYet")}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Champ : thème (optionnel) */}
