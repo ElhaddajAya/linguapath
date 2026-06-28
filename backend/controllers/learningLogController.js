@@ -182,7 +182,7 @@ Extract up to 5 useful phrases following all the rules above.`
             'gpt-4o-mini'
         )
 
-        // 5. Parser le JSON retourné par Groq
+        // 5. Parser le JSON retourné par OpenAI — on s'attend à un tableau d'objets { phrase, traduction, pattern }
         let phrasesExtraites = []
         try
         {
@@ -289,7 +289,7 @@ const getLearningLog = async (req, res) =>
 // Ajoute manuellement une phrase au Learning Log
 const ajouterPhraseManuelle = async (req, res) =>
 {
-    const { phrase, traduction, langue, theme } = req.body
+    const { phrase, traduction, langue, theme, pattern } = req.body
 
     if (!phrase || !traduction || !langue)
     {
@@ -308,6 +308,7 @@ const ajouterPhraseManuelle = async (req, res) =>
             langue,
             niveau: niveauUser,
             theme: theme || 'Général',
+            pattern: pattern?.trim() || 'Général',
             scenarioTitre: 'Ajout manuel',
             source: 'manuel',
         })

@@ -103,6 +103,7 @@ export default function LearningLog() {
     traduction: "",
     langue: "",
     theme: "",
+    pattern: "",
   });
 
   // ─ State : langues de l'utilisateur
@@ -162,11 +163,18 @@ export default function LearningLog() {
         traduction: form.traduction.trim(),
         langue: form.langue,
         theme: form.theme || "Général",
+        pattern: form.pattern.trim() || "Général",
       });
       // Ajouter la nouvelle entrée en haut de la liste
       setEntries((prev) => [res.data.entry, ...prev]);
       // Réinitialiser le formulaire et fermer le modal
-      setForm({ phrase: "", traduction: "", langue: "", theme: "" });
+      setForm({
+        phrase: "",
+        traduction: "",
+        langue: "",
+        theme: "",
+        pattern: "",
+      });
       setShowModal(false);
     } catch (err) {
       console.error("Erreur ajout :", err.message);
@@ -184,6 +192,19 @@ export default function LearningLog() {
   };
 
   const filtresActifs = filtreLangue || filtreTheme || filtreNiveau;
+
+  // Patterns déjà utilisés pour la langue sélectionnée dans le formulaire
+  // (recalculé automatiquement à chaque fois que form.langue ou entries change)
+  const patternsPourLangue = [
+    ...new Set(
+      entries
+        .filter(
+          (e) =>
+            e.langue === form.langue && e.pattern && e.pattern !== "Général",
+        )
+        .map((e) => e.pattern),
+    ),
+  ];
 
   // ── Rendu ────────────────────────────────────────────────
 
@@ -459,6 +480,35 @@ export default function LearningLog() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Champ : pattern grammatical (optionnel) — propose les patterns déjà utilisés */}
+            <div className='flex flex-col gap-1.5'>
+              <label className='text-xs font-medium text-warm-600'>
+                {t("learningLog.patternLabel")}
+              </label>
+              <input
+                type='text'
+                list='patterns-existants'
+                value={form.pattern}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, pattern: e.target.value }))
+                }
+                placeholder={t("learningLog.patternPlaceholder")}
+                className='px-4 py-2.5 rounded-xl border border-warm-200
+                               text-sm text-warm-900 bg-warm-50
+                               focus:outline-none focus:border-orange-300
+                               placeholder:text-warm-300'
+              />
+              {/* Suggestions natives du navigateur — l'utilisateur peut choisir un pattern existant OU taper un nouveau */}
+              <datalist id='patterns-existants'>
+                {patternsPourLangue.map((p) => (
+                  <option
+                    key={p}
+                    value={p}
+                  />
+                ))}
+              </datalist>
             </div>
 
             {/* Champ : thème (optionnel) */}
