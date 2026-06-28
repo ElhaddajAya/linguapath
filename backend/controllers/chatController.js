@@ -260,7 +260,8 @@ signaler, pas seulement la première. Relis le message UNE DEUXIÈME FOIS après
 analyse, pour vérifier qu'aucune erreur n'a été oubliée.
 
 EXEMPLE — message avec 2 erreurs : "I have headache and I am very tire"
-✅ CORRECT : 💡 Correction : "I have headache" → "I have a headache" — missing article "a".
+✅ CORRECT : 
+💡 Correction : "I have headache" → "I have a headache" — missing article "a".
 💡 Correction : "tire" → "tired" — spelling, missing 'd'.
 [puis réplique du personnage]
 ❌ INCORRECT : corriger seulement "tire" et ignorer "I have headache", ou inversement.
