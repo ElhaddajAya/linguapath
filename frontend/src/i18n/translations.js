@@ -97,6 +97,8 @@ const translations = {
         translationLabel: { fr: 'Traduction en français *', en: 'French translation *' },
         languageLabel: { fr: 'Langue *', en: 'Language *' },
         chooseLanguage: { fr: 'Choisir une langue', en: 'Choose a language' },
+        patternLabel: { fr: 'Pattern grammatical (optionnel)', en: 'Grammar pattern (optional)' },
+        patternPlaceholder: { fr: 'Ex: I have..., Tengo..., ...주세요', en: 'e.g. I have..., Tengo..., ...주세요' },
         themeLabel: { fr: 'Thème (optionnel)', en: 'Theme (optional)' },
         themePlaceholder: { fr: 'Ex: Restaurant, Voyage, Travail...', en: 'e.g. Restaurant, Travel, Work...' },
         cancel: { fr: 'Annuler', en: 'Cancel' },
