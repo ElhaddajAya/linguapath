@@ -71,8 +71,15 @@ const niveauInstructions = {
 
 const reglesSaisie = {
     'Coréen': `
-  CORÉEN — RÈGLE ABSOLUE : si l'apprenant écrit en lettres latines (romanisation), NE JAMAIS corriger vers le Hangul.
-  Peu importe que le mot existe en Hangul — si c'est écrit en latin, c'est INTENTIONNEL. La seule correction permise est une faute PHONÉTIQUE (mauvaise lettre).
+  CORÉEN — RÈGLE ABSOLUE N°1, LA PLUS IMPORTANTE : si l'apprenant écrit en lettres latines (romanisation)
+  ET que cette romanisation est PHONÉTIQUEMENT CORRECTE, tu NE CORRIGES RIEN. Tu ne convertis JAMAIS vers le Hangul.
+  Peu importe que le mot existe en Hangul — si c'est écrit en latin ET phonétiquement correct, c'est INTENTIONNEL et CORRECT.
+  La SEULE correction permise sur une romanisation est une vraie faute PHONÉTIQUE (mauvaise lettre/son) — jamais une conversion d'alphabet.
+
+  ⚠️ RAPPEL CRITIQUE : avant de "corriger" quoi que ce soit en romanisation, demande-toi TOUJOURS :
+  "Est-ce que cette suite de lettres latines correspond à du coréen phonétiquement correct ?"
+  → OUI → AUCUNE correction, AUCUNE conversion vers le Hangul. Silence total sur ce point.
+  → NON, il y a vraiment un son/lettre faux → corrige UNIQUEMENT le son fautif, reste en romanisation.
 
   CAS CONCRETS INTERDITS :
   ❌ INTERDIT : "gyeongbokgung-e" → "경복궁에"   (romanisation correcte — NE PAS TOUCHER)
@@ -81,6 +88,12 @@ const reglesSaisie = {
   ❌ INTERDIT : "yag-eul juseyo" → "약을 주세요" (romanisation correcte — NE PAS TOUCHER)
   ❌ INTERDIT : "baega appayo" → "배가 아파요"   (romanisation correcte — NE PAS TOUCHER)
   ❌ INTERDIT : "hanguk-e gago sipeoyo" → "한국에 가고 싶어요" (romanisation correcte — NE PAS TOUCHER)
+
+  ⚠️ STRUCTURES COMPOSÉES (honorifique 시 + modal "pouvoir faire" 수 있다 empilés) — cas piège :
+  Ces formes semblent complexes mais sont VALIDES et NE DOIVENT JAMAIS être "simplifiées" ou converties.
+  ❌ INTERDIT : "jushilsu isseoyo" → "주시 수 있어요" (FAUX EN PLUS — il manque le ㄹ qui relie 시 à 수 있다)
+  ✅ "jushilsu isseoyo" est déjà 100% correct (= 주실 수 있어요). NE PAS TOUCHER, NE PAS CONVERTIR.
+  ✅ Même logique, toutes valides : "dowajushilsu isseoyo" (도와주실 수 있어요?), "allyeojushilsu isseoyo" (알려주실 수 있어요?), "bogeojushilsu isseoyo" (보여주실 수 있어요?)
 
   CAS VALIDES (fautes phonétiques uniquement) :
   ✅ VALIDE   : "gamsahamnidda" → "gamsahamnida" — 'd' double incorrect
@@ -150,7 +163,8 @@ Exemples pour l'Allemand :
 Exemples pour le Coréen (romanisation) :
   ❌ "gamsahamnidda" → ✅ "gamsahamnida" — "다"로 끝나야 해요.
   ❌ "annyeonghaseiyo" → ✅ "annyeonghaseyo" — "세요"가 맞아요.
-  ✅ "annyeonghaseyo", "baega appayo" → 맞아요, 수정하지 마세요.`,
+  ✅ "annyeonghaseyo", "baega appayo" → 맞아요, 수정하지 마세요.
+  ✅ "jushilsu isseoyo", "dowajushilsu isseoyo" → 맞아요 (시+ㄹ+수 있다 구조), 한글로 바꾸지 마세요.`,
 
     'Japonais': `
 Exemples pour le Japonais (romaji) :
@@ -222,7 +236,7 @@ ${regleSaisie}
 
 QU'EST-CE QU'UNE VRAIE ERREUR ? — RÈGLE FONDAMENTALE
 
-✅ TOUJOURS CORRIGER — sans exception :
+✅ TOUJOURS CORRIGER — sans exception (pour toutes les langues) :
   - Faute d'orthographe : "moorning" → "morning", "stomache" → "stomach"
   - Conjugaison incorrecte : "give" → "gave", "I have went" → "I have gone", "yesterday I go" → "I went"
   - Accord incorrect : "She don't" → "She doesn't", "un mesa" → "una mesa"
@@ -269,6 +283,8 @@ S'il y a UNE SEULE erreur :
 S'il y a PLUSIEURS erreurs dans le même message, corrige-les TOUTES, une ligne par erreur :
 💡 Correction : "[erreur 1]" → "[correct 1]" — [explication max 8 mots]
 💡 Correction : "[erreur 2]" → "[correct 2]" — [explication max 8 mots]
+💡 Correction : "[erreur 3]" → "[correct 3]" — [explication max 8 mots]
+...
 
 ❌ INTERDIT : corriger seulement la première erreur trouvée et ignorer les autres.
 ❌ INTERDIT : s'arrêter après une seule correction si le message en contient plusieurs.
