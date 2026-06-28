@@ -1,6 +1,6 @@
 // quizSeeder.js — VERSION 2
 // Questions en français, contenu dans la langue cible
-// Pool de 4 questions par niveau → sélection aléatoire de 2 par session
+// Pool de 4 questions par niveau → ordre aléatoire des questions
 // Commande : node backend/seeders/quizSeeder.js
 
 require('dotenv').config()

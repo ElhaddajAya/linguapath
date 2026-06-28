@@ -1,9 +1,9 @@
-// Logique du quiz d'évaluation — VERSION 2
+// Logique du quiz d'évaluation de niveau CECRL
 // Changements vs v1 :
 //   - $sample MongoDB = tirage ALÉATOIRE (pas toujours les mêmes questions)
 //   - 4 questions par niveau = 24 questions au total (même précision qu'avant)
 //   - Pool de 6 questions par niveau → C(6,4) = 15 combinaisons possibles
-//   - Seuil à 60% (était 50%) → niveau plus précis et crédible
+//   - Seuil à 75% (était 50%) → niveau plus précis et crédible (3 qsts sur 4 au lieu de 2 sur 4)
 //
 // Important : pour que le niveau soit réellement mesurable dans le temps, on garde historique 
 // des niveaux précédents dans le profil utilisateur. 
@@ -16,7 +16,7 @@ const Quiz = require('../models/Quiz')
 const User = require('../models/User')
 
 // ── GET /api/quiz/:langue ──
-// Retourne 24 questions pour la langue demandée (4 par niveau, tirées au hasard)
+// Retourne 24 questions pour la langue demandée (4 par niveau, ordre aléatoire)
 const getQuestions = async (req, res) =>
 {
     const { langue } = req.params
@@ -32,7 +32,8 @@ const getQuestions = async (req, res) =>
             // Avec 6 questions disponibles et size:4 → 15 combinaisons différentes par niveau
             const q = await Quiz.aggregate([
                 { $match: { langue, niveau } },   // filtre par langue + niveau
-                { $sample: { size: 4 } }           // tire 4 questions au hasard
+                { $sample: { size: 4 } }          // tire 4 questions au hasard 
+                // (on sait pas combien il y a dans la base -> on peut ajouter plus de questions plus tard pour plus de variété)
             ])
 
             // Supprimer la bonne réponse avant d'envoyer au frontend
@@ -98,7 +99,7 @@ const saveResult = async (req, res) =>
         // On monte de A1 vers C2 : on valide un niveau si score >= 60%
         // Au premier échec → on s'arrête (niveau trop difficile)
         // Exemple : A1 ✅ A2 ✅ B1 ✅ B2 ❌ → niveau B1
-        const SEUIL_REUSSITE = 0.60  // 60% = au moins 3/4 bonnes réponses par niveau
+        const SEUIL_REUSSITE = 0.75  // 75% = au moins 3/4 bonnes réponses par niveau
         const niveaux = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
         let niveauFinal = 'A1'  // valeur par défaut si tout est raté
 
