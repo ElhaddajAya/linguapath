@@ -565,6 +565,21 @@ function appliquerFiltre(
   onSelectTheme,
   onSelectPattern,
 ) {
+  // Pré-calcul : quels thèmes (dans la langue sélectionnée) contiennent au
+  // moins une phrase qui correspond au pattern sélectionné. Utile dans la
+  // vue "pattern" pour garder le focus même sur les thèmes "secondaires"
+  // qui partagent ce même pattern, pas seulement le thème d'origine.
+  const themesAvecPatternSel = new Set(
+    nodesBase
+      .filter(
+        (n) =>
+          n.type === "phraseNode" &&
+          n.data.langueKey === langSel &&
+          n.data.patternKey === patSel,
+      )
+      .map((n) => n.data.themeKey),
+  );
+
   const nodesFiltrés = nodesBase.map((node) => {
     const d = node.data;
     let dimmed = false;
@@ -594,7 +609,13 @@ function appliquerFiltre(
         selected = d.langueKey === langSel && d.themeKey === themeSel;
         dimmed = !selected;
       } else if (vue === "pattern") {
-        dimmed = !(d.langueKey === langSel && d.themeKey === themeSel);
+        // Avant : seul le thème d'origine restait débloqué.
+        // Maintenant : on débloque aussi tout thème qui partage ce pattern.
+        const estThemeOrigine =
+          d.langueKey === langSel && d.themeKey === themeSel;
+        const partageCePattern =
+          d.langueKey === langSel && themesAvecPatternSel.has(d.themeKey);
+        dimmed = !(estThemeOrigine || partageCePattern);
       }
     }
 
@@ -612,10 +633,11 @@ function appliquerFiltre(
           ? () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey)
           : undefined;
       } else if (vue === "pattern") {
-        selected =
-          d.langueKey === langSel &&
-          d.themeKey === themeSel &&
-          d.patternKey === patSel;
+        // Avant : il fallait aussi que themeKey corresponde exactement,
+        // donc la copie de ce pattern dans un AUTRE thème restait grisée.
+        // Maintenant : on ne regarde que la langue + le texte du pattern,
+        // comme pour les phrases — ça débloque toutes les copies de ce pattern.
+        selected = d.langueKey === langSel && d.patternKey === patSel;
         dimmed = !selected;
         onClick = () => onSelectPattern(d.langueKey, d.themeKey, d.patternKey);
       }
