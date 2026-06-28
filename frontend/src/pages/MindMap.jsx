@@ -541,7 +541,10 @@ function construireArbreComplet(entries, phraseLabelFn) {
             source: patternId,
             target: phraseId,
             type: "smoothstep",
-            style: { stroke: "#D1D5DB", strokeWidth: 1 },
+            // Avant : "#D1D5DB" (gris très clair), puis "#9CA3AF" (gris moyen)
+            // — encore trop proche du gris une fois grisé à 15% d'opacité.
+            // On fonce davantage pour un écart net entre allumé et grisé.
+            style: { stroke: "#6B7280", strokeWidth: 1.4 },
           });
         });
       });
@@ -667,7 +670,9 @@ function appliquerFiltre(
     style: {
       ...edge.style,
       opacity:
-        dimmedIds.has(edge.source) || dimmedIds.has(edge.target) ? 0.15 : 1,
+        // Avant : 0.15 — pas assez bas pour bien distinguer une ligne
+        // allumée d'une ligne grisée, surtout sur le niveau pattern→phrase.
+        dimmedIds.has(edge.source) || dimmedIds.has(edge.target) ? 0.08 : 1,
     },
   }));
 
