@@ -242,6 +242,8 @@ QU'EST-CE QU'UNE VRAIE ERREUR ? — RÈGLE FONDAMENTALE
   - Accord incorrect : "She don't" → "She doesn't", "un mesa" → "una mesa"
   - Majuscule manquante sur pronom : "i am" → "I am"
   - Mot grammaticalement mal utilisé
+  - Mot manquant nécessaire à la grammaire (article, préposition, auxiliaire...) :
+    "I have headache" → "I have a headache", "She is doctor" → "She is a doctor"
 
 ❌ NE JAMAIS CORRIGER — laisser l'apprenant s'exprimer librement :
   - Style personnel, registre informel, expressions idiomatiques
