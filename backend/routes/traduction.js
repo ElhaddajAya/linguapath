@@ -1,239 +1,419 @@
-// Route dédiée à la romanisation ET traduction française
-// Utilise Groq (LLaMA 3.3 70B) — 14 400 req/jour gratuit
+// src/i18n/translations.js
+// Toutes les traductions de l'interface LinguaTalk — FR / EN
+// Utilisation : t('clé') → retourne le texte dans la langue active
 
-const express = require('express')
+const translations = {
 
-// Répare le JSON malformé que les LLMs produisent parfois :
-// - vrais sauts de ligne à l'intérieur des strings → \n
-// - séquences d'échappement invalides (ex: \→, \—) → backslash doublé
-const VALID_ESCAPES = new Set(['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'])
-function repairJson(str)
-{
-    let out = ''
-    let inStr = false
-    for (let i = 0; i < str.length; i++)
-    {
-        const c = str[i]
-        if (c === '\\' && inStr)
-        {
-            const next = str[i + 1]
-            if (VALID_ESCAPES.has(next))
-            {
-                // Séquence d'échappement valide — on la garde telle quelle
-                out += c + next
-                i++
-            } else
-            {
-                // Mauvais caractère échappé (ex: \→, \—) — on échappe le backslash
-                out += '\\\\'
-            }
-            continue
-        }
-        if (c === '"') inStr = !inStr
-        else if (inStr && c === '\n') { out += '\\n'; continue }
-        else if (inStr && c === '\r') { out += '\\r'; continue }
-        else if (inStr && c === '\t') { out += '\\t'; continue }
-        out += c
-    }
-    return out
+    // ── NAVBAR ────────────────────────────────────────────────────
+    nav: {
+        home: { fr: 'Accueil', en: 'Home' },
+        scenarios: { fr: 'Scénarios', en: 'Scenarios' },
+        learning: { fr: 'Learning Log', en: 'Learning Log' },
+        mindmap: { fr: 'MindMap', en: 'MindMap' },
+        history: { fr: 'Historique', en: 'History' },
+        profile: { fr: 'Profil', en: 'Profile' },
+        logout: { fr: 'Déconnexion', en: 'Logout' },
+        admin: { fr: 'Admin', en: 'Admin' },
+    },
+
+    // ── HOME ──────────────────────────────────────────────────────
+    home: {
+        greeting: { fr: 'Bonjour', en: 'Hello' },
+        subtitle: { fr: 'Prête à pratiquer aujourd\'hui ?', en: 'Ready to practice today?' },
+        level: { fr: 'Niveau', en: 'Level' },
+        practice: { fr: 'Pratiquer →', en: 'Practice →' },
+        addLanguage: { fr: 'Ajouter une nouvelle langue', en: 'Add a new language' },
+        noLanguage: { fr: 'Quelle langue veux-tu pratiquer ?', en: 'Which language do you want to practice?' },
+        noLanguageSub: { fr: 'Choisis une langue et on évalue ton niveau en 2 minutes.', en: 'Choose a language and we\'ll assess your level in 2 minutes.' },
+        start: { fr: 'Commencer', en: 'Get started' },
+        dashboard: { fr: 'Tableau de bord', en: 'Dashboard' },
+        adminSubtitle: { fr: 'Espace administrateur — gestion de la plateforme LinguaTalk', en: 'Admin space — LinguaTalk platform management' },
+        manageUsers: { fr: 'Gestion des utilisateurs', en: 'User management' },
+        manageUsersSub: { fr: 'Consulter la liste des apprenants inscrits, voir leurs langues et niveaux, activer ou désactiver un compte.', en: 'View the list of registered learners, see their languages and levels, activate or deactivate an account.' },
+        seeUsers: { fr: 'Voir les utilisateurs', en: 'View users' },
+        manageScenarios: { fr: 'Gestion des scénarios', en: 'Scenario management' },
+        manageScenariosSub: { fr: 'Créer, modifier et supprimer les scénarios de conversation disponibles sur la plateforme.', en: 'Create, edit and delete conversation scenarios available on the platform.' },
+        seeScenarios: { fr: 'Gérer les scénarios', en: 'Manage scenarios' },
+    },
+
+    // ── SCENARIOS ─────────────────────────────────────────────────
+    scenarios: {
+        title: { fr: 'Choisir un scénario', en: 'Choose a scenario' },
+        level: { fr: 'Niveau actuel en', en: 'Current level in' },
+        empty: { fr: 'Aucun scénario disponible pour ce niveau', en: 'No scenarios available for this level' },
+        emptySub: { fr: 'De nouveaux scénarios seront ajoutés bientôt.', en: 'New scenarios will be added soon.' },
+        levels: { fr: 'Niveaux', en: 'Levels' },
+        practice: { fr: 'Pratiquer →', en: 'Practice →' },
+        addLang: { fr: '+ Pratiquer une autre langue', en: '+ Practice another language' },
+        error: { fr: 'Impossible de charger les scénarios', en: 'Unable to load scenarios' },
+    },
+
+    // ── CHAT ──────────────────────────────────────────────────────
+    chat: {
+        end: { fr: 'Terminer', en: 'End session' },
+        placeholder: { fr: 'Écris ton message...', en: 'Write your message...' },
+        loading: { fr: 'Préparation de la conversation...', en: 'Preparing the conversation...' },
+        translation: { fr: 'Traduction', en: 'Translation' },
+        romanisation: { fr: 'Romanisation & traduction', en: 'Romanization & translation' },
+        hide: { fr: 'Masquer', en: 'Hide' },
+        micListening: { fr: 'Écoute en cours... Parle maintenant', en: 'Listening... Speak now' },
+        micError: { fr: 'Micro non disponible — vérifie les permissions du navigateur', en: 'Microphone unavailable — check browser permissions' },
+        unavailable: { fr: 'Indisponible.', en: 'Unavailable.' },
+        error: { fr: '❌ Erreur de connexion. Réessaie.', en: '❌ Connection error. Please try again.' },
+        welcomeFallback: { fr: '👋 Bonjour ! Je suis prêt(e) pour notre conversation.', en: '👋 Hello! I\'m ready for our conversation.' },
+        micStop: { fr: 'Arrêter', en: 'Stop' },
+        micStart: { fr: 'Parler', en: 'Speak' },
+        confirmTitle: { fr: 'Quitter la conversation ?', en: 'Leave the conversation?' },
+        confirmBody: { fr: 'Tu n\'as pas encore terminé cette session. Veux-tu enregistrer la conversation avant de quitter ?', en: 'You haven\'t ended this session yet. Do you want to save the conversation before leaving?' },
+        confirmSave: { fr: 'Enregistrer et quitter', en: 'Save and leave' },
+        confirmDiscard: { fr: 'Quitter sans enregistrer', en: 'Leave without saving' },
+        confirmCancel: { fr: 'Annuler', en: 'Cancel' },
+    },
+
+    // ── LEARNING LOG ──────────────────────────────────────────────
+    learningLog: {
+        title: { fr: 'Learning Log', en: 'Learning Log' },
+        searchPlaceholder: { fr: 'Rechercher une phrase ou sa traduction...', en: 'Search a phrase or its translation...' },
+        phrases: { fr: 'phrases apprises', en: 'learned phrases' },
+        phrase: { fr: 'phrase apprise', en: 'learned phrase' },
+        addPhrase: { fr: 'Ajouter une phrase', en: 'Add a phrase' },
+        add: { fr: 'Ajouter', en: 'Add' },
+        language: { fr: 'Langue', en: 'Language' },
+        all: { fr: 'Toutes', en: 'All' },
+        theme: { fr: 'Thème', en: 'Theme' },
+        allThemes: { fr: 'Tous', en: 'All' },
+        level: { fr: 'Niveau', en: 'Level' },
+        allLevels: { fr: 'Tous', en: 'All' },
+        reset: { fr: 'Effacer les filtres', en: 'Clear filters' },
+        empty: { fr: 'Aucune phrase pour ces filtres', en: 'No phrases for these filters' },
+        emptyNoFilter: { fr: 'Aucune phrase apprise pour l\'instant', en: 'No learned phrases yet' },
+        emptyFilters: { fr: 'Essaie de modifier tes filtres', en: 'Try changing your filters' },
+        emptySub: { fr: 'Lance une conversation pour commencer à apprendre !', en: 'Start a conversation to begin learning!' },
+        goScenario: { fr: 'Choisir un scénario', en: 'Choose a scenario' },
+        auto: { fr: 'Auto', en: 'Auto' },
+        manual: { fr: 'Manuel', en: 'Manual' },
+        delete: { fr: 'Supprimer', en: 'Delete' },
+        confirm: { fr: 'Supprimer cette phrase ?', en: 'Delete this phrase?' },
+        phraseLabel: { fr: 'Phrase (dans la langue cible) *', en: 'Phrase (in target language) *' },
+        translationLabel: { fr: 'Traduction en français *', en: 'French translation *' },
+        languageLabel: { fr: 'Langue *', en: 'Language *' },
+        chooseLanguage: { fr: 'Choisir une langue', en: 'Choose a language' },
+        patternLabel: { fr: 'Pattern grammatical (optionnel)', en: 'Grammar pattern (optional)' },
+        patternPlaceholder: { fr: 'Ex: I have..., Tengo..., ...주세요', en: 'e.g. I have..., Tengo..., ...주세요' },
+        noPatternYet: { fr: 'Aucun pattern existant pour cette langue — tapez-en un nouveau ci-dessus.', en: 'No existing pattern for this language — type a new one above.' },
+        themeLabel: { fr: 'Thème (optionnel)', en: 'Theme (optional)' },
+        themePlaceholder: { fr: 'Ex: Restaurant, Voyage, Travail...', en: 'e.g. Restaurant, Travel, Work...' },
+        cancel: { fr: 'Annuler', en: 'Cancel' },
+        adding: { fr: 'Ajout...', en: 'Adding...' },
+        savePhrase: { fr: 'Ajouter', en: 'Add phrase' },
+    },
+
+    // ── MINDMAP ───────────────────────────────────────────────────
+    mindmap: {
+        title: { fr: 'MindMap', en: 'MindMap' },
+        phrases: { fr: 'organisées par langue → thème → pattern', en: 'organized by language → theme → pattern' },
+        export: { fr: 'Exporter PNG', en: 'Export PNG' },
+        allLanguages: { fr: 'Toutes les langues', en: 'All languages' },
+        empty: { fr: 'Aucune phrase à visualiser', en: 'No phrases to visualize' },
+        emptySub: { fr: 'Lance une conversation pour commencer à apprendre !', en: 'Start a conversation to begin learning!' },
+        goScenario: { fr: 'Choisir un scénario', en: 'Choose a scenario' },
+        legend: { fr: 'Légende', en: 'Legend' },
+        root: { fr: 'Racine', en: 'Root' },
+        language: { fr: 'Langue (cliquable)', en: 'Language (clickable)' },
+        theme: { fr: 'Thème (cliquable)', en: 'Theme (clickable)' },
+        pattern: { fr: 'Pattern (cliquable partout)', en: 'Pattern (clickable anywhere)' },
+        phrase: { fr: 'Phrase', en: 'Phrase' },
+        clickPhrase: { fr: 'Clique sur une phrase pour les détails', en: 'Click a phrase for details' },
+        selected: { fr: 'Phrase sélectionnée', en: 'Selected phrase' },
+        translation: { fr: 'Traduction', en: 'Translation' },
+        pattern2: { fr: 'Pattern', en: 'Pattern' },
+        seeInLog: { fr: 'Voir dans le Learning Log', en: 'View in Learning Log' },
+        back: { fr: 'Retour', en: 'Back' },
+        hint1: { fr: '— clique sur une langue ou un pattern pour zoomer', en: '— click a language or pattern to zoom in' },
+        hint2: { fr: '— clique sur un thème ou un pattern pour voir les phrases', en: '— click a theme or pattern to see phrases' },
+        hint3: { fr: '— clique sur un pattern pour voir ses phrases', en: '— click a pattern to see its phrases' },
+        building: { fr: 'Construction de la MindMap...', en: 'Building the MindMap...' },
+        level: { fr: 'Niveau', en: 'Level' },
+        autoExtracted: { fr: 'Extrait auto', en: 'Auto-extracted' },
+        manualAdd: { fr: 'Ajout manuel', en: 'Manual add' },
+    },
+
+    // ── HISTORIQUE ────────────────────────────────────────────────
+    history: {
+        title: { fr: 'Historique des conversations', en: 'Conversation history' },
+        total: { fr: 'conversation au total', en: 'conversation in total' },
+        totals: { fr: 'conversations au total', en: 'conversations in total' },
+        empty: { fr: 'Aucune conversation pour l\'instant', en: 'No conversations yet' },
+        emptySub: { fr: 'Lance ton premier scénario pour commencer !', en: 'Start your first scenario to begin!' },
+        goScenario: { fr: 'Choisir un scénario', en: 'Choose a scenario' },
+        preview: { fr: 'Aperçu', en: 'Preview' },
+        hidePreview: { fr: 'Masquer l\'aperçu', en: 'Hide preview' },
+        open: { fr: 'Ouvrir', en: 'Open' },
+        level: { fr: 'Niveau', en: 'Level' },
+        today: { fr: 'Aujourd\'hui', en: 'Today' },
+        yesterday: { fr: 'Hier', en: 'Yesterday' },
+        daysAgo: { fr: 'Il y a', en: '' },
+        days: { fr: 'jours', en: 'days ago' },
+        loading: { fr: 'Chargement...', en: 'Loading...' },
+    },
+
+    // ── QUIZ ──────────────────────────────────────────────────────
+    quiz: {
+        title: { fr: 'Quelle langue veux-tu pratiquer ?', en: 'Which language do you want to practice?' },
+        subtitle: { fr: 'On va évaluer ton niveau en quelques questions rapides.', en: 'We\'ll assess your level with a few quick questions.' },
+        question: { fr: 'Question', en: 'Question' },
+        dontKnow: { fr: 'Je ne sais pas', en: 'I don\'t know' },
+        validate: { fr: 'Question suivante →', en: 'Next question →' },
+        seeResult: { fr: 'Voir mon résultat', en: 'See my result' },
+        calculating: { fr: 'Calcul en cours...', en: 'Calculating...' },
+        yourLevel: { fr: 'Ton niveau en', en: 'Your level in' },
+        practice: { fr: 'Commencer à pratiquer →', en: 'Start practicing →' },
+        testAnother: { fr: 'Tester une autre langue', en: 'Test another language' },
+        error: { fr: 'Erreur lors du chargement des questions', en: 'Error loading questions' },
+        errorSubmit: { fr: 'Erreur lors de la soumission', en: 'Error submitting answers' },
+        loading: { fr: 'Chargement...', en: 'Loading...' },
+        levelDesc: {
+            A1: { fr: 'Débutant — Tu connais les bases essentielles.', en: 'Beginner — You know the essential basics.' },
+            A2: { fr: 'Élémentaire — Tu peux gérer des situations simples.', en: 'Elementary — You can handle simple situations.' },
+            B1: { fr: 'Intermédiaire — Tu t\'exprimes sur des sujets familiers.', en: 'Intermediate — You can express yourself on familiar topics.' },
+            B2: { fr: 'Intermédiaire avancé — Tu communiques avec aisance.', en: 'Upper intermediate — You communicate with ease.' },
+            C1: { fr: 'Avancé — Tu maîtrises la langue couramment.', en: 'Advanced — You speak the language fluently.' },
+            C2: { fr: 'Maîtrise — Niveau quasi-natif. Bravo !', en: 'Mastery — Near-native level. Well done!' },
+        },
+    },
+
+    // ── PROFILE ───────────────────────────────────────────────────
+    profile: {
+        title: { fr: 'Mon profil', en: 'My profile' },
+        languages: { fr: 'Langues en apprentissage', en: 'Languages in learning' },
+        noLanguage: { fr: 'Aucune langue en apprentissage pour l\'instant.', en: 'No languages in learning yet.' },
+        chooseLanguage: { fr: 'Choisir une langue', en: 'Choose a language' },
+        addLanguage: { fr: 'Ajouter une nouvelle langue', en: 'Add a new language' },
+        edit: { fr: 'Modifier le profil', en: 'Edit profile' },
+        back: { fr: 'Retour à l\'accueil', en: 'Back to home' },
+        save: { fr: 'Sauvegarder', en: 'Save' },
+        saving: { fr: 'Sauvegarde...', en: 'Saving...' },
+        cancel: { fr: 'Annuler', en: 'Cancel' },
+        chooseAvatar: { fr: 'Choisir un avatar', en: 'Choose an avatar' },
+        password: { fr: 'Mot de passe', en: 'Password' },
+        changePassword: { fr: 'Changer', en: 'Change' },
+        cancelChange: { fr: 'Annuler', en: 'Cancel' },
+        currentPwd: { fr: 'Mot de passe actuel', en: 'Current password' },
+        newPwd: { fr: 'Nouveau mot de passe', en: 'New password' },
+        confirmPwd: { fr: 'Confirmer le mot de passe', en: 'Confirm password' },
+        pwdMatch: { fr: '✓ Les mots de passe correspondent', en: '✓ Passwords match' },
+        pwdNoMatch: { fr: '✕ Ne correspondent pas', en: '✕ Don\'t match' },
+        changePwdBtn: { fr: 'Changer le mot de passe', en: 'Change password' },
+        noPwdChange: { fr: 'Cliquez sur "Changer" pour modifier votre mot de passe.', en: 'Click "Change" to update your password.' },
+        practice: { fr: 'Pratiquer →', en: 'Practice →' },
+        adminSpace: { fr: 'Espace administrateur', en: 'Admin space' },
+        adminSub: { fr: 'Gérez les utilisateurs et les scénarios depuis le panneau admin.', en: 'Manage users and scenarios from the admin panel.' },
+        manageUsers: { fr: 'Gérer les utilisateurs', en: 'Manage users' },
+        manageScenarios: { fr: 'Gérer les scénarios', en: 'Manage scenarios' },
+        successToast: { fr: 'Profil mis à jour avec succès.', en: 'Profile updated successfully.' },
+        errorEmpty: { fr: 'Le nom ne peut pas être vide.', en: 'Name cannot be empty.' },
+        errorPwd: { fr: 'Entrez votre mot de passe actuel.', en: 'Enter your current password.' },
+        errorPwdLength: { fr: 'Le nouveau mot de passe doit contenir au moins 6 caractères.', en: 'New password must be at least 6 characters.' },
+        errorPwdMatch: { fr: 'Les mots de passe ne correspondent pas.', en: 'Passwords don\'t match.' },
+    },
+
+    // ── AUTH ──────────────────────────────────────────────────────
+    auth: {
+        login: { fr: 'Se connecter', en: 'Log in' },
+        signup: { fr: 'Créer un compte', en: 'Create account' },
+        email: { fr: 'Email', en: 'Email' },
+        password: { fr: 'Mot de passe', en: 'Password' },
+        forgot: { fr: 'Mot de passe oublié ?', en: 'Forgot password?' },
+        noAccount: { fr: 'Pas encore de compte ?', en: 'No account yet?' },
+        hasAccount: { fr: 'Déjà un compte ?', en: 'Already have an account?' },
+        google: { fr: 'Continuer avec Google', en: 'Continue with Google' },
+        or: { fr: 'ou', en: 'or' },
+        connecting: { fr: 'Connexion...', en: 'Logging in...' },
+        creating: { fr: 'Création...', en: 'Creating...' },
+        welcome: { fr: 'Bon retour 👋', en: 'Welcome back 👋' },
+        welcomeSub: { fr: 'Connecte-toi pour continuer ta progression', en: 'Log in to continue your progress' },
+        joinTitle: { fr: 'Crée ton compte', en: 'Create your account' },
+        joinSub: { fr: 'Rejoins LinguaTalk et commence à apprendre', en: 'Join LinguaTalk and start learning' },
+        fullName: { fr: 'Nom complet', en: 'Full name' },
+        googleFailed: { fr: 'La connexion avec Google a échoué. Réessayez.', en: 'Google sign-in failed. Please try again.' },
+        genericError: { fr: 'Erreur de connexion', en: 'Login error' },
+        resendVerification: { fr: 'Renvoyer l\'email de vérification', en: 'Resend verification email' },
+        verificationResent: { fr: 'Email de vérification renvoyé ! Vérifiez votre boîte mail.', en: 'Verification email resent! Check your inbox.' },
+        resendError: { fr: 'Erreur lors de l\'envoi.', en: 'Error sending email.' },
+        loginTagline: { fr: 'Apprends en parlant.', en: 'Learn by speaking.' },
+        loginTaglineSub: { fr: 'Des conversations réelles, un niveau qui progresse.', en: 'Real conversations, a level that progresses.' },
+        signupTagline: { fr: 'Rejoins LinguaTalk.', en: 'Join LinguaTalk.' },
+        signupTaglineSub: { fr: 'Choisis ta langue, découvre ton niveau.', en: 'Choose your language, discover your level.' },
+        signupError: { fr: 'Erreur lors de l\'inscription', en: 'Error during sign-up' },
+        checkEmail: { fr: 'Vérifiez votre email !', en: 'Check your email!' },
+        checkEmailSent: { fr: 'Un email de confirmation a été envoyé à', en: 'A confirmation email has been sent to' },
+        checkEmailClick: { fr: 'Cliquez sur le lien dans l\'email pour activer votre compte.', en: 'Click the link in the email to activate your account.' },
+        checkEmailSpam: { fr: 'Vous n\'avez pas reçu l\'email ? Vérifiez votre dossier spam.', en: 'Didn\'t receive the email? Check your spam folder.' },
+        backToLogin: { fr: 'Retour à la connexion', en: 'Back to login' },
+        createMyAccount: { fr: 'Créer mon compte', en: 'Create my account' },
+        forgotTitle: { fr: 'Mot de passe oublié ?', en: 'Forgot password?' },
+        forgotSub: { fr: 'Entrez votre email et nous vous enverrons un lien de réinitialisation.', en: 'Enter your email and we\'ll send you a reset link.' },
+        emailAddress: { fr: 'Adresse email', en: 'Email address' },
+        emptyEmail: { fr: 'Entrez votre adresse email.', en: 'Enter your email address.' },
+        serverError: { fr: 'Erreur serveur.', en: 'Server error.' },
+        sendingLink: { fr: 'Envoi en cours...', en: 'Sending...' },
+        sendLink: { fr: 'Envoyer le lien', en: 'Send link' },
+        emailSentTitle: { fr: 'Email envoyé !', en: 'Email sent!' },
+        emailSentBody: { fr: 'Si cette adresse est associée à un compte, vous recevrez un lien de réinitialisation dans quelques minutes.', en: 'If this address is linked to an account, you\'ll receive a reset link within a few minutes.' },
+        emailSentSpam: { fr: 'Vérifiez aussi votre dossier spam.', en: 'Also check your spam folder.' },
+        googleLoading: { fr: 'Connexion Google en cours...', en: 'Signing in with Google...' },
+        fillAllFields: { fr: 'Remplissez tous les champs.', en: 'Fill in all fields.' },
+        invalidExpiredLink: { fr: 'Lien invalide ou expiré.', en: 'Invalid or expired link.' },
+        invalidLink: { fr: 'Lien invalide', en: 'Invalid link' },
+        invalidLinkSub: { fr: 'Ce lien de réinitialisation est invalide ou expiré.', en: 'This reset link is invalid or has expired.' },
+        requestNewLink: { fr: 'Demander un nouveau lien', en: 'Request a new link' },
+        newPasswordTitle: { fr: 'Nouveau mot de passe', en: 'New password' },
+        newPasswordSub: { fr: 'Choisissez un nouveau mot de passe pour votre compte.', en: 'Choose a new password for your account.' },
+        resetting: { fr: 'Réinitialisation...', en: 'Resetting...' },
+        resetPasswordBtn: { fr: 'Réinitialiser le mot de passe', en: 'Reset password' },
+        passwordChanged: { fr: 'Mot de passe modifié !', en: 'Password changed!' },
+        passwordChangedSub: { fr: 'Votre mot de passe a été réinitialisé avec succès.', en: 'Your password has been successfully reset.' },
+        autoRedirect: { fr: 'Redirection automatique vers la connexion...', en: 'Automatically redirecting to login...' },
+        invalidVerificationLink: { fr: 'Lien de vérification invalide.', en: 'Invalid verification link.' },
+        verifying: { fr: 'Vérification en cours...', en: 'Verifying...' },
+        emailVerified: { fr: 'Email vérifié !', en: 'Email verified!' },
+    },
+
+    // ── ADMIN ─────────────────────────────────────────────────────
+    admin: {
+        backToScenarios: { fr: 'Scénarios', en: 'Scenarios' },
+        active: { fr: 'actif', en: 'active' },
+        actives: { fr: 'actifs', en: 'active' },
+        inactive: { fr: 'désactivé', en: 'disabled' },
+        inactives: { fr: 'désactivés', en: 'disabled' },
+        searchPlaceholder: { fr: 'Rechercher un utilisateur...', en: 'Search for a user...' },
+        loading: { fr: 'Chargement...', en: 'Loading...' },
+        noUserFound: { fr: 'Aucun utilisateur trouvé', en: 'No user found' },
+        tryOtherName: { fr: 'Essaie avec un autre nom ou email.', en: 'Try a different name or email.' },
+        columnUser: { fr: 'Utilisateur', en: 'User' },
+        columnLanguages: { fr: 'Langues pratiquées', en: 'Languages practiced' },
+        columnAction: { fr: 'Action', en: 'Action' },
+        none: { fr: 'Aucune', en: 'None' },
+        noLanguage: { fr: 'Aucune langue', en: 'No language' },
+        deactivate: { fr: 'Désactiver', en: 'Deactivate' },
+        reactivate: { fr: 'Réactiver', en: 'Reactivate' },
+        deactivateAccount: { fr: 'Désactiver le compte', en: 'Deactivate account' },
+        reactivateAccount: { fr: 'Réactiver le compte', en: 'Reactivate account' },
+        errorLoadUsers: { fr: 'Erreur lors du chargement des utilisateurs.', en: 'Error loading users.' },
+        errorToggle: { fr: 'Erreur lors de la modification.', en: 'Error updating status.' },
+        user: { fr: 'User', en: 'User' },
+    },
+
+    // ── ADMIN SCENARIOS ───────────────────────────────────────────
+    adminScenarios: {
+        users: { fr: 'Utilisateurs', en: 'Users' },
+        available: { fr: 'scénario disponible', en: 'scenario available' },
+        availables: { fr: 'scénarios disponibles', en: 'scenarios available' },
+        newScenario: { fr: 'Nouveau scénario', en: 'New scenario' },
+        new: { fr: 'Nouveau', en: 'New' },
+        searchPlaceholder: { fr: 'Rechercher par titre...', en: 'Search by title...' },
+        noScenario: { fr: 'Aucun scénario pour l\'instant', en: 'No scenarios yet' },
+        noScenarioSub: { fr: 'Crée le premier scénario pour que les apprenants puissent pratiquer.', en: 'Create the first scenario so learners can start practicing.' },
+        createFirst: { fr: 'Créer le premier scénario', en: 'Create the first scenario' },
+        noMatch: { fr: 'Aucun scénario ne correspond aux filtres', en: 'No scenario matches the filters' },
+        resetFilters: { fr: 'Réinitialiser les filtres', en: 'Reset filters' },
+        editScenario: { fr: 'Modifier le scénario', en: 'Edit scenario' },
+        emoji: { fr: 'Emoji', en: 'Emoji' },
+        titleLabel: { fr: 'Titre *', en: 'Title *' },
+        choose: { fr: 'Choisir', en: 'Choose' },
+        themeRequired: { fr: 'Thème *', en: 'Theme *' },
+        minLevel: { fr: 'Niveau min *', en: 'Min level *' },
+        maxLevel: { fr: 'Niveau max *', en: 'Max level *' },
+        descriptionRequired: { fr: 'Description *', en: 'Description *' },
+        systemPrompt: { fr: 'Rôle de l\'IA (System Prompt) *', en: 'AI Role (System Prompt) *' },
+        systemPromptHint: { fr: 'Décrit le personnage que jouera l\'IA pendant la conversation.', en: 'Describes the character the AI will play during the conversation.' },
+        editBtn: { fr: 'Modifier', en: 'Edit' },
+        confirmDelete: { fr: 'Supprimer ce scénario ?', en: 'Delete this scenario?' },
+        confirmDeleteSub: { fr: 'Cette action est irréversible. Les conversations existantes liées à ce scénario ne seront pas supprimées.', en: 'This action is irreversible. Existing conversations linked to this scenario will not be deleted.' },
+        deleting: { fr: 'Suppression...', en: 'Deleting...' },
+        errorLoad: { fr: 'Erreur lors du chargement des scénarios.', en: 'Error loading scenarios.' },
+        fillRequired: { fr: 'Remplis tous les champs obligatoires.', en: 'Fill in all required fields.' },
+        editSuccess: { fr: 'Scénario modifié avec succès.', en: 'Scenario successfully updated.' },
+        createSuccess: { fr: 'Scénario créé avec succès.', en: 'Scenario successfully created.' },
+        errorSave: { fr: 'Erreur lors de la sauvegarde.', en: 'Error while saving.' },
+        deleteSuccess: { fr: 'Scénario supprimé.', en: 'Scenario deleted.' },
+        errorDelete: { fr: 'Erreur lors de la suppression.', en: 'Error while deleting.' },
+    },
+
+    // ── LANDING (page publique) ────────────────────────────────────
+    landing: {
+        login: { fr: 'Se connecter', en: 'Log in' },
+        startFree: { fr: 'Commencer gratuitement', en: 'Start for free' },
+        signupShort: { fr: 'S\'inscrire', en: 'Sign up' },
+        badge: { fr: 'Plateforme IA d\'apprentissage des langues', en: 'AI-powered language learning platform' },
+        tagline: { fr: 'LEARN · SPEAK · GROW', en: 'LEARN · SPEAK · GROW' },
+        heroTitle: { fr: 'Apprenez les langues', en: 'Learn languages' },
+        heroTitleHighlight: { fr: 'en conversant avec l\'IA', en: 'by talking with AI' },
+        heroSub: { fr: 'Des conversations guidées dans des situations réelles, un suivi automatique de votre progression, et une MindMap visuelle de vos connaissances. Pour les niveaux A2 à B2.', en: 'Guided conversations in real-life situations, automatic progress tracking, and a visual MindMap of your knowledge. For levels A2 to B2.' },
+        haveAccount: { fr: 'J\'ai déjà un compte', en: 'I already have an account' },
+
+        benefit1: { fr: 'Conversations guidées par IA dans des scénarios réels', en: 'AI-guided conversations in real-life scenarios' },
+        benefit2: { fr: 'Évaluation de niveau CECRL (A1 à C2)', en: 'CEFR level assessment (A1 to C2)' },
+        benefit3: { fr: 'Learning Log automatique après chaque session', en: 'Automatic Learning Log after every session' },
+        benefit4: { fr: 'MindMap interactive et exportable en PNG', en: 'Interactive MindMap, exportable as PNG' },
+        benefit5: { fr: 'Support de 8 langues dont coréen, japonais et arabe', en: 'Support for 8 languages including Korean, Japanese and Arabic' },
+        benefit6: { fr: 'Mode voix, romanisation et cartes de phrases', en: 'Voice mode, romanization and phrase cards' },
+
+        featuresLabel: { fr: 'Fonctionnalités', en: 'Features' },
+        featuresTitle: { fr: 'Tout ce qu\'il faut pour progresser', en: 'Everything you need to progress' },
+        featuresSub: { fr: 'LinguaTalk combine la puissance de l\'IA avec une structure pédagogique que les autres applications n\'ont pas.', en: 'LinguaTalk combines the power of AI with a pedagogical structure other apps don\'t have.' },
+
+        feature1Title: { fr: 'Scénarios réels', en: 'Real scenarios' },
+        feature1Desc: { fr: 'L\'IA joue un rôle précis — serveur, recruteur, médecin — et vous plonge dans une situation du quotidien.', en: 'The AI plays a specific role — waiter, recruiter, doctor — and immerses you in an everyday situation.' },
+        feature2Title: { fr: 'Évaluation de niveau', en: 'Level assessment' },
+        feature2Desc: { fr: 'Un test initial place l\'utilisateur de A1 à C2. Les scénarios sont filtrés automatiquement selon le niveau.', en: 'An initial test places the user from A1 to C2. Scenarios are automatically filtered by level.' },
+        feature3Title: { fr: 'Learning Log', en: 'Learning Log' },
+        feature3Desc: { fr: 'Les phrases et expressions clés sont extraites automatiquement après chaque session et sauvegardées.', en: 'Key phrases and expressions are automatically extracted after each session and saved.' },
+        feature4Title: { fr: 'MindMap visuelle', en: 'Visual MindMap' },
+        feature4Desc: { fr: 'Un arbre interactif de connaissances qui grandit à chaque session. Exportable en image PNG.', en: 'An interactive knowledge tree that grows with every session. Exportable as a PNG image.' },
+        feature5Title: { fr: 'Mode voix', en: 'Voice mode' },
+        feature5Desc: { fr: 'Dictez votre réponse avec le micro — Web Speech API convertit votre voix en texte instantanément.', en: 'Dictate your answer with the mic — Web Speech API converts your voice to text instantly.' },
+        feature6Title: { fr: 'Corrections discrètes', en: 'Discreet corrections' },
+        feature6Desc: { fr: 'L\'IA corrige les erreurs de grammaire et de vocabulaire de manière naturelle à chaque échange.', en: 'The AI corrects grammar and vocabulary mistakes naturally with every exchange.' },
+
+        howItWorksLabel: { fr: 'Comment ça marche', en: 'How it works' },
+        howItWorksTitle: { fr: '5 étapes pour progresser', en: '5 steps to progress' },
+
+        step1Title: { fr: 'Inscris-toi', en: 'Sign up' },
+        step1Desc: { fr: 'Crée ton compte en 30 secondes avec ton email.', en: 'Create your account in 30 seconds with your email.' },
+        step2Title: { fr: 'Évalue ton niveau', en: 'Assess your level' },
+        step2Desc: { fr: 'Un QCM rapide détermine ton niveau A1 → C2 dans la langue choisie.', en: 'A quick quiz determines your A1 → C2 level in the chosen language.' },
+        step3Title: { fr: 'Choisis un scénario', en: 'Choose a scenario' },
+        step3Desc: { fr: 'Restaurant, voyage, entretien d\'embauche... adapté à ton niveau.', en: 'Restaurant, travel, job interview... adapted to your level.' },
+        step4Title: { fr: 'Parle avec l\'IA', en: 'Talk with the AI' },
+        step4Desc: { fr: 'L\'IA joue un rôle précis. Tu pratiques, elle corrige discrètement.', en: 'The AI plays a specific role. You practice, it corrects discreetly.' },
+        step5Title: { fr: 'Suis ta progression', en: 'Track your progress' },
+        step5Desc: { fr: 'Learning Log + MindMap mis à jour automatiquement après chaque session.', en: 'Learning Log + MindMap automatically updated after every session.' },
+
+        ctaTitle: { fr: 'Prêt à progresser ?', en: 'Ready to progress?' },
+        ctaSub: { fr: 'Rejoignez LinguaTalk et commencez votre première conversation guidée par l\'IA dès aujourd\'hui — gratuitement.', en: 'Join LinguaTalk and start your first AI-guided conversation today — for free.' },
+        ctaButton: { fr: 'Créer mon compte gratuitement', en: 'Create my free account' },
+
+        footerTagline: { fr: 'Plateforme d\'apprentissage des langues par IA — EMSI Rabat 2025/2026', en: 'AI-powered language learning platform — EMSI Rabat 2025/2026' },
+        footerCredits: { fr: 'Aya El Haddaj & Malak Fadil · Encadrante : Mme Hasnaa Chaabi', en: 'Aya El Haddaj & Malak Fadil · Supervisor: Mrs. Hasnaa Chaabi' },
+    },
+
+    // ── COMMUN ────────────────────────────────────────────────────
+    common: {
+        loading: { fr: 'Chargement...', en: 'Loading...' },
+        error: { fr: 'Erreur', en: 'Error' },
+        save: { fr: 'Sauvegarder', en: 'Save' },
+        cancel: { fr: 'Annuler', en: 'Cancel' },
+        delete: { fr: 'Supprimer', en: 'Delete' },
+        edit: { fr: 'Modifier', en: 'Edit' },
+        create: { fr: 'Créer', en: 'Create' },
+        search: { fr: 'Rechercher', en: 'Search' },
+        level: { fr: 'Niveau', en: 'Level' },
+        language: { fr: 'Langue', en: 'Language' },
+        phrase: { fr: 'Phrase', en: 'Phrase' },
+        phrases: { fr: 'phrases', en: 'phrases' },
+    },
+
 }
-const router = express.Router()
-const { protect } = require('../middleware/authMiddleware')
-const { envoyerMessage } = require('../services/openaiService')
 
-router.post('/', protect, async (req, res) =>
-{
-    const { texte, langue } = req.body
-    if (!texte) return res.status(400).json({ message: 'texte requis' })
-
-    const LANGUES_LATINES = ['Anglais', 'Espagnol', 'Français', 'Allemand']
-    const estLatine = langue && LANGUES_LATINES.includes(langue)
-
-    try
-    {
-        // Pour les langues latines : traduction uniquement, pas de romanisation
-        // Pour les langues non-latines : romanisation stricte + traduction
-        const systemPrompt = estLatine
-            ? `You are a professional French translator. Your ONLY job is to translate text into French.
-
-CRITICAL RULES:
-- TRANSLATE the ENTIRE text from first word to last word. NEVER stop halfway. NEVER skip any paragraph.
-- If the text has multiple paragraphs → translate ALL of them, in order, separated by a blank line.
-- If a paragraph is a question → translate the question as a question. Do NOT answer it.
-- Lines starting with "💡 Correction :" are grammar corrections → translate the ENTIRE line including the explanation after the dash (—).
-- Do NOT answer, explain, describe, or add any information beyond the translation.
-
-PRONOUN RULES — very important:
-- The text is a dialogue between a speaker and a listener.
-- "you/usted/Sie/you" addressing the listener → translate as "vous" (not "il/elle/lui/leur")
-- "le/la/les" as indirect object for usted/Sie → translate as "vous" not "lui/leur"
-- "I/je/yo/ich" = first person → keep as first person in French
-- NEVER introduce a third person ("il", "elle", "lui") if the original has none.
-
-EXAMPLE — input with correction + character response:
-INPUT:
-💡 Correction : "Ive" → "I've" — "I've" is a contraction of "I have".
-
-How long have you been experiencing these symptoms?
-
-CORRECT OUTPUT (translate EVERYTHING):
-💡 Correction : « Ive » → « I've » — « I've » est une contraction de « I have ».
-
-Depuis combien de temps ressentez-vous ces symptômes ?
-
-EXAMPLES OF CORRECT TRANSLATIONS:
-  "¿Quiere que le preparemos una tabla?" → "Voulez-vous que nous vous préparions un plateau ?"
-  "I'd be happy to show you our menu" → "Je serais ravi de vous montrer notre menu"
-
-EXAMPLES OF FORBIDDEN TRANSLATIONS:
-  "¿Quiere que le preparemos...?" → "...que je lui prépare..." ← WRONG (lui ≠ vous)
-  Stopping after the 💡 Correction line ← FORBIDDEN — translate ALL paragraphs
-  "¿Qué es el gazpacho?" → "Le gaspacho est une soupe froide..." ← NEVER explain
-
-Return ONLY this exact JSON format on one line, nothing else:
-{"romanisation":"","traduction":"FRENCH_TRANSLATION_HERE"}`
-
-            : langue === 'Coréen'
-                ? `You are a Korean linguistics expert. Convert Korean text to Revised Romanization of Korean (RR / 국어의 로마자 표기법) and translate to French.
-
-CONSONANTS — initial position: ㄱ=g ㄴ=n ㄷ=d ㄹ=r ㅁ=m ㅂ=b ㅅ=s ㅇ=(silent) ㅈ=j ㅊ=ch ㅋ=k ㅌ=t ㅍ=p ㅎ=h
-CONSONANTS — final position (받침): ㄱ=k ㄴ=n ㄷ=t ㄹ=l ㅁ=m ㅂ=p ㅅ=t ㅇ=ng ㅊ=t ㅋ=k ㅌ=t ㅍ=p ㅎ=t
-DOUBLE CONSONANTS: ㄲ=kk ㄸ=tt ㅃ=pp ㅆ=ss ㅉ=jj
-VOWELS: ㅏ=a ㅐ=ae ㅑ=ya ㅒ=yae ㅓ=eo ㅔ=e ㅕ=yeo ㅖ=ye ㅗ=o ㅘ=wa ㅙ=wae ㅚ=oe ㅛ=yo ㅜ=u ㅝ=wo ㅞ=we ㅟ=wi ㅠ=yu ㅡ=eu ㅢ=ui ㅣ=i
-
-CRITICAL PHONOLOGICAL RULES (apply in this order):
-1. LIAISON — final consonant + syllable starting with ㅇ (silent): consonant shifts to next syllable
-   약을→yageul (not yak-eul), 음악→eumak, 학원→hagwon, 있어요→isseoyo
-2. ㄹ — before vowel=r, before consonant or at end=l, between vowels=ll
-   달→dal, 달라→dalla, 물→mul, 물이→muri
-3. NASALISATION — ㄱ+ㄴ/ㅁ→ng, ㄷ+ㄴ/ㅁ→n, ㅂ+ㄴ/ㅁ→m
-   학문→hangmun, 닫는→dannneun, 합니다→hamnida
-4. ㄴ+ㄹ or ㄹ+ㄴ → ll: 신라→Silla, 천리→cheolli
-5. ㅎ before ㄱ/ㄷ/ㅂ/ㅈ → k/t/p/ch (aspiration): 좋다→jota, 많다→manta
-6. ASSIMILATION of ㄱ/ㄷ/ㅂ before ㄴ/ㅁ: 먹는→meongneun, 국민→gungmin
-
-Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-
-💡 CORRECTION LINES — mandatory rule :
-Lines starting with "💡 Correction :" MUST be translated to French like this :
-  INPUT  : 💡 Correction : "chajgoisseoyo" → "chajgo isseoyo" — "있어요"가 맞아요.
-  OUTPUT : 💡 Correction : "chajgoisseoyo" → "chajgo isseoyo" — « isseoyo » est la bonne orthographe.
-  INPUT  : 💡 Correction : "salkkeyo" → "살게요" — "살게요"가 맞아요.
-  OUTPUT : 💡 Correction : "salkkeyo" → "살게요" — « salgeyo » est la forme correcte.
-Rule : keep "💡 Correction : X → Y —" exactly as-is, translate ONLY the explanation after "—" into French.
-
-Return ONLY this exact JSON on one line:
-{"romanisation":"RR_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
-
-                : langue === 'Japonais'
-                    ? `You are a Japanese linguistics expert. Convert Japanese text to standard Hepburn romanization and translate to French.
-
-STANDARD HEPBURN RULES:
-- Basic: a i u e o / ka ki ku ke ko / sa shi su se so / ta chi tsu te to / na ni nu ne no / ha hi fu he ho / ma mi mu me mo / ya yu yo / ra ri ru re ro / wa n
-- Voiced: ga gi gu ge go / za ji zu ze zo / da (di=ji, du=zu) de do / ba bi bu be bo / pa pi pu pe po
-- っ/ッ → double the NEXT consonant: 学校→gakkou, 切手→kitte, 雑誌→zasshi, 一本→ippon
-- Long vowels: おう/おお→ō (or ou), うう/ウウ→ū (or uu) — use macrons ō ū
-- PARTICLES: は→wa, を→o, へ→e (always, regardless of kana reading)
-- ん/ン: →n normally; →m before b/p/m (三味線→shamisen); add apostrophe before vowel/n (金一→kin'ichi)
-- ぢ=ji, づ=zu (same as じ/ず in modern usage)
-
-Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-
-💡 CORRECTION LINES — mandatory rule :
-Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
-translate ONLY the explanation after "—" into French.
-  INPUT  : 💡 Correction : "taberu tai" → "tabetai" — "〜たい"は一つの単語です。
-  OUTPUT : 💡 Correction : "taberu tai" → "tabetai" — «〜たい » est un seul mot.
-
-Return ONLY this exact JSON on one line:
-{"romanisation":"HEPBURN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
-
-                    : langue === 'Chinois'
-                        ? `You are a Mandarin Chinese linguistics expert. Convert Chinese text to standard Pinyin with tone marks and translate to French.
-
-PINYIN TONE MARKS: 1st=ā ē ī ō ū ǖ / 2nd=á é í ó ú ǘ / 3rd=ǎ ě ǐ ǒ ǔ ǚ / 4th=à è ì ò ù ǜ / neutral=no mark
-TONE PLACEMENT RULES: mark goes on the main vowel (a/e always; for ou→o; for other combinations: last vowel)
-SPACING: one space between each syllable word (你好→nǐ hǎo, 谢谢→xiè xie, 我要→wǒ yào)
-SPECIAL INITIALS: zh ch sh r / z c s / j q x / b p m f d t n l g k h
-SPECIAL FINALS: -ian=-iān (not -yen), -iu=-iǔ, -ui=-uéi, -un=-ún, -ün=-üén
-NEUTRAL TONE: common particles and suffixes (的 de, 了 le, 吗 ma, 吧 ba, 呢 ne, 们 men) have no tone mark
-
-Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-
-💡 CORRECTION LINES — mandatory rule :
-Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
-translate ONLY the explanation after "—" into French.
-
-Return ONLY this exact JSON on one line:
-{"romanisation":"PINYIN_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
-
-                        : langue === 'Arabe'
-                            ? `You are an Arabic linguistics expert. Convert Arabic text to readable phonetic romanization and translate to French.
-
-CONSONANT MAPPING:
-ب=b ت=t ث=th ج=j ح=h خ=kh د=d ذ=dh ر=r ز=z س=s ش=sh ص=s ض=d ط=t ظ=z ع=' غ=gh ف=f ق=q ك=k ل=l م=m ن=n ه=h و=w/oo ي=y/ee ء='
-VOWELS: فتحة(a) كسرة(i/e) ضمة(u/o) / long: ا=aa/a و=oo ي=ee
-COMMON WORDS (use these exact spellings): مرحبا=marhaba, شكراً=shukran, أهلاً=ahlan, نعم=na'am, لا=la, صباح=sabah, مساء=masa', كيف=kif/kayfa, ماذا=matha, هل=hal
-
-RULES: write phonetically as a French speaker would read it; no capital letters; separate words with spaces; shadda (ّ) doubles the consonant
-
-Translate the ENTIRE input — ALL paragraphs from first to last. NEVER stop after the first paragraph.
-
-💡 CORRECTION LINES — mandatory rule :
-Lines starting with "💡 Correction :" → keep "💡 Correction : X → Y —" exactly as-is,
-translate ONLY the explanation after "—" into French.
-
-Return ONLY this exact JSON on one line:
-{"romanisation":"PHONETIC_RESULT","traduction":"FRENCH_TRANSLATION_HERE"}`
-
-                            : `Translate the given text to French.
-Return ONLY this exact JSON format on one line:
-{"romanisation":"","traduction":"FRENCH_TRANSLATION_HERE"}
-
-Your ONLY job is to translate/romanize the entire text from first to last word. NEVER stop halfway.
-Do NOT respond to the text. Translate questions as questions. Do NOT explain anything.
-Lines starting with "💡 Correction :" → keep the format, translate the explanation after the dash (—) into French.
-Return ONLY the JSON, nothing else. No markdown, no code blocks, no explanations.
-`
-
-        const modelAUtiliser = 'gpt-4o-mini'
-
-        const reponse = await envoyerMessage(systemPrompt, [], texte, 1, modelAUtiliser)
-        const clean = reponse.replace(/```json|```/g, '').trim()
-
-        let data
-        try
-        {
-            data = JSON.parse(clean)
-        } catch
-        {
-            const jsonStr = clean.match(/\{[\s\S]*?\}/)?.[0] || clean
-            data = JSON.parse(repairJson(jsonStr))
-        }
-
-        const decodeHtml = (str) => str
-            .replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
-            .replace(/^\[|\]$/g, '').trim()
-
-        let traduction = decodeHtml(data?.traduction || '')
-        // Écarte le placeholder non remplacé ou les traductions hallucinées trop longues
-        const PLACEHOLDERS = ['FRENCH_TRANSLATION_HERE', 'RR_RESULT', 'HEPBURN_RESULT', 'PINYIN_RESULT', 'PHONETIC_RESULT']
-        if (PLACEHOLDERS.includes(traduction)) traduction = ''
-        const inputMots = texte.trim().split(/\s+/).length
-        const outputMots = traduction.split(/\s+/).length
-        if (outputMots > inputMots * 5) traduction = ''
-
-        let romanisation = decodeHtml(data?.romanisation || '')
-        if (PLACEHOLDERS.includes(romanisation)) romanisation = ''
-
-        res.json({ romanisation, traduction })
-
-    } catch (err)
-    {
-        console.error('Erreur traduction :', err.message)
-        res.status(500).json({ message: 'Erreur traduction' })
-    }
-})
-
-module.exports = router
+export default translations

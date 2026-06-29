@@ -12,6 +12,7 @@ import {
   PenLine,
   Trash2,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import api from "../services/api";
 import { useLangue } from "../contexts/LangueContext";
@@ -99,6 +100,9 @@ export default function LearningLog() {
   const [filtreLangue, setFiltreLangue] = useState("");
   const [filtreTheme, setFiltreTheme] = useState("");
   const [filtreNiveau, setFiltreNiveau] = useState("");
+
+  // ─ State : recherche texte libre (filtrée côté frontend, pas besoin du backend)
+  const [recherche, setRecherche] = useState("");
 
   // ─ State : thèmes disponibles (extraits des entries)
   const [themes, setThemes] = useState([]);
@@ -219,9 +223,23 @@ export default function LearningLog() {
     setFiltreLangue("");
     setFiltreTheme("");
     setFiltreNiveau("");
+    setRecherche("");
   };
 
-  const filtresActifs = filtreLangue || filtreTheme || filtreNiveau;
+  const filtresActifs =
+    filtreLangue || filtreTheme || filtreNiveau || recherche;
+
+  // Liste affichée = entries déjà chargées, filtrées en plus par le texte
+  // tapé dans la recherche (sur la phrase OU sa traduction, insensible à la casse).
+  // On ne touche pas au backend : c'est un filtre rapide sur ce qu'on a déjà en mémoire.
+  const entriesAffichees = entries.filter((e) => {
+    if (!recherche.trim()) return true;
+    const q = recherche.trim().toLowerCase();
+    return (
+      e.phrase.toLowerCase().includes(q) ||
+      e.traduction.toLowerCase().includes(q)
+    );
+  });
 
   // Patterns déjà utilisés pour la langue sélectionnée dans le formulaire
   // (recalculé automatiquement à chaque fois que form.langue ou entries change)
@@ -254,8 +272,8 @@ export default function LearningLog() {
               {t("learningLog.title")}
             </h1>
             <p className='text-warm-500 text-xs sm:text-sm mt-1'>
-              {entries.length}{" "}
-              {entries.length !== 1
+              {entriesAffichees.length}{" "}
+              {entriesAffichees.length !== 1
                 ? t("learningLog.phrases")
                 : t("learningLog.phrase")}
             </p>
@@ -281,6 +299,24 @@ export default function LearningLog() {
           className='bg-white rounded-2xl border border-warm-200
                                 shadow-soft p-4 sm:p-5 mb-4 sm:mb-6'
         >
+          {/* Barre de recherche — filtre la phrase et sa traduction, en plus des filtres ci-dessous */}
+          <div className='relative mb-3 sm:mb-4'>
+            <Search
+              size={16}
+              className='absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-400'
+            />
+            <input
+              type='text'
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              placeholder={t("learningLog.searchPlaceholder")}
+              className='w-full pl-10 pr-4 py-2.5 rounded-xl border border-warm-200
+                         text-sm text-warm-900 bg-warm-50
+                         focus:outline-none focus:border-orange-300
+                         placeholder:text-warm-300'
+            />
+          </div>
+
           <div className='flex flex-wrap gap-2 sm:gap-4 items-end w-full'>
             {/* Filtre langue */}
             <div className='flex flex-col gap-1.5 flex-1 min-w-30'>
@@ -378,7 +414,7 @@ export default function LearningLog() {
           <div className='text-center py-20 text-warm-400'>
             {t("common.loading")}
           </div>
-        ) : entries.length === 0 ? (
+        ) : entriesAffichees.length === 0 ? (
           <div className='bg-white rounded-2xl border border-warm-200 shadow-soft p-12 text-center'>
             <p className='text-4xl mb-4'>📝</p>
             <p className='text-warm-600 font-medium mb-2'>
@@ -405,7 +441,7 @@ export default function LearningLog() {
           </div>
         ) : (
           <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
-            {entries.map((entry) => (
+            {entriesAffichees.map((entry) => (
               <PhraseCard
                 key={entry._id}
                 entry={entry}
